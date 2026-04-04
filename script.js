@@ -1,49 +1,85 @@
 let map;
 let playerMarker;
-let watchId = null;
+let imageOverlay;
+let nickname = "";
+let modoMestre = false;
 
-// 1. Cria o mapa visual
-map = L.map('map').setView([-15.7801, -47.9292], 13);
+// 1. ESCUTAR O CLIQUE NO BOTÃO DE ENTRAR
+document.getElementById('enter-btn').addEventListener('click', function() {
+    nickname = document.getElementById('nickname').value.trim();
+    
+    if (nickname.length < 3) {
+        alert("Escolha um codinome com pelo menos 3 letras!");
+        return;
+    }
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+    // SEGREDO: Se escrever MESTRE, liberas ferramentas de upload
+    if (nickname.toUpperCase() === "MESTRE") {
+        modoMestre = true;
+        document.getElementById('admin-tools').style.display = 'block';
+        alert("Modo Mestre Ativado! Podes carregar o teu mapa JPG.");
+    }
 
-// 2. Adiciona 3 objetivos de teste no mapa
-const objetivos = [
-    { coords: [-15.7850, -47.9350], nome: "Objetivo 1" },
-    { coords: [-15.7750, -47.9200], nome: "Objetivo 2" },
-    { coords: [-15.7900, -47.9150], nome: "Objetivo 3" }
-];
+    // Trocar de ecrã (Login -> Jogo)
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'flex';
+    document.getElementById('player-display').innerText = `Explorador: ${nickname}`;
 
-objetivos.forEach(obj => {
-    L.marker(obj.coords).addTo(map).bindPopup(obj.nome);
+    // Iniciar o mapa base
+    initMap();
 });
 
-// 3. Função que roda quando o GPS se mexe
-function atualizarLocalizacao(pos) {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
+// 2. INICIALIZAR O MAPA (MODO SIMPLES PARA IMAGEM)
+function initMap() {
+    // Usamos L.CRS.Simple para que o mapa entenda pixels em vez de coordenadas globais
+    map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: -2
+    });
 
-    document.getElementById('coordinates').innerText = `Lat: ${lat.toFixed(5)}, Lon: ${lng.toFixed(5)}`;
-    document.getElementById('message').innerText = "Rastreando...";
+    // Definir um ponto inicial vazio
+    map.setView([0, 0], 1);
 
-    if (!playerMarker) {
-        playerMarker = L.marker([lat, lng]).addTo(map).bindPopup("Você").openPopup();
-    } else {
-        playerMarker.setLatLng([lat, lng]);
-    }
-    map.setView([lat, lng], 16);
+    // CONFIGURAR O UPLOAD DE IMAGEM
+    document.getElementById('map-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const imgUrl = event.target.result;
+            const img = new Image();
+            
+            img.onload = function() {
+                const w = this.width;
+                const h = this.height;
+                const bounds = [[0, 0], [h, w]]; // Define os limites pelo tamanho da imagem
+
+                // Se já existir um mapa, removemos para colocar o novo
+                if (imageOverlay) map.removeLayer(imageOverlay);
+                
+                imageOverlay = L.imageOverlay(imgUrl, bounds).addTo(map);
+                map.fitBounds(bounds);
+                
+                document.getElementById('message').innerText = "Mapa carregado com sucesso!";
+            };
+            img.src = imgUrl;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // 3. CLIQUE NO MAPA PARA MARCAR PONTOS (SÓ PARA O MESTRE)
+    map.on('click', function(e) {
+        if (modoMestre) {
+            const y = e.latlng.lat.toFixed(0);
+            const x = e.latlng.lng.toFixed(0);
+            
+            // Criar um marcador onde clicaste
+            L.marker(e.latlng).addTo(map)
+                .bindPopup(`<b>Ponto de Interesse</b><br>Coordenadas na Imagem:<br>X: ${x} | Y: ${y}`)
+                .openPopup();
+            
+            document.getElementById('coordinates').innerText = `Ponto Marcado: X ${x}, Y ${y}`;
+        }
+    });
 }
-
-// 4. Botão para ligar o GPS
-document.getElementById('start-btn').addEventListener('click', () => {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(atualizarLocalizacao, (err) => {
-            alert("Erro no GPS: " + err.message);
-        }, { enableHighAccuracy: true });
-        
-        document.getElementById('start-btn').innerText = "GPS Ativo";
-        document.getElementById('start-btn').style.opacity = "0.7";
-    }
-});

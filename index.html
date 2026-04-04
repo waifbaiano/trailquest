@@ -3,24 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
     <title>TrailQuest - Aventura</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>TrailQuest</h1>
-        <p>Aventura e Exploração</p>
-    </header>
 
-    <div id="map"></div>
-
-    <div class="control-panel">
-        <button id="start-btn">Iniciar localização</button>
-        <div id="status-panel">
-            <p id="coordinates">Coordenadas: --, --</p>
-            <p id="message">Aguardando início...</p>
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="logo-area">
+                <h1>TrailQuest</h1>
+                <span>Exploração e Mistério</span>
+            </div>
+            
+            <div class="input-group">
+                <p>Digite seu Codinome:</p>
+                <input type="text" id="nickname" placeholder="Ex: Explorador_01">
+                <button id="enter-btn">INICIAR JORNADA</button>
+            </div>
         </div>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <header>
+            <div class="player-info">
+                <span id="player-display">Explorador: --</span>
+            </div>
+            <div id="admin-tools" style="display: none;">
+                <label for="map-upload" class="upload-label">🗺️ Mudar Mapa</label>
+                <input type="file" id="map-upload" accept="image/*" style="display:none;">
+            </div>
+        </header>
+
+        <div id="map"></div>
+
+        <footer>
+            <div id="status-panel">
+                <p id="coordinates">Aguardando sinal...</p>
+                <p id="message">Clique no mapa para marcar pontos (Modo Mestre)</p>
+            </div>
+        </footer>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
