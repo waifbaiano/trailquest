@@ -1,125 +1,73 @@
-// --- VARIÁVEIS GLOBAIS ---
-let map;
-let imageOverlay;
-let modoMestre = false;
-let pontosMarcados = [];
+let html5QrCode;
+let maxFixedPoints = 0;
+let currentPoints = 0;
+let markers = [];
 
-// --- FUNÇÃO DE NAVEGAÇÃO ---
-function showScreen(screenId) {
-    // Esconde todas as telas
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(s => s.style.display = 'none');
+// Iniciar Câmera do Participante
+function startQRScanner() {
+    showScreen('screen-qr-reader');
+    html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
     
-    // Mostra a tela desejada
-    const target = document.getElementById(screenId);
-    if (target) {
-        target.style.display = 'flex';
-        
-        // Se for a tela do mapa, precisamos dar um "refresh" no Leaflet
-        if (screenId === 'screen-map-editor' && map) {
-            setTimeout(() => map.invalidateSize(), 100);
-        }
+    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+        alert("Código detectado: " + decodedText);
+        stopQRScanner();
+    }).catch(err => alert("Erro ao acessar câmera: " + err));
+}
+
+function stopQRScanner() {
+    if(html5QrCode) {
+        html5QrCode.stop().then(() => showScreen('screen-start'));
     }
 }
 
-// --- LOGICA DE GRUPOS (SUAS REGRAS) ---
-function validateGroups() {
-    const qtyGroups = parseInt(document.getElementById('qty-groups').value);
-    const details = document.getElementById('group-details');
-    const btnSave = document.getElementById('btn-save-groups');
-
-    if (isNaN(qtyGroups) || qtyGroups < 2) {
-        alert("Quantidade de grupos inválida! O mínimo é 2.");
-        details.style.display = 'none';
-        btnSave.disabled = true;
-        return;
+// Login Diferenciado
+function loginAs(role) {
+    if (role === 'organizador') {
+        showScreen('screen-main-menu');
+    } else {
+        startQRScanner();
     }
-
-    // Se for 2 ou mais, mostra os próximos campos
-    details.style.display = 'block';
-    btnSave.disabled = false;
-
-    // Lógica de Líderes baseada na sua explicação:
-    // A quantidade de líderes geralmente é limitada pela quantidade de grupos
-    const inputLeaders = document.getElementById('qty-leaders');
-    inputLeaders.placeholder = `Máximo sugerido: ${qtyGroups}`;
 }
 
-// --- LOGICA DOS OBJETIVOS ---
-function startMapEditor() {
-    const fixed = document.getElementById('fixed-obj').value;
-    const mobile = document.getElementById('mobile-obj').value;
+// Validação de Objetivos Fixos (Obrigatórios)
+function validateObjectives() {
+    const fixedInput = document.getElementById('fixed-obj');
+    const btnConfig = document.getElementById('btn-config-map');
+    
+    maxFixedPoints = parseInt(fixedInput.value);
 
-    if (!mobile || mobile < 1) {
-        alert("A escolha de objetivos móveis é OBRIGATÓRIA!");
-        return;
+    if (maxFixedPoints > 0) {
+        btnConfig.disabled = false;
+        btnConfig.classList.remove('btn-inactive');
+        btnConfig.classList.add('btn-active-red');
+    } else {
+        btnConfig.disabled = true;
+        btnConfig.classList.remove('btn-active-red');
+        btnConfig.classList.add('btn-inactive');
     }
-
-    showScreen('screen-map-editor');
-    initMapEditor();
 }
 
-// --- EDITOR DE MAPA (IMAGEM JPG) ---
+// Editor de Mapa com Limite de Pontos
 function initMapEditor() {
-    if (map) return; // Não recria o mapa se já existir
-
-    map = L.map('map', {
-        crs: L.CRS.Simple,
-        minZoom: -2
-    });
-
-    map.setView([0, 0], 1);
-
-    // Upload da Imagem do Mapa
-    document.getElementById('map-upload').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const imgUrl = event.target.result;
-            const img = new Image();
-            img.onload = function() {
-                const w = this.width;
-                const h = this.height;
-                const bounds = [[0, 0], [h, w]];
-
-                if (imageOverlay) map.removeLayer(imageOverlay);
-                imageOverlay = L.imageOverlay(imgUrl, bounds).addTo(map);
-                map.fitBounds(bounds);
-            };
-            img.src = imgUrl;
-        };
-        reader.readAsDataURL(file);
-    });
-
-    // Clique para marcar/remover pontos (Editável)
+    // ... (mesma base anterior) ...
     map.on('click', function(e) {
-        const marker = L.marker(e.latlng, { draggable: true }).addTo(map);
-        
-        // Popup com opção de excluir (Como você pediu: 100% editável)
-        const btnDelete = document.createElement('button');
-        btnDelete.innerText = "Excluir Ponto";
-        btnDelete.style.padding = "5px";
-        btnDelete.style.background = "red";
-        btnDelete.style.color = "white";
-        btnDelete.style.border = "none";
-        btnDelete.style.borderRadius = "3px";
-        
-        btnDelete.onclick = function() {
-            map.removeLayer(marker);
-        };
-
-        marker.bindPopup(btnDelete).openPopup();
+        if (markers.length < maxFixedPoints) {
+            const marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+            markers.push(marker);
+            updateCounter();
+            
+            marker.on('click', () => {
+                map.removeLayer(marker);
+                markers = markers.filter(m => m !== marker);
+                updateCounter();
+            });
+        } else {
+            alert(`Limite de ${maxFixedPoints} objetivos atingido!`);
+        }
     });
 }
 
-function saveMap() {
-    alert("Edição de mapa salva com sucesso!");
-    showScreen('screen-main-menu');
+function updateCounter() {
+    document.getElementById('obj-counter').innerText = `Pontos: ${markers.length} / ${maxFixedPoints}`;
 }
-
-// --- INICIALIZAÇÃO AO CARREGAR ---
-window.onload = () => {
-    showScreen('screen-start');
-};

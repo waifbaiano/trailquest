@@ -6,23 +6,27 @@
     <title>TrailQuest Pro</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 
-    <div id="screen-start" class="screen">
-        <div class="box">
+    <div id="screen-start" class="screen start-bg">
+        <div class="box overlay-box">
             <h1>TrailQuest</h1>
-            <button onclick="showScreen('screen-login')">Fazer Login</button>
-            <button onclick="showScreen('screen-join-participant')">Continuar como Participante</button>
+            <button class="btn-main" onclick="showScreen('screen-login')">Fazer Login</button>
+            <button class="btn-sec" onclick="startQRScanner()">Continuar como Participante</button>
         </div>
     </div>
 
-    <div id="screen-login" class="screen" style="display:none;">
+    <div id="screen-login" class="screen">
         <div class="box">
-            <h2>Login</h2>
+            <h2>Acesse sua conta</h2>
             <input type="email" id="login-email" placeholder="E-mail">
             <input type="password" id="login-pass" placeholder="Senha">
-            <button onclick="showScreen('screen-main-menu')">Entrar</button>
+            <div class="role-selection">
+                <button onclick="loginAs('organizador')">Entrar como Organizador</button>
+                <button onclick="loginAs('participante')">Entrar como Participante</button>
+            </div>
             <button class="back" onclick="showScreen('screen-start')">Voltar</button>
         </div>
     </div>
@@ -30,57 +34,39 @@
     <div id="screen-main-menu" class="screen" style="display:none;">
         <div class="box">
             <h2>Menu Organizador</h2>
-            <button onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
-            <button onclick="showScreen('screen-groups')">Organizar Grupos</button>
+            <button id="nav-objectives" onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
+            <button id="nav-groups" onclick="showScreen('screen-groups')">Organizar Grupos</button>
+            <button id="btn-proceed" class="btn-disabled" onclick="showFinalQR()" disabled>Prosseguir para o Jogo</button>
             <button class="back" onclick="showScreen('screen-start')">Sair</button>
         </div>
     </div>
 
     <div id="screen-objectives" class="screen" style="display:none;">
         <div class="box">
-            <h3>Definição de Objetivos</h3>
-            <label>Qtd. Objetivos Fixos:</label>
-            <input type="number" id="fixed-obj" min="0">
+            <h3>Objetivos</h3>
+            <label>Qtd. Objetivos Fixos (Obrigatório):</label>
+            <input type="number" id="fixed-obj" oninput="validateObjectives()">
             
-            <label>Qtd. Objetivos Móveis (Obrigatório):</label>
-            <input type="number" id="mobile-obj" min="1">
+            <label>Qtd. Objetivos Móveis:</label>
+            <input type="number" id="mobile-obj">
             
-            <button onclick="startMapEditor()">Configurar Mapa e Pontos</button>
-            <button class="back" onclick="showScreen('screen-main-menu')">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="screen-groups" class="screen" style="display:none;">
-        <div class="box">
-            <h3>Organizar Grupos</h3>
-            <label>Quantidade de Grupos:</label>
-            <input type="number" id="qty-groups" onchange="validateGroups()">
-            
-            <div id="group-details" style="display:none;">
-                <label>Pessoas por Grupo:</label>
-                <input type="number" id="people-per-group" min="1">
-                
-                <label>Quantidade de Líderes:</label>
-                <input type="number" id="qty-leaders">
-            </div>
-            
-            <button id="btn-save-groups" disabled>Salvar Grupos</button>
+            <button id="btn-config-map" class="btn-inactive" onclick="startMapEditor()" disabled>Configurar Mapa</button>
             <button class="back" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
     </div>
 
-    <div id="screen-join-participant" class="screen" style="display:none;">
+    <div id="screen-qr-reader" class="screen" style="display:none;">
         <div class="box">
-            <h2>Entrar no Jogo</h2>
-            <p>Aponte a câmera para o QR Code do Organizador</p>
-            <div id="qr-reader" style="width: 100%; height: 200px; background: #ccc;">[Câmera aqui]</div>
-            <button class="back" onclick="showScreen('screen-start')">Voltar</button>
+            <h3>Escaneie o QR Code</h3>
+            <div id="reader"></div>
+            <button class="back" onclick="stopQRScanner()">Cancelar</button>
         </div>
     </div>
 
     <div id="screen-map-editor" class="screen" style="display:none;">
         <header>
-            <button onclick="saveMap()">Salvar Edição</button>
+            <span id="obj-counter">Pontos: 0 / 0</span>
+            <button onclick="saveMap()">Finalizar Edição</button>
             <input type="file" id="map-upload" accept="image/*">
         </header>
         <div id="map"></div>
