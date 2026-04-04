@@ -1,0 +1,51 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    background-color: #f4ecd8; /* Bege Vintage */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: #5d4037; /* Marrom */
+    color: #f4ecd8;
+    text-align: center;
+    padding: 15px;
+}
+
+#map {
+    flex-grow: 1; /* Faz o mapa ocupar a tela toda */
+    width: 100%;
+    border-top: 3px solid #3e2723;
+}
+
+.control-panel {
+    background: #e7d8b8;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+button {
+    background-color: #558b2f; /* Verde Oliva */
+    color: white;
+    border: none;
+    padding: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 300px;
+}
+
+#status-panel {
+    text-align: center;
+    color: #3e2723;
+}
