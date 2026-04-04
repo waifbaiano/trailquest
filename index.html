@@ -3,52 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <title>TrailQuest - Aventura</title>
-    
+    <title>TrailQuest Pro</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <div class="logo-area">
-                <h1>TrailQuest</h1>
-                <span>Exploração e Mistério</span>
-            </div>
-            
-            <div class="input-group">
-                <p>Digite seu Codinome:</p>
-                <input type="text" id="nickname" placeholder="Ex: Explorador_01">
-                <button id="enter-btn">INICIAR JORNADA</button>
-            </div>
+    <div id="screen-start" class="screen">
+        <div class="box">
+            <h1>TrailQuest</h1>
+            <button onclick="showScreen('screen-login')">Fazer Login</button>
+            <button onclick="showScreen('screen-join-participant')">Continuar como Participante</button>
         </div>
     </div>
 
-    <div id="game-screen" style="display: none;">
+    <div id="screen-login" class="screen" style="display:none;">
+        <div class="box">
+            <h2>Login</h2>
+            <input type="email" id="login-email" placeholder="E-mail">
+            <input type="password" id="login-pass" placeholder="Senha">
+            <button onclick="showScreen('screen-main-menu')">Entrar</button>
+            <button class="back" onclick="showScreen('screen-start')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-main-menu" class="screen" style="display:none;">
+        <div class="box">
+            <h2>Menu Organizador</h2>
+            <button onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
+            <button onclick="showScreen('screen-groups')">Organizar Grupos</button>
+            <button class="back" onclick="showScreen('screen-start')">Sair</button>
+        </div>
+    </div>
+
+    <div id="screen-objectives" class="screen" style="display:none;">
+        <div class="box">
+            <h3>Definição de Objetivos</h3>
+            <label>Qtd. Objetivos Fixos:</label>
+            <input type="number" id="fixed-obj" min="0">
+            
+            <label>Qtd. Objetivos Móveis (Obrigatório):</label>
+            <input type="number" id="mobile-obj" min="1">
+            
+            <button onclick="startMapEditor()">Configurar Mapa e Pontos</button>
+            <button class="back" onclick="showScreen('screen-main-menu')">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="screen-groups" class="screen" style="display:none;">
+        <div class="box">
+            <h3>Organizar Grupos</h3>
+            <label>Quantidade de Grupos:</label>
+            <input type="number" id="qty-groups" onchange="validateGroups()">
+            
+            <div id="group-details" style="display:none;">
+                <label>Pessoas por Grupo:</label>
+                <input type="number" id="people-per-group" min="1">
+                
+                <label>Quantidade de Líderes:</label>
+                <input type="number" id="qty-leaders">
+            </div>
+            
+            <button id="btn-save-groups" disabled>Salvar Grupos</button>
+            <button class="back" onclick="showScreen('screen-main-menu')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-join-participant" class="screen" style="display:none;">
+        <div class="box">
+            <h2>Entrar no Jogo</h2>
+            <p>Aponte a câmera para o QR Code do Organizador</p>
+            <div id="qr-reader" style="width: 100%; height: 200px; background: #ccc;">[Câmera aqui]</div>
+            <button class="back" onclick="showScreen('screen-start')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-map-editor" class="screen" style="display:none;">
         <header>
-            <div class="player-info">
-                <span id="player-display">Explorador: --</span>
-            </div>
-            <div id="admin-tools" style="display: none;">
-                <label for="map-upload" class="upload-label">🗺️ Mudar Mapa</label>
-                <input type="file" id="map-upload" accept="image/*" style="display:none;">
-            </div>
+            <button onclick="saveMap()">Salvar Edição</button>
+            <input type="file" id="map-upload" accept="image/*">
         </header>
-
         <div id="map"></div>
-
-        <footer>
-            <div id="status-panel">
-                <p id="coordinates">Aguardando sinal...</p>
-                <p id="message">Clique no mapa para marcar pontos (Modo Mestre)</p>
-            </div>
-        </footer>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

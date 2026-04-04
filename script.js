@@ -1,46 +1,76 @@
+// --- VARIÁVEIS GLOBAIS ---
 let map;
-let playerMarker;
 let imageOverlay;
-let nickname = "";
 let modoMestre = false;
+let pontosMarcados = [];
 
-// 1. ESCUTAR O CLIQUE NO BOTÃO DE ENTRAR
-document.getElementById('enter-btn').addEventListener('click', function() {
-    nickname = document.getElementById('nickname').value.trim();
+// --- FUNÇÃO DE NAVEGAÇÃO ---
+function showScreen(screenId) {
+    // Esconde todas as telas
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.style.display = 'none');
     
-    if (nickname.length < 3) {
-        alert("Escolha um codinome com pelo menos 3 letras!");
+    // Mostra a tela desejada
+    const target = document.getElementById(screenId);
+    if (target) {
+        target.style.display = 'flex';
+        
+        // Se for a tela do mapa, precisamos dar um "refresh" no Leaflet
+        if (screenId === 'screen-map-editor' && map) {
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+    }
+}
+
+// --- LOGICA DE GRUPOS (SUAS REGRAS) ---
+function validateGroups() {
+    const qtyGroups = parseInt(document.getElementById('qty-groups').value);
+    const details = document.getElementById('group-details');
+    const btnSave = document.getElementById('btn-save-groups');
+
+    if (isNaN(qtyGroups) || qtyGroups < 2) {
+        alert("Quantidade de grupos inválida! O mínimo é 2.");
+        details.style.display = 'none';
+        btnSave.disabled = true;
         return;
     }
 
-    // SEGREDO: Se escrever MESTRE, liberas ferramentas de upload
-    if (nickname.toUpperCase() === "MESTRE") {
-        modoMestre = true;
-        document.getElementById('admin-tools').style.display = 'block';
-        alert("Modo Mestre Ativado! Podes carregar o teu mapa JPG.");
+    // Se for 2 ou mais, mostra os próximos campos
+    details.style.display = 'block';
+    btnSave.disabled = false;
+
+    // Lógica de Líderes baseada na sua explicação:
+    // A quantidade de líderes geralmente é limitada pela quantidade de grupos
+    const inputLeaders = document.getElementById('qty-leaders');
+    inputLeaders.placeholder = `Máximo sugerido: ${qtyGroups}`;
+}
+
+// --- LOGICA DOS OBJETIVOS ---
+function startMapEditor() {
+    const fixed = document.getElementById('fixed-obj').value;
+    const mobile = document.getElementById('mobile-obj').value;
+
+    if (!mobile || mobile < 1) {
+        alert("A escolha de objetivos móveis é OBRIGATÓRIA!");
+        return;
     }
 
-    // Trocar de ecrã (Login -> Jogo)
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'flex';
-    document.getElementById('player-display').innerText = `Explorador: ${nickname}`;
+    showScreen('screen-map-editor');
+    initMapEditor();
+}
 
-    // Iniciar o mapa base
-    initMap();
-});
+// --- EDITOR DE MAPA (IMAGEM JPG) ---
+function initMapEditor() {
+    if (map) return; // Não recria o mapa se já existir
 
-// 2. INICIALIZAR O MAPA (MODO SIMPLES PARA IMAGEM)
-function initMap() {
-    // Usamos L.CRS.Simple para que o mapa entenda pixels em vez de coordenadas globais
     map = L.map('map', {
         crs: L.CRS.Simple,
         minZoom: -2
     });
 
-    // Definir um ponto inicial vazio
     map.setView([0, 0], 1);
 
-    // CONFIGURAR O UPLOAD DE IMAGEM
+    // Upload da Imagem do Mapa
     document.getElementById('map-upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -49,37 +79,47 @@ function initMap() {
         reader.onload = function(event) {
             const imgUrl = event.target.result;
             const img = new Image();
-            
             img.onload = function() {
                 const w = this.width;
                 const h = this.height;
-                const bounds = [[0, 0], [h, w]]; // Define os limites pelo tamanho da imagem
+                const bounds = [[0, 0], [h, w]];
 
-                // Se já existir um mapa, removemos para colocar o novo
                 if (imageOverlay) map.removeLayer(imageOverlay);
-                
                 imageOverlay = L.imageOverlay(imgUrl, bounds).addTo(map);
                 map.fitBounds(bounds);
-                
-                document.getElementById('message').innerText = "Mapa carregado com sucesso!";
             };
             img.src = imgUrl;
         };
         reader.readAsDataURL(file);
     });
 
-    // 3. CLIQUE NO MAPA PARA MARCAR PONTOS (SÓ PARA O MESTRE)
+    // Clique para marcar/remover pontos (Editável)
     map.on('click', function(e) {
-        if (modoMestre) {
-            const y = e.latlng.lat.toFixed(0);
-            const x = e.latlng.lng.toFixed(0);
-            
-            // Criar um marcador onde clicaste
-            L.marker(e.latlng).addTo(map)
-                .bindPopup(`<b>Ponto de Interesse</b><br>Coordenadas na Imagem:<br>X: ${x} | Y: ${y}`)
-                .openPopup();
-            
-            document.getElementById('coordinates').innerText = `Ponto Marcado: X ${x}, Y ${y}`;
-        }
+        const marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+        
+        // Popup com opção de excluir (Como você pediu: 100% editável)
+        const btnDelete = document.createElement('button');
+        btnDelete.innerText = "Excluir Ponto";
+        btnDelete.style.padding = "5px";
+        btnDelete.style.background = "red";
+        btnDelete.style.color = "white";
+        btnDelete.style.border = "none";
+        btnDelete.style.borderRadius = "3px";
+        
+        btnDelete.onclick = function() {
+            map.removeLayer(marker);
+        };
+
+        marker.bindPopup(btnDelete).openPopup();
     });
 }
+
+function saveMap() {
+    alert("Edição de mapa salva com sucesso!");
+    showScreen('screen-main-menu');
+}
+
+// --- INICIALIZAÇÃO AO CARREGAR ---
+window.onload = () => {
+    showScreen('screen-start');
+};
