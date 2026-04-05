@@ -1,10 +1,10 @@
 {
-  "name": "TrailQuest Vintage",
+  "name": "TrailQuest Pro",
   "short_name": "TrailQuest",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#d7ccc8",
-  "theme_color": "#5d4037",
+  "background_color": "#1a1a1a",
+  "theme_color": "#2e7d32",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/854/854878.png",

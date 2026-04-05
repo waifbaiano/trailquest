@@ -1,79 +1,23 @@
-/* 1. RESET E TRAVA DE TELA */
-* { 
-    margin: 0; padding: 0; box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent;
+:root { --p: #2e7d32; --bg: #1a1a1a; --white: #f5f5dc; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+
+.screen { 
+    display: none; width: 100vw; height: 100vh; 
+    flex-direction: column; align-items: center; justify-content: center; 
+}
+.screen.active { display: flex; }
+
+.vintage-box { 
+    background: var(--white); padding: 30px; border-radius: 15px; 
+    width: 90%; max-width: 400px; text-align: center; border: 4px solid #3e2723;
 }
 
-body, html {
-    height: 100%; width: 100%;
-    background-color: #1a1a1a;
-    font-family: 'Special Elite', serif;
-    overflow: hidden;
+.btn-f { 
+    width: 100%; padding: 15px; margin: 10px 0; border: none; 
+    border-radius: 8px; background: var(--p); color: white; 
+    font-weight: bold; cursor: pointer; 
 }
 
-/* 2. FORMATO DAS TELAS */
-.screen {
-    display: none;
-    width: 100vw; height: 100vh;
-    position: fixed; top: 0; left: 0;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-size: cover;
-    background-position: center;
-}
-
-.start-bg { background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1350'); }
-.bg-paper { background-image: linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1350'); }
-
-/* 3. A CAIXA (VINTAGE BOX) */
-.vintage-box {
-    background: rgba(245, 245, 220, 0.98);
-    border: 5px solid #3e2723;
-    padding: 25px;
-    width: 90%;
-    max-width: 360px;
-    border-radius: 15px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-    text-align: center;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-/* 4. TIPOGRAFIA E ELEMENTOS */
-.logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.2rem; margin-bottom: 5px; }
-.handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.5rem; margin-bottom: 20px; }
-.label-small { font-size: 0.8rem; display: block; text-align: left; margin: 10px 0 5px 0; color: #3e2723; font-weight: bold; }
-
-input {
-    width: 100%; padding: 12px; margin-bottom: 10px;
-    border: 2px solid #8d6e63; border-radius: 8px;
-    font-size: 1rem; font-family: 'Special Elite', serif;
-}
-
-/* 5. BOTÕES */
-button {
-    width: 100%; padding: 15px; margin-top: 8px;
-    border: none; border-radius: 8px;
-    font-family: 'Special Elite'; font-weight: bold;
-    text-transform: uppercase; cursor: pointer;
-}
-
-.btn-vintage { background: #3e2723; color: #f5f5dc; }
-.btn-vintage-alt { background: #2e7d32; color: white; }
-.btn-inactive { background: #ccc !important; color: #666 !important; cursor: not-allowed; }
-.active-green { background: #2e7d32 !important; color: white !important; }
-
-.back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.8rem; margin-top: 15px; }
-
-/* 6. EDITOR DE MAPA */
-#map-canvas {
-    width: 100%; border: 2px solid #3e2723;
-    border-radius: 5px; margin-top: 10px;
-    background: #eee; cursor: crosshair;
-}
-
-#groups-inputs-list {
-    max-height: 150px; overflow-y: auto;
-    margin: 10px 0; border: 1px dashed #8d6e63; padding: 5px;
-}
+#map { width: 100%; height: 100%; position: absolute; z-index: 1; }
+.map-controls { position: fixed; bottom: 20px; z-index: 10; width: 100%; display: flex; justify-content: center; gap: 10px; }

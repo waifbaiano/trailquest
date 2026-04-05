@@ -3,76 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>TrailQuest Pro PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
-    <div class="top-bar" id="main-top-bar">
-        <div class="menu-dots" onclick="toggleDrop()">⋮</div>
-        <div id="myDrop" class="dropdown-menu">
-            <button onclick="showS('screen-start')">SAIR</button>
-        </div>
-    </div>
-
-    <div id="screen-start" class="screen start-bg" style="display:flex">
-        <div class="vintage-box">
-            <h1>TrailQuest</h1>
-            <button class="btn-f" onclick="showS('screen-login')">Mestre</button>
-        </div>
-    </div>
-
-    <div id="screen-login" class="screen start-bg">
-        <div class="vintage-box">
-            <input type="password" placeholder="Senha">
-            <button class="btn-f" onclick="showS('screen-main-menu')">Entrar</button>
-        </div>
-    </div>
-
-    <div id="screen-main-menu" class="screen bg-paper">
-        <div class="vintage-box">
-            <button class="btn-f" onclick="showS('screen-objectives')">Objetivos</button>
-            <button id="btn-final" class="btn-inativo" disabled onclick="showS('screen-final-pin')">Gerar Código</button>
-        </div>
-    </div>
-
-    <div id="screen-objectives" class="screen bg-paper">
-        <div class="vintage-box">
-            <input type="number" id="f-count" placeholder="Qtd Objetivos">
-            <button class="btn-f" onclick="showS('screen-map-config')">Configurar Mapa</button>
-        </div>
-    </div>
-
-    <div id="screen-map-config" class="screen">
-        <div class="map-wrapper" id="wrapper">
-            <div id="map-container">
-                <img id="m-img">
-                <svg id="map-svg"></svg>
-                <div id="m-layer"></div>
+    <main id="app-container">
+        <section id="screen-start" class="screen active">
+            <div class="vintage-box">
+                <h1>TrailQuest</h1>
+                <button class="btn-f" data-nav="screen-login">Fazer Login</button>
+                <button class="btn-f secondary" data-nav="screen-guest">Participante</button>
             </div>
-        </div>
-        
-        <div id="m-opts" class="marker-menu">
-            <button onclick="oRen()">Nomear</button>
-            <button onclick="oQR()">QR Code</button>
-            <button onclick="oDel()" class="btn-delete">Excluir</button>
-        </div>
+        </section>
 
-        <div id="up-p" class="vintage-box" style="position:absolute;">
-            <h3>Upload Mapa</h3>
-            <input type="file" id="map-upload" accept="image/*">
-        </div>
+        <section id="screen-login" class="screen">
+            <div class="vintage-box">
+                <h2>Acesso Mestre</h2>
+                <input type="email" id="login-email" placeholder="E-mail">
+                <input type="password" id="login-pass" placeholder="Senha">
+                <button class="btn-f" id="btn-do-login">Entrar</button>
+                <button class="back-link" data-nav="screen-start">Voltar</button>
+            </div>
+        </section>
 
-        <div id="m-foot" class="map-footer" style="display:none">
-            <div id="btn-add" class="btn-f" onclick="tAdd()">ADICIONAR OBJETIVOS</div>
-            <button class="btn-f" style="background:#3e2723" onclick="fMap()">SALVAR</button>
-        </div>
-    </div>
+        <section id="screen-map" class="screen">
+            <div id="map"></div>
+            <div class="map-controls">
+                <button id="btn-add-point" class="btn-circle">+</button>
+                <button id="btn-save-trail" class="btn-f">Salvar</button>
+            </div>
+        </section>
+    </main>
 
-    <div id="screen-final-pin" class="screen start-bg">
-        <div class="vintage-box"><h1>882 190</h1><button class="btn-f" onclick="showS('screen-main-menu')">OK</button></div>
-    </div>
-
-    <script src="script.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
