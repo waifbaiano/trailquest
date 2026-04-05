@@ -42,7 +42,7 @@
             z-index: 10;
         }
 
-        /* Mapa e Botões Flutuantes */
+        /* Container do Mapa */
         #map-container {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9999; display: none; background: #000;
@@ -60,7 +60,7 @@
             font-weight: bold; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             font-size: 0.8rem;
         }
-        .btn-gps { background: #1976d2; } /* Azul para destacar o GPS */
+        .btn-gps { background: #1976d2; }
 
         h1, h2 { color: var(--verde); margin-bottom: 15px; font-size: 2.8rem; line-height: 1; }
         input {
@@ -98,6 +98,7 @@
             usuarioLogado: false,
             mapa: null,
             marcos: [],
+            meuCirculo: null,
 
             telas: {
                 inicio: () => `
@@ -223,10 +224,21 @@
 
             confirmarAcesso() { if (!document.getElementById('btnContinuar').classList.contains('btn-desativado')) alert("Acesso Autorizado!"); },
 
-            // --- SISTEMA DE MAPAS ---
+            // --- SISTEMA DE MAPAS E LOCALIZAÇÃO ---
+            solicitarPermissaoGPS() {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        () => console.log("GPS ok"),
+                        () => alert("Ative o GPS para localizar sua posição exata na trilha."),
+                        { enableHighAccuracy: true, timeout: 5000 }
+                    );
+                }
+            },
+
             abrirMapa() {
                 document.getElementById('map-container').style.display = 'block';
                 if (!this.mapa) {
+                    // Centro inicial padrão
                     this.mapa = L.map('map').setView([-12.5, -38.3], 13);
                     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                         attribution: 'Esri World Imagery'
@@ -242,25 +254,114 @@
             },
 
             localizarUsuario() {
-                if (!navigator.geolocation) {
-                    alert("Seu navegador não suporta geolocalização.");
-                    return;
-                }
+                if (!navigator.geolocation) { alert("Navegador sem suporte a GPS."); return; }
+
+                const btn = document.querySelector('.btn-gps');
+                const originalText = btn.innerText;
+                btn.innerText = "🔍 BUSCANDO SATÉLITE...";
+
+                const gpsOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                };
+
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                        const { latitude, longitude } = pos.coords;
-                        this.mapa.setView([latitude, longitude], 16); // Foco com zoom aproximado
-                        L.circle([latitude, longitude], { radius: 20, color: 'blue' }).addTo(this.mapa).bindPopup("Você está aqui").openPopup();
+                        const { latitude, longitude, accuracy } = pos.coords;
+                        
+                        if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
+
+                        this.mapa.setView([latitude, longitude], 17);
+
+                        this.meuCirculo = L.circle([latitude, longitude], {
+                            radius: accuracy,
+                            color: '#1976d2',
+                            fillColor: '#1976d2',
+                            fillOpacity: 0.3
+                        }).addTo(this.mapa).bindPopup(`Você está aqui (Precisão: ${Math.round(accuracy)}m)`).openPopup();
+
+                        btn.innerText = originalText;
                     },
-                    () => { alert("Não foi possível obter sua localização. Verifique as permissões do GPS."); },
-                    { enableHighAccuracy: true }
+                    (err) => {
+                        btn.innerText = originalText;
+                        alert("Erro de Sinal: Vá para um local aberto e verifique se o GPS está em 'Alta Precisão'.");
+                    },
+                    gpsOptions
                 );
             },
 
             fecharMapa() { document.getElementById('map-container').style.display = 'none'; }
         };
 
-        window.onload = () => App.navegar('inicio');
+        window.onload = () => {
+            App.navegar('inicio');
+            App.solicitarPermissaoGPS();
+        };
     </script>
+    <script>
+    // Esta parte garante que a função antiga seja substituída pela nova com diagnóstico
+    if (typeof App !== 'undefined') {
+        
+        App.localizarUsuario = function() {
+            if (!navigator.geolocation) {
+                alert("ERRO: O seu navegador não tem suporte para GPS.");
+                return;
+            }
+
+            const btn = document.querySelector('.btn-gps');
+            const textoOriginal = btn ? btn.innerText : "📍 MINHA POSIÇÃO";
+            if(btn) btn.innerText = "🔍 ACESSANDO SATÉLITE...";
+
+            const sucesso = (pos) => {
+                const { latitude, longitude, accuracy } = pos.coords;
+                
+                // Limpa círculo anterior se existir
+                if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
+                
+                // Foca o mapa na posição real
+                this.mapa.setView([latitude, longitude], 17);
+                
+                // Desenha o marcador de precisão
+                this.meuCirculo = L.circle([latitude, longitude], {
+                    radius: accuracy,
+                    color: '#1976d2',
+                    fillOpacity: 0.3
+                }).addTo(this.mapa).bindPopup(`Você está aqui (Precisão: ${Math.round(accuracy)}m)`).openPopup();
+                
+                if(btn) btn.innerText = textoOriginal;
+            };
+
+            const erro = (err) => {
+                if(btn) btn.innerText = textoOriginal;
+                
+                // DIAGNÓSTICO REAL
+                switch(err.code) {
+                    case 1:
+                        alert("PERMISSÃO NEGADA: O seu navegador ou celular bloqueou o GPS. \n\nSOLUÇÃO: Vá nas configurações do Chrome > Configurações do Site > Localização e permita este site.");
+                        break;
+                    case 2:
+                        alert("SINAL INDISPONÍVEL: Não foi possível detectar os satélites. \n\nSOLUÇÃO: Saia de ambientes cobertos ou ligue o GPS do celular.");
+                        break;
+                    case 3:
+                        alert("TEMPO ESGOTADO: O GPS demorou muito a responder. Tente novamente em local aberto.");
+                        break;
+                    default:
+                        alert("ERRO: " + err.message);
+                }
+            };
+
+            // Executa a busca com máxima prioridade de hardware
+            navigator.geolocation.getCurrentPosition(sucesso, erro, {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            });
+        };
+
+        console.log("Sistema de localização atualizado com sucesso!");
+    }
+</script>
+
 </body>
 </html>
