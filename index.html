@@ -394,4 +394,30 @@
         function checkGlobalReady() {
             const btn = document.getElementById('btn-final-codes');
             btn.disabled = !(mapReady && groupsReady);
-            btn.className = btn.disabled ? 'b
+            btn.className = btn.disabled ? 'b           
+            btn.className = btn.disabled ? 'btn-inactive' : 'btn-add-mode';
+        }
+
+        function handleFinalStep() {
+            const mobileCount = parseInt(document.getElementById('mobile-count').value) || 0;
+            if (mobileCount >= 1) {
+                showScreen('screen-mobile-pin');
+            } else {
+                showScreen('screen-final-pin');
+            }
+        }
+
+        function skipMobilePin() {
+            document.getElementById('menu-mobile-reg').style.display = 'block';
+            showScreen('screen-final-pin');
+        }
+
+        // Fecha o menu de opções se clicar fora dele
+        window.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('marker') && !document.getElementById('marker-options').contains(e.target)) {
+                document.getElementById('marker-options').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
