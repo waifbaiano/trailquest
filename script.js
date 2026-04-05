@@ -1,77 +1,82 @@
 let html5QrCode;
+let map, imageOverlay, markers = [], maxPoints = 0;
 
-// FUNÇÃO DE NAVEGAÇÃO
-function showScreen(screenId) {
+function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    const target = document.getElementById(screenId);
-    if (target) {
-        target.style.display = 'flex';
-        localStorage.setItem('currentScreen', screenId);
-    }
+    document.getElementById(id).style.display = 'flex';
+    localStorage.setItem('lastScreen', id);
 }
 
-// CORREÇÃO: Função que decide para onde o usuário vai
-function loginAs(role) {
-    if (role === 'organizador') {
-        showScreen('screen-main-menu');
-    } else {
-        // Se for participante, abre a câmera direto
-        startQRScanner();
-    }
-}
-
-// VALIDAÇÃO DOS OBJETIVOS (BOTÃO ACORDA VERDE)
-function validateObjectives() {
-    const fixedInput = document.getElementById('fixed-obj');
-    const btnConfig = document.getElementById('btn-config-map');
-    const val = parseInt(fixedInput.value);
-
-    if (val > 0) {
-        btnConfig.disabled = false;
-        btnConfig.classList.remove('btn-inactive');
-        btnConfig.classList.add('btn-active-green');
-    } else {
-        btnConfig.disabled = true;
-        btnConfig.classList.add('btn-inactive');
-        btnConfig.classList.remove('btn-active-green');
-    }
-}
-
-// CÂMERA
+// CÂMERA COM PERMISSÃO FORÇADA
 function startQRScanner() {
     showScreen('screen-qr-reader');
-    setTimeout(() => {
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: 250 },
-            (text) => { alert("Código: " + text); stopQRScanner(); }
-        ).catch(err => {
-            alert("Câmera não autorizada.");
-            showScreen('screen-start');
-        });
-    }, 300);
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+        (text) => { alert("Lido: " + text); stopQRScanner(); },
+        (err) => { console.log("Aguardando câmera..."); }
+    );
 }
 
 function stopQRScanner() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            html5QrCode = null;
-            showScreen('screen-start');
+    if(html5QrCode) html5QrCode.stop().then(() => showScreen('screen-start'));
+}
+
+// LÓGICA DE GRUPOS
+function validateGroups() {
+    const qty = parseInt(document.getElementById('qty-groups').value);
+    const logicDiv = document.getElementById('group-logic');
+    const btn = document.getElementById('btn-save-groups');
+
+    if (qty >= 2) {
+        logicDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.classList.add('active-green');
+        document.getElementById('label-leaders').innerText = `Qtd. Líderes (Máx: ${qty}):`;
+    } else {
+        logicDiv.style.display = 'none';
+        btn.disabled = true;
+        btn.classList.remove('active-green');
+    }
+}
+
+// OBJETIVOS E MAPA
+function validateObjectives() {
+    const val = parseInt(document.getElementById('fixed-obj').value);
+    const btn = document.getElementById('btn-config-map');
+    maxPoints = val;
+    if (val > 0) {
+        btn.disabled = false;
+        btn.classList.add('active-green');
+    } else {
+        btn.disabled = true;
+        btn.classList.remove('active-green');
+    }
+}
+
+function startMapEditor() {
+    showScreen('screen-map-editor');
+    if (!map) {
+        map = L.map('map', { crs: L.CRS.Simple });
+        map.on('click', (e) => {
+            if (markers.length < maxPoints) {
+                const m = L.marker(e.latlng, {draggable:true}).addTo(map);
+                markers.push(m);
+                document.getElementById('obj-counter').innerText = `${markers.length} / ${maxPoints}`;
+            }
         });
     }
 }
 
-// SAIR E LIMPAR
-function logout() {
-    localStorage.clear();
-    // Limpa campos de texto fisicamente
-    document.getElementById('login-email').value = "";
-    document.getElementById('login-pass').value = "";
-    showScreen('screen-start');
+function saveMap() {
+    localStorage.setItem('mapReady', 'true');
+    showScreen('screen-main-menu');
+    document.getElementById('btn-proceed').disabled = false;
+    document.getElementById('btn-proceed').classList.add('active-green');
 }
 
-window.onload = () => {
-    const last = localStorage.getItem('currentScreen');
-    showScreen(last || 'screen-start');
-};
+function logout() {
+    localStorage.clear();
+    location.reload();
+}
+
+window.onload = () => showScreen(localStorage.getItem('lastScreen') || 'screen-start');

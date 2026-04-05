@@ -1,74 +1,31 @@
-/* Reset e Centralização Total */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body, html {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #1a1a1a;
+/* Adicione estas classes ao seu CSS atual ou substitua */
+.input-large {
+    padding: 18px !important;
+    font-size: 1.2rem !important;
+    margin-bottom: 15px;
 }
 
-.screen {
-    display: none;
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
+.map-header {
+    position: absolute;
     top: 0;
-    left: 0;
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center;     /* Centraliza verticalmente */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-/* Imagens de Fundo Mais Visíveis */
-.start-bg {
-    background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                      url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1350&q=80');
-}
-
-.bg-paper { 
-    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)),
-                      url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80');
-}
-
-/* Caixa Vintage Centralizada */
-.vintage-box {
-    background: rgba(245, 245, 220, 0.92) url('https://www.transparenttextures.com/patterns/papyrus.png');
-    border: 5px solid #3e2723;
-    padding: 30px;
-    width: 90%;
-    max-width: 350px;
-    border-radius: 10px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-    text-align: center;
-}
-
-/* Botões que "Acordam" em Verde */
-.btn-active-green {
-    background-color: #2e7d32 !important;
-    color: white !important;
-    border: 2px solid #1b5e20 !important;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(46, 125, 50, 0.5);
-}
-
-.btn-inactive {
-    background-color: #ffffff !important;
-    color: #999 !important;
-    border: 1px solid #ccc !important;
-    cursor: not-allowed;
-}
-
-button {
     width: 100%;
-    padding: 15px;
-    margin-top: 15px;
-    font-family: 'Special Elite', serif;
-    font-weight: bold;
+    z-index: 1000;
+    background: rgba(62, 39, 35, 0.9);
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    color: #f5f5dc;
+}
+
+.btn-upload {
+    background: #795548;
+    padding: 8px;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.active-green {
+    background-color: #2e7d32 !important;
+    color: white !important;
 }

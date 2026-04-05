@@ -3,18 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <title>TrailQuest - Corrida de Orientação</title>
-    
+    <title>TrailQuest Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
@@ -22,7 +15,6 @@
     <div id="screen-start" class="screen start-bg">
         <div class="box vintage-box">
             <h1 class="logo-font">TrailQuest</h1>
-            <p class="handwritten">Prepare sua bússola...</p>
             <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
             <button class="btn-vintage-alt" onclick="startQRScanner()">Continuar como Participante</button>
         </div>
@@ -30,66 +22,73 @@
 
     <div id="screen-login" class="screen start-bg">
         <div class="box vintage-box">
-            <h2 class="handwritten">Acesso ao Acampamento</h2>
-            <input type="email" id="login-email" placeholder="E-mail do Explorador">
-            <input type="password" id="login-pass" placeholder="Senha Secreta">
+            <h2 class="handwritten">Acesso</h2>
+            <input type="email" id="login-email" class="input-large" placeholder="E-mail">
+            <input type="password" id="login-pass" class="input-large" placeholder="Senha">
             <button class="btn-vintage" onclick="showScreen('screen-role-choice')">Entrar</button>
-            <button class="back-link" onclick="logout()">Voltar ao Início</button>
+            <button class="back-link" onclick="logout()">Voltar</button>
         </div>
     </div>
 
     <div id="screen-role-choice" class="screen start-bg">
         <div class="box vintage-box">
-            <h2 class="handwritten">Qual seu papel na trilha?</h2>
+            <h2 class="handwritten">Seu Papel</h2>
             <button class="btn-vintage" onclick="loginAs('organizador')">Organizador</button>
             <button class="btn-vintage" onclick="loginAs('participante')">Participante</button>
-            <button class="back-link" onclick="showScreen('screen-login')">Voltar</button>
         </div>
     </div>
 
     <div id="screen-main-menu" class="screen bg-paper">
         <div class="box vintage-box">
             <h2 class="logo-font">Menu Mestre</h2>
-            <button id="nav-objectives" onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
-            <button id="nav-groups" onclick="showScreen('screen-groups')">Organizar Grupos</button>
-            
-            <button id="btn-proceed" class="btn-inactive" disabled>Prosseguir para o Jogo</button>
-            
+            <button onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
+            <button onclick="showScreen('screen-groups')">Organizar Grupos</button>
+            <button id="btn-proceed" class="btn-inactive" disabled>Prosseguir</button>
             <button class="back-link" onclick="logout()">Sair</button>
         </div>
     </div>
 
     <div id="screen-objectives" class="screen bg-paper">
         <div class="box vintage-box">
-            <h3 class="handwritten">Objetivos da Missão</h3>
-            
-            <label>Qtd. Objetivos Fixos (Obrigatório):</label>
-            <input type="number" id="fixed-obj" placeholder="Ex: 5" oninput="validateObjectives()">
-            
-            <label>Qtd. Objetivos Móveis (Opcional):</label>
-            <input type="number" id="mobile-obj" placeholder="Ex: 2">
-            
+            <h3 class="handwritten">Objetivos</h3>
+            <label>Qtd. Objetivos Fixos:</label>
+            <input type="number" id="fixed-obj" oninput="validateObjectives()">
+            <label>Qtd. Objetivos Móveis:</label>
+            <input type="number" id="mobile-obj">
             <button id="btn-config-map" class="btn-inactive" onclick="startMapEditor()" disabled>Configurar Mapa</button>
+            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-groups" class="screen bg-paper">
+        <div class="box vintage-box">
+            <h3 class="handwritten">Grupos</h3>
+            <label>Quantidade de Grupos (mínimo 2):</label>
+            <input type="number" id="qty-groups" oninput="validateGroups()">
+            <div id="group-logic" style="display:none;">
+                <label id="label-leaders"></label>
+                <input type="number" id="input-leaders">
+            </div>
+            <button id="btn-save-groups" class="btn-inactive" disabled onclick="saveGroups()">Salvar Grupos</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
     </div>
 
     <div id="screen-qr-reader" class="screen bg-dark">
         <div class="box vintage-box">
-            <h2 class="handwritten">Localizando trilha...</h2>
             <div id="reader"></div>
-            <button class="btn-vintage-alt" onclick="stopQRScanner()">Cancelar</button>
+            <button class="btn-vintage-alt" onclick="stopQRScanner()">Fechar Câmera</button>
         </div>
     </div>
 
     <div id="screen-map-editor" class="screen">
         <header class="map-header">
-            <span id="obj-counter">Pontos: 0 / 0</span>
-            <button class="btn-save-map" onclick="saveMap()">Finalizar Edição</button>
-            <label for="map-upload" class="btn-upload-map">🗺️ Subir Mapa</label>
+            <span id="obj-counter">0 / 0</span>
+            <button class="btn-save" onclick="saveMap()">Salvar Edição</button>
+            <label for="map-upload" class="btn-upload">Subir Imagem</label>
             <input type="file" id="map-upload" accept="image/*" style="display:none;">
         </header>
-        <div id="map"></div>
+        <div id="map" style="width:100%; height:100%;"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
