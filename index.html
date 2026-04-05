@@ -21,10 +21,10 @@
     <div id="screen-login" class="screen start-bg">
         <div class="vintage-box">
             <h2 class="handwritten">Mestre da Trilha</h2>
-            <input type="email" placeholder="E-mail">
-            <input type="password" placeholder="Senha">
-            <button class="btn-vintage" onclick="showScreen('screen-main-menu')">Entrar</button>
-            <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
+            <input type="email" id="login-email" placeholder="E-mail">
+            <input type="password" id="login-pass" placeholder="Senha">
+            <button class="btn-vintage" onclick="loginMestre()">Entrar</button>
+            <button class="back-link" onclick="sairLogin()">Voltar</button>
         </div>
     </div>
 
@@ -39,20 +39,43 @@
     <div id="screen-main-menu" class="screen bg-paper">
         <div class="vintage-box">
             <h2 class="logo-font">Menu Mestre</h2>
-            <button class="btn-vintage" onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
-            <button class="btn-vintage">Organizar Grupos</button>
+            <button class="btn-vintage" onclick="showScreen('screen-objectives')">Objetivos</button>
+            <button class="btn-vintage" onclick="showScreen('screen-groups')">Grupos</button>
             <button class="back-link" onclick="showScreen('screen-start')">Sair</button>
         </div>
     </div>
 
     <div id="screen-objectives" class="screen bg-paper">
         <div class="vintage-box">
-            <h3 class="handwritten">Configurar Missão</h3>
-            <label style="font-size: 0.8rem; display: block; margin-bottom: 5px;">Qtd. Objetivos Fixos:</label>
-            <input type="number" id="fixed-count" placeholder="Ex: 10" oninput="checkObjectives()">
+            <h3 class="handwritten">Missão</h3>
+            <label class="label-small">Qtd. Objetivos Fixos:</label>
+            <input type="number" id="fixed-count" placeholder="0" oninput="checkObjectives()">
             
-            <button id="btn-map" class="btn-inactive" disabled>Configurar Mapa</button>
+            <label class="label-small">Qtd. Objetivos Móveis:</label>
+            <input type="number" id="mobile-count" placeholder="0">
+            
+            <button id="btn-map" class="btn-inactive" disabled onclick="showScreen('screen-map-config')">Configurar Mapa</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-groups" class="screen bg-paper">
+        <div class="vintage-box">
+            <h3 class="handwritten">Equipes</h3>
+            <label class="label-small">Número de Grupos:</label>
+            <input type="number" id="group-qty" placeholder="Ex: 4" oninput="checkGroups()">
+            
+            <button id="btn-save-groups" class="btn-inactive" disabled onclick="alert('Grupos Salvos!')">Confirmar Grupos</button>
+            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-map-config" class="screen bg-paper">
+        <div class="vintage-box">
+            <h3 class="handwritten">O Mapa</h3>
+            <p style="font-size: 0.8rem; margin-bottom: 15px;">Suba a imagem da trilha para marcar os pontos.</p>
+            <button class="btn-vintage" onclick="alert('Selecione o arquivo JPG/PNG')">Escolher Imagem</button>
+            <button class="back-link" onclick="showScreen('screen-objectives')">Voltar</button>
         </div>
     </div>
 
