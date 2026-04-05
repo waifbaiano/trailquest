@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest - Início</title>
+    <title>TrailQuest - Corrida de Orientação</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 
     <div id="screen-start" class="screen start-bg">
         <div class="vintage-box">
             <h1 class="logo-font">TrailQuest</h1>
-            <p class="handwritten">Prepare sua bússola...</p>
-            
+            <p class="handwritten">Sua aventura começa aqui</p>
             <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
             <button class="btn-vintage-alt" onclick="startQRScanner()">Participante</button>
         </div>
@@ -23,11 +25,28 @@
 
     <div id="screen-login" class="screen start-bg">
         <div class="vintage-box">
-            <h2 class="handwritten">Acesso</h2>
-            <input type="email" id="login-email" class="input-large" placeholder="E-mail">
-            <input type="password" id="login-pass" class="input-large" placeholder="Senha">
-            <button class="btn-vintage" onclick="alert('Login em breve')">Entrar</button>
+            <h2 class="handwritten">Identifique-se</h2>
+            <input type="email" id="login-email" class="input-large" placeholder="E-mail do Explorador">
+            <input type="password" id="login-pass" class="input-large" placeholder="Senha Secreta">
+            <button class="btn-vintage" onclick="loginAs('organizador')">Entrar</button>
             <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-qr-reader" class="screen" style="background: #1a1a1a;">
+        <div class="vintage-box">
+            <h2 class="handwritten">Escaneie o Mapa</h2>
+            <div id="reader" style="width: 100%; border-radius: 10px; overflow: hidden;"></div>
+            <button class="btn-vintage" style="background: #b71c1c; margin-top: 20px;" onclick="stopQRScanner()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="screen-main-menu" class="screen bg-paper">
+        <div class="vintage-box">
+            <h2 class="logo-font">Menu Mestre</h2>
+            <button class="btn-vintage" onclick="alert('Em desenvolvimento')">Escolher Objetivos</button>
+            <button class="btn-vintage" onclick="alert('Em desenvolvimento')">Organizar Grupos</button>
+            <button class="back-link" onclick="showScreen('screen-start')">Sair</button>
         </div>
     </div>
 

@@ -1,46 +1,68 @@
-// Função para mostrar telas
+let html5QrCode;
+
+// Função Navegação
 function showScreen(id) {
-    // Esconde todas
-    const allScreens = document.querySelectorAll('.screen');
-    allScreens.forEach(s => s.style.display = 'none');
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.style.display = 'none');
     
-    // Mostra a selecionada
     const target = document.getElementById(id);
     if (target) {
         target.style.display = 'flex';
-        localStorage.setItem('trail_screen', id);
+        // Limpa campos ao voltar para telas iniciais
+        if (id === 'screen-start' || id === 'screen-login') {
+            const email = document.getElementById('login-email');
+            const pass = document.getElementById('login-pass');
+            if(email) email.value = "";
+            if(pass) pass.value = "";
+        }
     }
 }
 
 // Lógica de Login
 function loginAs(role) {
-    if (role === 'organizador') showScreen('screen-main-menu');
-    else alert("Funcionalidade de participante em breve!");
+    const email = document.getElementById('login-email').value;
+    if (email.trim() === "") {
+        alert("Digite seu e-mail de explorador.");
+        return;
+    }
+    showScreen('screen-main-menu');
 }
 
-// Trava de Objetivos (Botão Verde)
-function validateObjectives() {
-    const val = document.getElementById('fixed-obj').value;
-    const btn = document.getElementById('btn-config-map');
-    if (parseInt(val) > 0) {
-        btn.disabled = false;
-        btn.classList.add('active-green');
-        btn.classList.remove('btn-inactive');
-    } else {
-        btn.disabled = true;
-        btn.classList.remove('active-green');
-        btn.classList.add('btn-inactive');
+// Lógica da Câmera (QR Code)
+async function startQRScanner() {
+    showScreen('screen-qr-reader');
+    
+    // Delay para garantir que a div "reader" está pronta
+    setTimeout(async () => {
+        try {
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            await html5QrCode.start(
+                { facingMode: "environment" }, 
+                config,
+                (decodedText) => {
+                    alert("Código encontrado: " + decodedText);
+                    stopQRScanner();
+                }
+            );
+        } catch (err) {
+            alert("Câmera não disponível. Verifique as permissões do navegador.");
+            showScreen('screen-start');
+        }
+    }, 500);
+}
+
+function stopQRScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode = null;
+            showScreen('screen-start');
+        }).catch(() => showScreen('screen-start'));
     }
 }
 
-// Limpar ao Sair
-function logout() {
-    localStorage.clear();
-    location.reload();
-}
-
-// QUANDO A PÁGINA CARREGA
+// Inicia na tela inicial
 window.onload = () => {
-    const saved = localStorage.getItem('trail_screen');
-    showScreen(saved || 'screen-start');
+    showScreen('screen-start');
 };
