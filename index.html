@@ -17,10 +17,7 @@
         }
 
         /* MENU SUPERIOR */
-        .top-bar {
-            position: fixed; top: 15px; right: 15px; z-index: 100;
-            display: none;
-        }
+        .top-bar { position: fixed; top: 15px; right: 15px; z-index: 100; display: none; }
         .menu-dots {
             font-size: 30px; color: #3e2723; cursor: pointer;
             background: rgba(245, 245, 220, 0.9);
@@ -34,10 +31,7 @@
             border-radius: 8px; display: none; width: 130px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .dropdown-menu button {
-            background: none; color: #3e2723; padding: 12px;
-            width: 100%; border: none; font-size: 1rem; cursor: pointer;
-        }
+        .dropdown-menu button { background: none; color: #3e2723; padding: 12px; width: 100%; border: none; font-size: 1rem; cursor: pointer; }
 
         .screen {
             display: none; width: 100vw; height: 100vh;
@@ -57,40 +51,16 @@
             text-align: center; max-height: 90vh; overflow-y: auto;
         }
 
-        /* CORREÇÃO DO MAPA: CENTRALIZAÇÃO TOTAL */
+        /* MAPA */
         #screen-map-config { background: #000; }
-        .map-wrapper {
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden; /* O zoom será controlado pelo transform */
-            position: relative;
-        }
-        #map-container { 
-            position: relative; 
-            display: inline-block;
-            transition: transform 0.2s ease-out;
-            cursor: crosshair;
-        }
-        #map-img { 
-            display: block; 
-            max-width: 90vw; /* Garante que comece visível */
-            max-height: 80vh;
-            pointer-events: none;
-        }
-
+        .map-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        #map-container { position: relative; display: inline-block; transition: transform 0.2s ease-out; cursor: crosshair; }
+        #map-img { display: block; max-width: 90vw; max-height: 80vh; pointer-events: none; }
         .marker {
             position: absolute; width: 34px; height: 34px;
             background: #d32f2f; border: 2px solid #fff; color: #fff;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             transform: translate(-50%, -50%); font-weight: bold; font-size: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-        }
-
-        /* EQUIPES: MELHORIA VISUAL */
-        .group-item {
-            background: rgba(62, 39, 35, 0.05);
-            padding: 10px; border-radius: 8px; margin-bottom: 8px;
-            border-left: 4px solid #2e7d32;
         }
 
         .logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.2rem; margin-bottom: 5px; }
@@ -105,10 +75,7 @@
         .active-green { background: #2e7d32 !important; color: white !important; }
         .back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.8rem; margin-top: 15px; }
         
-        .map-controls {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 110; width: 90%; max-width: 400px;
-        }
+        .map-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 110; width: 90%; max-width: 400px; }
     </style>
 </head>
 <body>
@@ -170,13 +137,21 @@
     <div id="screen-groups" class="screen bg-paper">
         <div class="vintage-box">
             <h3 class="handwritten">Equipes</h3>
+            
             <label class="label-small">Número de Grupos:</label>
-            <input type="number" id="group-qty" placeholder="Ex: 4" oninput="checkGroups()">
-            <div id="groups-setup-area" style="display:none; margin-top: 15px; text-align: left;">
-                <p style="font-size: 0.75rem; margin-bottom: 10px; color: #5d4037;">Nomeie as equipes abaixo:</p>
-                <div id="groups-inputs-list"></div>
+            <input type="number" id="group-qty" placeholder="Ex: 4" oninput="logicGroups()">
+
+            <div id="area-people" style="display:none; margin-top:10px;">
+                <div id="people-inputs-container">
+                    </div>
             </div>
-            <button id="btn-save-groups" class="btn-inactive" disabled onclick="alert('Equipes confirmadas!')">Salvar Equipes</button>
+
+            <div id="area-leaders" style="display:none; margin-top:10px;">
+                <label class="label-small">Quantidade de líderes por grupo:</label>
+                <input type="number" id="leaders-qty" placeholder="Ex: 1" oninput="validateFinalGroups()">
+            </div>
+
+            <button id="btn-save-groups" class="btn-inactive" disabled onclick="saveGroupsFinal()">Confirmar Equipes</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
     </div>
@@ -188,18 +163,15 @@
                 <div id="markers-layer"></div>
             </div>
         </div>
-
         <div id="upload-panel" class="vintage-box" style="position:absolute; z-index:120;">
             <h3 class="handwritten">Mapa da Trilha</h3>
-            <p style="font-size: 0.8rem; margin-bottom: 15px;">Suba a imagem para marcar os pontos.</p>
-            <input type="file" id="map-upload" accept="image/*" onchange="handleMapUpload(event)" style="font-size: 0.8rem;">
+            <input type="file" id="map-upload" accept="image/*" onchange="handleMapUpload(event)">
             <button class="back-link" onclick="showScreen('screen-objectives')">Cancelar</button>
         </div>
-
         <div id="map-editor-controls" class="map-controls" style="display:none;">
-            <button class="btn-vintage" style="flex:1" onclick="zoomMap(1.2)">ZOOM +</button>
-            <button class="btn-vintage" style="flex:1" onclick="zoomMap(0.8)">ZOOM -</button>
-            <button id="btn-done-map" class="btn-vintage-alt" style="flex:2" onclick="showScreen('screen-main-menu')">CONCLUIR</button>
+            <button class="btn-vintage" style="flex:1" onclick="zoomMap(1.2)">+</button>
+            <button class="btn-vintage" style="flex:1" onclick="zoomMap(0.8)">-</button>
+            <button id="btn-done-map" class="btn-vintage-alt" style="flex:2" onclick="showScreen('screen-main-menu')">OK</button>
         </div>
     </div>
 
@@ -235,24 +207,78 @@
             btn.className = val > 0 ? 'btn-vintage-alt active-green' : 'btn-inactive';
         }
 
-        function checkGroups() {
-            const qty = document.getElementById('group-qty').value;
-            const area = document.getElementById('groups-setup-area');
-            const list = document.getElementById('groups-inputs-list');
-            const btn = document.getElementById('btn-save-groups');
-            if(qty >= 1) {
-                area.style.display = 'block';
-                list.innerHTML = "";
-                for(let i=1; i<=qty; i++) {
-                    list.innerHTML += `<div class="group-item"><input type="text" placeholder="Nome da Equipe ${i}" style="margin-bottom:0"></div>`;
+        // --- LÓGICA DE GRUPOS REORGANIZADA ---
+
+        function logicGroups() {
+            const qty = parseInt(document.getElementById('group-qty').value);
+            const areaPeople = document.getElementById('area-people');
+            const container = document.getElementById('people-inputs-container');
+            const areaLeaders = document.getElementById('area-leaders');
+            
+            if(qty >= 3) {
+                areaPeople.style.display = 'block';
+                container.innerHTML = ""; // Limpa campos anteriores
+
+                if(qty % 2 === 0) {
+                    // Par: Apenas um campo
+                    container.innerHTML = `
+                        <label class="label-small">Número de pessoas por grupo:</label>
+                        <input type="number" class="people-field" placeholder="Ex: 5" oninput="logicLeadersDisplay()">
+                    `;
+                } else {
+                    // Ímpar: Dois campos (o momento do grupo ímpar)
+                    container.innerHTML = `
+                        <label class="label-small">Número de pessoas nos grupos pares:</label>
+                        <input type="number" class="people-field" placeholder="Ex: 5" oninput="logicLeadersDisplay()">
+                        <label class="label-small">Número de pessoas no grupo ímpar:</label>
+                        <input type="number" class="people-field" placeholder="Ex: 4 ou 6" oninput="logicLeadersDisplay()">
+                    `;
                 }
-                btn.disabled = false; btn.className = 'btn-vintage-alt active-green';
             } else {
-                area.style.display = 'none'; btn.disabled = true; btn.className = 'btn-inactive';
+                areaPeople.style.display = 'none';
+                areaLeaders.style.display = 'none';
+            }
+            validateFinalGroups();
+        }
+
+        function logicLeadersDisplay() {
+            const fields = document.querySelectorAll('.people-field');
+            const areaLeaders = document.getElementById('area-leaders');
+            let allFilled = true;
+
+            fields.forEach(f => {
+                if(!f.value || parseInt(f.value) <= 1) allFilled = false;
+            });
+
+            if(allFilled && fields.length > 0) {
+                areaLeaders.style.display = 'block';
+            } else {
+                areaLeaders.style.display = 'none';
+            }
+            validateFinalGroups();
+        }
+
+        function validateFinalGroups() {
+            const qty = document.getElementById('group-qty').value;
+            const leaders = document.getElementById('leaders-qty').value;
+            const areaLeadersVisible = document.getElementById('area-leaders').style.display === 'block';
+            const btn = document.getElementById('btn-save-groups');
+
+            if (qty >= 3 && areaLeadersVisible && leaders > 0) {
+                btn.disabled = false;
+                btn.className = 'btn-vintage-alt active-green';
+            } else {
+                btn.disabled = true;
+                btn.className = 'btn-inactive';
             }
         }
 
-        // LÓGICA DO MAPA CENTRALIZADO
+        function saveGroupsFinal() {
+            alert("Configuração salva com sucesso!");
+            showScreen('screen-main-menu');
+        }
+
+        // --- MAPA ---
         function handleMapUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -264,7 +290,7 @@
                     document.getElementById('upload-panel').style.display = 'none';
                     document.getElementById('map-editor-controls').style.display = 'flex';
                     currentScale = 1;
-                    updateMapTransform();
+                    document.getElementById('map-container').style.transform = `scale(1)`;
                 }
             }
             reader.readAsDataURL(file);
@@ -272,28 +298,17 @@
 
         function zoomMap(factor) {
             currentScale *= factor;
-            if(currentScale < 0.5) currentScale = 0.5;
-            if(currentScale > 4) currentScale = 4;
-            updateMapTransform();
-        }
-
-        function updateMapTransform() {
             document.getElementById('map-container').style.transform = `scale(${currentScale})`;
         }
 
         function addMarker(e) {
             const container = document.getElementById('map-container');
             const rect = container.getBoundingClientRect();
-            
-            // Calcula posição real baseada no zoom e na posição do clique
             const x = (e.clientX - rect.left) / currentScale;
             const y = (e.clientY - rect.top) / currentScale;
-
             const index = markers.findIndex(m => Math.hypot(m.x - x, m.y - y) < (20 / currentScale));
-            
-            if(index > -1) {
-                markers.splice(index, 1);
-            } else {
+            if(index > -1) markers.splice(index, 1);
+            else {
                 const limit = document.getElementById('fixed-count').value || 99;
                 if(markers.length < limit) markers.push({x, y});
             }
@@ -306,8 +321,7 @@
             markers.forEach((m, i) => {
                 const div = document.createElement('div');
                 div.className = 'marker';
-                div.style.left = m.x + "px";
-                div.style.top = m.y + "px";
+                div.style.left = m.x + "px"; div.style.top = m.y + "px";
                 div.innerText = i + 1;
                 layer.appendChild(div);
             });
