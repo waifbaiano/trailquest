@@ -16,26 +16,27 @@
             overflow: hidden;
         }
 
-        /* MENU SUPERIOR (TRÊS PONTINHOS) */
+        /* MENU SUPERIOR */
         .top-bar {
             position: fixed; top: 15px; right: 15px; z-index: 100;
-            display: none; /* Só aparece após o login */
+            display: none;
         }
         .menu-dots {
             font-size: 30px; color: #3e2723; cursor: pointer;
-            background: rgba(245, 245, 220, 0.8);
-            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(245, 245, 220, 0.9);
+            width: 45px; height: 45px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
         .dropdown-menu {
-            position: absolute; top: 45px; right: 0;
+            position: absolute; top: 55px; right: 0;
             background: #f5f5dc; border: 2px solid #3e2723;
-            border-radius: 8px; display: none; width: 120px;
+            border-radius: 8px; display: none; width: 130px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .dropdown-menu button {
-            background: none; color: #3e2723; padding: 10px;
-            width: 100%; border: none; font-size: 0.9rem; text-decoration: none;
+            background: none; color: #3e2723; padding: 12px;
+            width: 100%; border: none; font-size: 1rem; cursor: pointer;
         }
 
         .screen {
@@ -56,30 +57,47 @@
             text-align: center; max-height: 90vh; overflow-y: auto;
         }
 
-        /* EDITOR DE MAPA FULLSCREEN */
+        /* CORREÇÃO DO MAPA: CENTRALIZAÇÃO TOTAL */
         #screen-map-config { background: #000; }
         .map-wrapper {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            overflow: auto; display: flex; align-items: flex-start; justify-content: center;
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; /* O zoom será controlado pelo transform */
+            position: relative;
         }
-        #map-container { position: relative; cursor: crosshair; transform-origin: top left; }
-        #map-img { display: block; max-width: none; }
+        #map-container { 
+            position: relative; 
+            display: inline-block;
+            transition: transform 0.2s ease-out;
+            cursor: crosshair;
+        }
+        #map-img { 
+            display: block; 
+            max-width: 90vw; /* Garante que comece visível */
+            max-height: 80vh;
+            pointer-events: none;
+        }
+
         .marker {
-            position: absolute; width: 30px; height: 30px;
-            background: red; border: 2px solid white; color: white;
+            position: absolute; width: 34px; height: 34px;
+            background: #d32f2f; border: 2px solid #fff; color: #fff;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            transform: translate(-50%, -50%); font-weight: bold; font-size: 12px;
+            transform: translate(-50%, -50%); font-weight: bold; font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
         }
-        .map-controls {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 10; width: 90%;
+
+        /* EQUIPES: MELHORIA VISUAL */
+        .group-item {
+            background: rgba(62, 39, 35, 0.05);
+            padding: 10px; border-radius: 8px; margin-bottom: 8px;
+            border-left: 4px solid #2e7d32;
         }
 
         .logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.2rem; margin-bottom: 5px; }
         .handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.5rem; margin-bottom: 20px; }
         .label-small { font-size: 0.8rem; display: block; text-align: left; margin: 10px 0 5px 0; color: #3e2723; font-weight: bold; }
 
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #8d6e63; border-radius: 8px; font-family: 'Special Elite'; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #8d6e63; border-radius: 8px; font-family: 'Special Elite'; font-size: 1rem; }
         button { width: 100%; padding: 15px; margin-top: 8px; border: none; border-radius: 8px; font-family: 'Special Elite'; font-weight: bold; text-transform: uppercase; cursor: pointer; }
         .btn-vintage { background: #3e2723; color: #f5f5dc; }
         .btn-vintage-alt { background: #2e7d32; color: white; }
@@ -87,7 +105,10 @@
         .active-green { background: #2e7d32 !important; color: white !important; }
         .back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.8rem; margin-top: 15px; }
         
-        #groups-inputs-list { max-height: 200px; overflow-y: auto; margin: 10px 0; }
+        .map-controls {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; z-index: 110; width: 90%; max-width: 400px;
+        }
     </style>
 </head>
 <body>
@@ -151,37 +172,39 @@
             <h3 class="handwritten">Equipes</h3>
             <label class="label-small">Número de Grupos:</label>
             <input type="number" id="group-qty" placeholder="Ex: 4" oninput="checkGroups()">
-            <div id="groups-setup-area" style="display:none;">
+            <div id="groups-setup-area" style="display:none; margin-top: 15px; text-align: left;">
+                <p style="font-size: 0.75rem; margin-bottom: 10px; color: #5d4037;">Nomeie as equipes abaixo:</p>
                 <div id="groups-inputs-list"></div>
             </div>
-            <button id="btn-save-groups" class="btn-inactive" disabled onclick="alert('Grupos Salvos!')">Salvar Equipes</button>
+            <button id="btn-save-groups" class="btn-inactive" disabled onclick="alert('Equipes confirmadas!')">Salvar Equipes</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
     </div>
 
     <div id="screen-map-config" class="screen">
-        <div class="map-wrapper" id="mapWrapper">
+        <div class="map-wrapper">
             <div id="map-container" onclick="addMarker(event)">
                 <img id="map-img" src="" alt="Mapa">
                 <div id="markers-layer"></div>
             </div>
         </div>
 
-        <div id="upload-panel" class="vintage-box" style="position:absolute; z-index:20;">
-            <h3 class="handwritten">Escolha o Mapa</h3>
-            <input type="file" id="map-upload" accept="image/*" onchange="handleMapUpload(event)">
+        <div id="upload-panel" class="vintage-box" style="position:absolute; z-index:120;">
+            <h3 class="handwritten">Mapa da Trilha</h3>
+            <p style="font-size: 0.8rem; margin-bottom: 15px;">Suba a imagem para marcar os pontos.</p>
+            <input type="file" id="map-upload" accept="image/*" onchange="handleMapUpload(event)" style="font-size: 0.8rem;">
             <button class="back-link" onclick="showScreen('screen-objectives')">Cancelar</button>
         </div>
 
         <div id="map-editor-controls" class="map-controls" style="display:none;">
-            <button class="btn-vintage" style="width:30%" onclick="zoomMap(0.1)">+</button>
-            <button class="btn-vintage" style="width:30%" onclick="zoomMap(-0.1)">-</button>
-            <button id="btn-done-map" class="btn-vintage-alt" style="width:40%" onclick="showScreen('screen-main-menu')">OK</button>
+            <button class="btn-vintage" style="flex:1" onclick="zoomMap(1.2)">ZOOM +</button>
+            <button class="btn-vintage" style="flex:1" onclick="zoomMap(0.8)">ZOOM -</button>
+            <button id="btn-done-map" class="btn-vintage-alt" style="flex:2" onclick="showScreen('screen-main-menu')">CONCLUIR</button>
         </div>
     </div>
 
     <script>
-        let scale = 1;
+        let currentScale = 1;
         let markers = [];
 
         function toggleDropdown() {
@@ -203,9 +226,7 @@
             showScreen('screen-start');
         }
 
-        function loginMestre() {
-            showScreen('screen-main-menu');
-        }
+        function loginMestre() { showScreen('screen-main-menu'); }
 
         function checkObjectives() {
             const val = document.getElementById('fixed-count').value;
@@ -219,11 +240,11 @@
             const area = document.getElementById('groups-setup-area');
             const list = document.getElementById('groups-inputs-list');
             const btn = document.getElementById('btn-save-groups');
-            if(qty > 1) {
+            if(qty >= 1) {
                 area.style.display = 'block';
                 list.innerHTML = "";
                 for(let i=1; i<=qty; i++) {
-                    list.innerHTML += `<input type="text" placeholder="Nome da Equipe ${i}">`;
+                    list.innerHTML += `<div class="group-item"><input type="text" placeholder="Nome da Equipe ${i}" style="margin-bottom:0"></div>`;
                 }
                 btn.disabled = false; btn.className = 'btn-vintage-alt active-green';
             } else {
@@ -231,8 +252,10 @@
             }
         }
 
+        // LÓGICA DO MAPA CENTRALIZADO
         function handleMapUpload(event) {
             const file = event.target.files[0];
+            if(!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = document.getElementById('map-img');
@@ -240,31 +263,39 @@
                 img.onload = function() {
                     document.getElementById('upload-panel').style.display = 'none';
                     document.getElementById('map-editor-controls').style.display = 'flex';
-                    scale = window.innerWidth / img.width;
-                    zoomMap(0);
+                    currentScale = 1;
+                    updateMapTransform();
                 }
             }
             reader.readAsDataURL(file);
         }
 
-        function zoomMap(delta) {
-            scale += delta;
-            document.getElementById('map-container').style.transform = `scale(${scale})`;
+        function zoomMap(factor) {
+            currentScale *= factor;
+            if(currentScale < 0.5) currentScale = 0.5;
+            if(currentScale > 4) currentScale = 4;
+            updateMapTransform();
+        }
+
+        function updateMapTransform() {
+            document.getElementById('map-container').style.transform = `scale(${currentScale})`;
         }
 
         function addMarker(e) {
-            const rect = document.getElementById('map-img').getBoundingClientRect();
-            const x = (e.clientX - rect.left) / scale;
-            const y = (e.clientY - rect.top) / scale;
+            const container = document.getElementById('map-container');
+            const rect = container.getBoundingClientRect();
+            
+            // Calcula posição real baseada no zoom e na posição do clique
+            const x = (e.clientX - rect.left) / currentScale;
+            const y = (e.clientY - rect.top) / currentScale;
 
-            // Se clicar perto de um ponto existente, remove ele (Edição)
-            const index = markers.findIndex(m => Math.hypot(m.x - x, m.y - y) < 20);
+            const index = markers.findIndex(m => Math.hypot(m.x - x, m.y - y) < (20 / currentScale));
+            
             if(index > -1) {
                 markers.splice(index, 1);
             } else {
-                if(markers.length < document.getElementById('fixed-count').value) {
-                    markers.push({x, y});
-                }
+                const limit = document.getElementById('fixed-count').value || 99;
+                if(markers.length < limit) markers.push({x, y});
             }
             renderMarkers();
         }
@@ -282,7 +313,7 @@
             });
         }
 
-        function checkPIN(v) { if(v === "123456") alert("Bem-vindo!"); }
+        function checkPIN(v) { if(v === "123456") alert("PIN Correto!"); }
     </script>
 </body>
 </html>
