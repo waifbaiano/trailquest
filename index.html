@@ -3,97 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <title>TrailQuest - Corrida de Orientação</title>
+    <title>TrailQuest - Início</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
-    
-    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 
     <div id="screen-start" class="screen start-bg">
         <div class="vintage-box">
             <h1 class="logo-font">TrailQuest</h1>
-            <p class="handwritten" style="color: #3e2723;">Sua aventura começa aqui</p>
+            <p class="handwritten">Prepare sua bússola...</p>
+            
             <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
-            <button class="btn-vintage-alt" onclick="startQRScanner()">Continuar como Participante</button>
+            <button class="btn-vintage-alt" onclick="startQRScanner()">Participante</button>
         </div>
     </div>
 
     <div id="screen-login" class="screen start-bg">
         <div class="vintage-box">
-            <h2 class="handwritten" style="color: #3e2723;">Identifique-se</h2>
+            <h2 class="handwritten">Acesso</h2>
             <input type="email" id="login-email" class="input-large" placeholder="E-mail">
             <input type="password" id="login-pass" class="input-large" placeholder="Senha">
-            <button class="btn-vintage" onclick="showScreen('screen-role-choice')">Entrar</button>
-            <button class="back-link" onclick="logout()">Voltar ao Início</button>
+            <button class="btn-vintage" onclick="alert('Login em breve')">Entrar</button>
+            <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
         </div>
     </div>
 
-    <div id="screen-role-choice" class="screen start-bg">
-        <div class="vintage-box">
-            <h2 class="handwritten" style="color: #3e2723;">Qual sua função?</h2>
-            <button class="btn-vintage" onclick="loginAs('organizador')">Organizador</button>
-            <button class="btn-vintage" onclick="loginAs('participante')">Participante</button>
-            <button class="back-link" onclick="showScreen('screen-login')">Voltar</button>
-        </div>
-    </div>
-
-    <div id="screen-main-menu" class="screen bg-paper">
-        <div class="vintage-box">
-            <h2 class="logo-font">Menu Mestre</h2>
-            <button onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
-            <button onclick="showScreen('screen-groups')">Organizar Grupos</button>
-            <button id="btn-proceed" class="btn-inactive" disabled>Prosseguir para o Jogo</button>
-            <button class="back-link" onclick="logout()">Sair</button>
-        </div>
-    </div>
-
-    <div id="screen-objectives" class="screen bg-paper">
-        <div class="vintage-box">
-            <h3 class="handwritten" style="color: #3e2723;">Objetivos</h3>
-            <label>Quantidade de Objetivos Fixos:</label>
-            <input type="number" id="fixed-obj" class="input-large" placeholder="Ex: 10" oninput="validateObjectives()">
-            
-            <label>Quantidade de Objetivos Móveis:</label>
-            <input type="number" id="mobile-obj" class="input-large" placeholder="Ex: 5">
-            
-            <button id="btn-config-map" class="btn-inactive" onclick="startMapEditor()" disabled>Configurar Mapa</button>
-            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
-        </div>
-    </div>
-
-    <div id="screen-groups" class="screen bg-paper">
-        <div class="vintage-box">
-            <h3 class="handwritten" style="color: #3e2723;">Configurar Grupos</h3>
-            <label>Total de Grupos:</label>
-            <input type="number" id="qty-groups" class="input-large" placeholder="Mínimo 2" oninput="validateGroups()">
-            
-            <div id="group-logic" style="display:none; margin-top: 15px;">
-                <label id="label-leaders"></label>
-                <input type="number" id="input-leaders" class="input-large" placeholder="Líderes">
-            </div>
-            
-            <button id="btn-save-groups" class="btn-inactive" disabled onclick="saveGroups()">Confirmar Grupos</button>
-            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
-        </div>
-    </div>
-
-    <div id="screen-qr-reader" class="screen" style="background: #000;">
-        <div class="vintage-box">
-            <h2 class="handwritten" style="color: #3e2723;">Aponte para o QR Code</h2>
-            <div id="reader" style="width: 100%; border-radius: 10px; overflow: hidden;"></div>
-            <button class="btn-vintage" style="background: #b71c1c;" onclick="stopQRScanner()">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="screen-map-editor" class="screen">
-        <header class="map-header">
-            <span id="obj-counter" style="font-family: 'Special Elite';
+    <script src="script.js"></script>
+</body>
+</html>

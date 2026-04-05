@@ -1,22 +1,18 @@
-/* Reset Básico */
+/* Reset Geral */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body, html { 
-    height: 100%; 
-    width: 100%; 
-    background-color: #1a1a1a; 
+body, html {
+    height: 100%;
+    width: 100%;
+    background-color: #1a1a1a;
     font-family: 'Special Elite', serif;
-    overflow: hidden;
 }
 
-/* Sistema de Telas */
+/* Telas */
 .screen {
-    display: none; /* Começam escondidas */
+    display: none; /* Escondido por padrão */
     width: 100vw;
     height: 100vh;
-    position: absolute;
-    top: 0;
-    left: 0;
     flex-direction: column;
     justify-content: center; /* Centraliza Vertical */
     align-items: center;     /* Centraliza Horizontal */
@@ -24,46 +20,35 @@ body, html {
     background-position: center;
 }
 
-/* Imagens de Fundo */
-.start-bg { 
+/* Fundo do Menu Inicial (Floresta Americana/Suiça) */
+.start-bg {
     background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-    url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1350&q=80'); 
+                      url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1350&q=80');
 }
 
-.bg-paper { 
-    background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), 
-    url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80'); 
-}
-
-/* Caixa Vintage */
+/* Caixa Vintage Centralizada */
 .vintage-box {
     background: rgba(245, 245, 220, 0.95);
     border: 4px solid #3e2723;
-    padding: 25px;
+    padding: 30px;
     width: 85%;
     max-width: 380px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
     text-align: center;
-    z-index: 10;
 }
 
-/* Inputs e Botões */
-.input-large {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    border: 2px solid #8d6e63;
-    border-radius: 8px;
-    font-size: 1rem;
-}
+.logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.5rem; margin-bottom: 10px; }
+.handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.5rem; margin-bottom: 20px; }
 
+/* Botões */
 button {
     width: 100%;
     padding: 16px;
-    margin-top: 12px;
+    margin-top: 15px;
     border: none;
     border-radius: 8px;
+    font-family: 'Special Elite', serif;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
@@ -72,7 +57,13 @@ button {
 .btn-vintage { background: #3e2723; color: #f5f5dc; }
 .btn-vintage-alt { background: #2e7d32; color: white; }
 
-.active-green { background-color: #2e7d32 !important; color: white !important; }
-.btn-inactive { background: #ccc !important; color: #666 !important; cursor: not-allowed; }
+/* Inputs */
+.input-large {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 2px solid #8d6e63;
+    border-radius: 8px;
+}
 
-.back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.9rem; }
+.back-link { background: none; color: #3e2723; text-decoration: underline; }
