@@ -1,16 +1,20 @@
-/* Fontes e Reset */
+/* Reset Básico */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; background: #1a1a1a; }
 
-.logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; margin-bottom: 10px; }
-.handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.8rem; margin-bottom: 20px; }
+body, html { 
+    height: 100%; 
+    width: 100%; 
+    background-color: #1a1a1a; 
+    font-family: 'Special Elite', serif;
+    overflow: hidden;
+}
 
-/* Sistema de Telas Centralizadas */
+/* Sistema de Telas */
 .screen {
-    display: none;
+    display: none; /* Começam escondidas */
     width: 100vw;
     height: 100vh;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     flex-direction: column;
@@ -20,48 +24,47 @@ body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; bac
     background-position: center;
 }
 
-/* Imagens de Fundo (Selvas e Trilhas) */
+/* Imagens de Fundo */
 .start-bg { 
-    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-    url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071'); 
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+    url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1350&q=80'); 
 }
+
 .bg-paper { 
-    background-image: linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), 
-    url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=2070'); 
+    background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), 
+    url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80'); 
 }
 
 /* Caixa Vintage */
 .vintage-box {
     background: rgba(245, 245, 220, 0.95);
-    border: 5px solid #3e2723;
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+    border: 4px solid #3e2723;
+    padding: 25px;
+    width: 85%;
+    max-width: 380px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     text-align: center;
+    z-index: 10;
 }
 
-/* Inputs Grandes para Login */
+/* Inputs e Botões */
 .input-large {
     width: 100%;
     padding: 15px;
     margin: 10px 0;
     border: 2px solid #8d6e63;
     border-radius: 8px;
-    font-size: 1.1rem;
-    background: white;
+    font-size: 1rem;
 }
 
-/* Botões */
 button {
     width: 100%;
-    padding: 18px;
-    margin-top: 15px;
+    padding: 16px;
+    margin-top: 12px;
     border: none;
     border-radius: 8px;
     font-weight: bold;
-    font-family: 'Special Elite', serif;
     cursor: pointer;
     text-transform: uppercase;
 }
@@ -69,18 +72,7 @@ button {
 .btn-vintage { background: #3e2723; color: #f5f5dc; }
 .btn-vintage-alt { background: #2e7d32; color: white; }
 
-.active-green { 
-    background-color: #2e7d32 !important; 
-    color: white !important; 
-    box-shadow: 0 0 15px rgba(46,125,50,0.6);
-}
-
+.active-green { background-color: #2e7d32 !important; color: white !important; }
 .btn-inactive { background: #ccc !important; color: #666 !important; cursor: not-allowed; }
 
-/* Mapa */
-.map-header {
-    position: absolute; top: 0; width: 100%; z-index: 1000;
-    background: rgba(62, 39, 35, 0.9); padding: 15px;
-    display: flex; justify-content: space-between; color: white;
-}
-#map { width: 100%; height: 100%; background: #000; }
+.back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.9rem; }
