@@ -362,6 +362,77 @@
         console.log("Sistema de localização atualizado com sucesso!");
     }
 </script>
+<script>
+    if (typeof App !== 'undefined') {
+        
+        // Sobrescrevemos a função abrirMapa para incluir a lógica de edição
+        const originalAbrirMapa = App.abrirMapa;
+        
+        App.abrirMapa = function() {
+            // Chama a função original primeiro
+            originalAbrirMapa.apply(this);
+            
+            // Removemos o evento de clique antigo para não duplicar pontos
+            this.mapa.off('click');
+            
+            // Novo evento de clique com funções de edição
+            this.mapa.on('click', (e) => {
+                const { lat, lng } = e.latlng;
+                this.adicionarPontoEditavel(lat, lng);
+            });
+        };
+
+        App.adicionarPontoEditavel = function(lat, lng) {
+            const id = Date.now(); // ID único para o ponto
+            
+            // Cria o marcador configurado para ser arrastável
+            const marker = L.marker([lat, lng], {
+                draggable: true,
+                autoPan: true
+            }).addTo(this.mapa);
+
+            const atualizarPopup = () => {
+                const pos = marker.getLatLng();
+                const conteudo = `
+                    <div style="text-align:center; font-family:'Montserrat',sans-serif;">
+                        <b style="color:var(--verde)">Objetivo</b><br>
+                        <small>${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}</small><br><br>
+                        <button onclick="App.removerPonto(${id})" 
+                            style="background:#d32f2f; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">
+                            🗑️ EXCLUIR
+                        </button>
+                    </div>
+                `;
+                marker.bindPopup(conteudo).openPopup();
+            };
+
+            // Evento: Quando terminar de arrastar, atualiza a posição na lista
+            marker.on('dragend', function() {
+                atualizarPopup();
+                App.salvarEstadoPontos();
+            });
+
+            // Guarda o marcador num array com o seu ID
+            this.marcos.push({ id: id, marker: marker });
+            atualizarPopup();
+            this.salvarEstadoPontos();
+        };
+
+        App.removerPonto = function(id) {
+            const index = this.marcos.findIndex(m => m.id === id);
+            if (index !== -1) {
+                this.mapa.removeLayer(this.marcos[index].marker);
+                this.marcos.splice(index, 1);
+                this.salvarEstadoPontos();
+            }
+        };
+
+        App.salvarEstadoPontos = function() {
+            // Aqui você pode adicionar lógica para salvar no LocalStorage se desejar
+            console.log("Pontos atuais:", this.marcos.map(m => m.marker.getLatLng()));
+        };
+    }
+</script>
 
 </body>
 </html>
