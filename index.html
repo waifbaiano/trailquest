@@ -147,7 +147,7 @@
             </div>
 
             <div id="area-leaders" style="display:none; margin-top:10px;">
-                <label class="label-small">Quantidade de líderes por grupo:</label>
+                <label class="label-small">Número de líderes por grupo:</label>
                 <input type="number" id="leaders-qty" placeholder="Ex: 1" oninput="validateFinalGroups()">
             </div>
 
@@ -207,8 +207,7 @@
             btn.className = val > 0 ? 'btn-vintage-alt active-green' : 'btn-inactive';
         }
 
-        // --- LÓGICA DE GRUPOS REORGANIZADA ---
-
+        // --- LÓGICA DE GRUPOS ---
         function logicGroups() {
             const qty = parseInt(document.getElementById('group-qty').value);
             const areaPeople = document.getElementById('area-people');
@@ -217,16 +216,14 @@
             
             if(qty >= 3) {
                 areaPeople.style.display = 'block';
-                container.innerHTML = ""; // Limpa campos anteriores
+                container.innerHTML = ""; 
 
                 if(qty % 2 === 0) {
-                    // Par: Apenas um campo
                     container.innerHTML = `
                         <label class="label-small">Número de pessoas por grupo:</label>
                         <input type="number" class="people-field" placeholder="Ex: 5" oninput="logicLeadersDisplay()">
                     `;
                 } else {
-                    // Ímpar: Dois campos (o momento do grupo ímpar)
                     container.innerHTML = `
                         <label class="label-small">Número de pessoas nos grupos pares:</label>
                         <input type="number" class="people-field" placeholder="Ex: 5" oninput="logicLeadersDisplay()">
@@ -244,13 +241,13 @@
         function logicLeadersDisplay() {
             const fields = document.querySelectorAll('.people-field');
             const areaLeaders = document.getElementById('area-leaders');
-            let allFilled = true;
+            let anyFilledCorrect = true;
 
             fields.forEach(f => {
-                if(!f.value || parseInt(f.value) <= 1) allFilled = false;
+                if(!f.value || parseInt(f.value) <= 1) anyFilledCorrect = false;
             });
 
-            if(allFilled && fields.length > 0) {
+            if(anyFilledCorrect && fields.length > 0) {
                 areaLeaders.style.display = 'block';
             } else {
                 areaLeaders.style.display = 'none';
@@ -261,10 +258,10 @@
         function validateFinalGroups() {
             const qty = document.getElementById('group-qty').value;
             const leaders = document.getElementById('leaders-qty').value;
-            const areaLeadersVisible = document.getElementById('area-leaders').style.display === 'block';
+            const leadersVisible = document.getElementById('area-leaders').style.display === 'block';
             const btn = document.getElementById('btn-save-groups');
 
-            if (qty >= 3 && areaLeadersVisible && leaders > 0) {
+            if (qty >= 3 && leadersVisible && leaders > 0) {
                 btn.disabled = false;
                 btn.className = 'btn-vintage-alt active-green';
             } else {
@@ -274,7 +271,7 @@
         }
 
         function saveGroupsFinal() {
-            alert("Configuração salva com sucesso!");
+            alert("Configuração salva!");
             showScreen('screen-main-menu');
         }
 
