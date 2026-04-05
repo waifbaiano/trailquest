@@ -433,6 +433,123 @@
         };
     }
 </script>
+<script>
+    if (typeof App !== 'undefined') {
+        // Ajuste de fonte global para campos de entrada conforme solicitado
+        const style = document.createElement('style');
+        style.innerHTML = `input, select, textarea { font-family: 'Roboto', 'Canvas', sans-serif !important; }`;
+        document.head.appendChild(style);
+
+        // Extensão do objeto App para novas funcionalidades
+        App.linhaRoteiro = null;
+        
+        const originalAbrirMapa = App.abrirMapa;
+        App.abrirMapa = function() {
+            originalAbrirMapa.apply(this);
+            this.mapa.off('click');
+            this.mapa.on('click', (e) => {
+                const limite = parseInt(document.getElementById('fixos').value) || 0;
+                if (this.marcos.length >= limite) {
+                    alert("Limite atingido! Você só pode marcar " + limite + " pontos (conforme Objetivos Fixos).");
+                    return;
+                }
+                this.adicionarPontoAvancado(e.latlng.lat, e.latlng.lng);
+            });
+            this.desenharLinhaRoteiro();
+        };
+
+        App.adicionarPontoAvancado = function(lat, lng) {
+            const id = Date.now();
+            const ordem = this.marcos.length + 1;
+            
+            const marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(this.mapa);
+
+            const ponto = {
+                id: id,
+                nome: "Ponto " + ordem,
+                ordem: ordem,
+                marker: marker,
+                codigoQR: `TQ-${id}-${ordem}`
+            };
+
+            marker.on('dragend', () => {
+                this.desenharLinhaRoteiro();
+                this.atualizarPopup(ponto);
+            });
+
+            this.marcos.push(ponto);
+            this.atualizarPopup(ponto);
+            this.desenharLinhaRoteiro();
+        };
+
+        App.atualizarPopup = function(ponto) {
+            const conteudo = `
+                <div style="font-family:'Roboto',sans-serif; min-width:150px;">
+                    <label style="font-size:10px; font-weight:bold;">NOME DO PONTO:</label><br>
+                    <input type="text" value="${ponto.nome}" onchange="App.editarNome(${ponto.id}, this.value)" 
+                        style="width:100%; margin-bottom:5px; text-align:left; padding:4px;"><br>
+                    
+                    <label style="font-size:10px; font-weight:bold;">ORDEM NO ROTEIRO:</label><br>
+                    <input type="number" value="${ponto.ordem}" onchange="App.alterarOrdem(${ponto.id}, this.value)"
+                        style="width:100%; margin-bottom:10px; text-align:left; padding:4px;"><br>
+                    
+                    <div style="background:#eee; padding:5px; font-size:9px; border-radius:3px; margin-bottom:10px;">
+                        <strong>QR CODE:</strong><br>${ponto.codigoQR}
+                    </div>
+
+                    <button onclick="App.removerPonto(${ponto.id})" 
+                        style="background:#d32f2f; color:white; border:none; width:100%; padding:8px; border-radius:3px; font-weight:bold;">
+                        EXCLUIR PONTO
+                    </button>
+                </div>
+            `;
+            ponto.marker.bindPopup(conteudo).openPopup();
+        };
+
+        App.editarNome = function(id, novoNome) {
+            const p = this.marcos.find(m => m.id === id);
+            if (p) p.nome = novoNome;
+        };
+
+        App.alterarOrdem = function(id, novaOrdem) {
+            const p = this.marcos.find(m => m.id === id);
+            if (p) {
+                p.ordem = parseInt(novaOrdem);
+                // Reordenar array baseado na nova ordem
+                this.marcos.sort((a, b) => a.ordem - b.ordem);
+                this.desenharLinhaRoteiro();
+            }
+        };
+
+        App.desenharLinhaRoteiro = function() {
+            if (this.linhaRoteiro) this.mapa.removeLayer(this.linhaRoteiro);
+            
+            const coordenadas = this.marcos
+                .sort((a, b) => a.ordem - b.ordem)
+                .map(p => p.marker.getLatLng());
+
+            if (coordenadas.length > 1) {
+                this.linhaRoteiro = L.polyline(coordenadas, {
+                    color: '#ffa000',
+                    weight: 4,
+                    opacity: 0.7,
+                    dashArray: '10, 10'
+                }).addTo(this.mapa);
+            }
+        };
+
+        App.removerPonto = function(id) {
+            const idx = this.marcos.findIndex(m => m.id === id);
+            if (idx !== -1) {
+                this.mapa.removeLayer(this.marcos[idx].marker);
+                this.marcos.splice(idx, 1);
+                this.desenharLinhaRoteiro();
+            }
+        };
+    }
+</script>
 
 </body>
 </html>
