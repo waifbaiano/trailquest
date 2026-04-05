@@ -33,15 +33,7 @@
             overflow: hidden;
         }
         .dropdown-menu button { background: none; color: #3e2723; padding: 12px; width: 100%; border: none; font-size: 0.9rem; cursor: pointer; text-align: left; font-family: 'Special Elite'; }
-        
-        /* BOTÃO SAIR PEQUENO E VERMELHO */
-        .dropdown-menu .btn-exit { 
-            color: #d32f2f; 
-            font-size: 0.7rem; 
-            border-top: 1px solid rgba(62, 39, 35, 0.2); 
-            text-align: center;
-            font-weight: bold;
-        }
+        .dropdown-menu .btn-exit { color: #d32f2f; font-size: 0.7rem; border-top: 1px solid rgba(62, 39, 35, 0.2); text-align: center; font-weight: bold; }
 
         .screen {
             display: none; width: 100vw; height: 100vh;
@@ -61,31 +53,54 @@
             text-align: center; max-height: 90vh; overflow-y: auto;
         }
 
-        /* MAPA */
-        #screen-map-config { background: #000; }
+        /* MAPA INTERATIVO */
+        #screen-map-config { background: #000; touch-action: none; }
         .map-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        #map-container { position: relative; display: inline-block; transition: transform 0.2s ease-out; cursor: crosshair; }
-        #map-img { display: block; max-width: 90vw; max-height: 80vh; pointer-events: none; }
+        #map-container { position: relative; display: inline-block; transition: transform 0.1s ease-out; cursor: grab; }
+        #map-container.editing { cursor: crosshair; }
+        #map-img { display: block; max-width: 200vw; max-height: 200vh; pointer-events: none; user-select: none; }
+        
+        #map-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
         .marker {
-            position: absolute; width: 34px; height: 34px;
+            position: absolute; width: 36px; height: 36px;
             background: #d32f2f; border: 2px solid #fff; color: #fff;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             transform: translate(-50%, -50%); font-weight: bold; font-size: 14px;
+            z-index: 10; cursor: move; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+        .marker-label {
+            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+            background: rgba(62, 39, 35, 0.9); color: white; padding: 2px 8px;
+            border-radius: 4px; font-size: 11px; white-space: nowrap; pointer-events: none;
+            border: 1px solid #fff;
         }
 
-        .logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.2rem; margin-bottom: 5px; }
-        .handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.5rem; margin-bottom: 20px; }
-        .label-small { font-size: 0.8rem; display: block; text-align: left; margin: 10px 0 5px 0; color: #3e2723; font-weight: bold; }
+        /* MENU DE OPÇÕES DO PONTO */
+        .marker-menu {
+            position: fixed; background: #f5f5dc; border: 3px solid #3e2723;
+            border-radius: 10px; z-index: 200; display: none; width: 180px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .marker-menu button { 
+            width: 100%; padding: 12px; border: none; background: none;
+            font-family: 'Special Elite'; font-size: 0.9rem; text-align: left;
+            border-bottom: 1px solid rgba(62, 39, 35, 0.1); cursor: pointer;
+        }
+        .marker-menu .btn-delete { color: #d32f2f; font-size: 0.75rem; font-weight: bold; }
 
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #8d6e63; border-radius: 8px; font-family: 'Special Elite'; font-size: 1rem; }
-        button { width: 100%; padding: 15px; margin-top: 8px; border: none; border-radius: 8px; font-family: 'Special Elite'; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-        .btn-vintage { background: #3e2723; color: #f5f5dc; }
-        .btn-vintage-alt { background: #2e7d32; color: white; }
-        .btn-inactive { background: #ccc !important; color: #666 !important; cursor: not-allowed; }
-        .active-green { background: #2e7d32 !important; color: white !important; }
-        .back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.8rem; margin-top: 15px; }
-        
-        .map-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 110; width: 90%; max-width: 400px; }
+        /* CONTROLES DO RODAPÉ */
+        .map-footer {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 110; width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .btn-add-mode { background: #2e7d32; color: white; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
+
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #8d6e63; border-radius: 8px; font-family: 'Special Elite'; }
+        .btn-vintage-alt { background: #2e7d32; color: white; padding: 12px; border-radius: 8px; font-weight: bold; }
+        .btn-inactive { background: #ccc !important; color: #666 !important; }
+        .back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.8rem; margin-top: 10px; border:none; cursor:pointer;}
     </style>
 </head>
 <body>
@@ -100,26 +115,24 @@
 
     <div id="screen-start" class="screen start-bg" style="display: flex;">
         <div class="vintage-box">
-            <h1 class="logo-font">TrailQuest</h1>
-            <p class="handwritten">Sua jornada começa aqui</p>
-            <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
-            <button class="btn-vintage-alt" onclick="showScreen('screen-pin')">Participante</button>
+            <h1 style="font-family:'Permanent Marker'; color:#2e7d32;">TrailQuest</h1>
+            <p style="font-family:'Satisfy'; margin-bottom:20px;">Sua jornada começa aqui</p>
+            <button class="btn-add-mode" style="background:#3e2723; width:100%;" onclick="showScreen('screen-login')">Fazer Login</button>
+            <button class="btn-add-mode" style="width:100%; margin-top:10px;" onclick="showScreen('screen-pin')">Participante</button>
         </div>
     </div>
 
     <div id="screen-login" class="screen start-bg">
         <div class="vintage-box">
-            <h2 class="handwritten">Mestre da Trilha</h2>
             <input type="email" id="login-email" placeholder="E-mail">
             <input type="password" id="login-pass" placeholder="Senha">
-            <button class="btn-vintage" onclick="loginMestre()">Entrar</button>
+            <button class="btn-add-mode" style="background:#3e2723; width:100%;" onclick="loginMestre()">Entrar</button>
             <button class="back-link" onclick="sairLogin()">Voltar</button>
         </div>
     </div>
 
     <div id="screen-pin" class="screen start-bg">
         <div class="vintage-box">
-            <h2 class="handwritten">Código da Trilha</h2>
             <input type="number" id="input-pin" placeholder="PIN">
             <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
         </div>
@@ -127,268 +140,258 @@
 
     <div id="screen-main-menu" class="screen bg-paper">
         <div class="vintage-box">
-            <h2 class="logo-font">Menu Mestre</h2>
-            <button class="btn-vintage" onclick="showScreen('screen-objectives')">Objetivos</button>
-            <button class="btn-vintage" onclick="showScreen('screen-groups')">Grupos</button>
-            <button id="btn-final-codes" class="btn-inactive" disabled onclick="handleFinalStep()">Gerar Códigos</button>
+            <h2 style="font-family:'Permanent Marker'; margin-bottom:15px;">Menu Mestre</h2>
+            <button class="btn-add-mode" style="background:#3e2723; width:100%;" onclick="showScreen('screen-objectives')">Objetivos</button>
+            <button class="btn-add-mode" style="background:#3e2723; width:100%; margin-top:10px;" onclick="showScreen('screen-groups')">Grupos</button>
+            <button id="btn-final-codes" class="btn-inactive" style="width:100%; margin-top:10px; border:none; padding:15px; border-radius:8px; font-family:'Special Elite'; font-weight:bold;" disabled onclick="handleFinalStep()">Gerar Códigos</button>
         </div>
     </div>
 
     <div id="screen-objectives" class="screen bg-paper">
         <div class="vintage-box">
-            <h3 class="handwritten">Missão</h3>
-            <label class="label-small">Qtd. Objetivos Fixos:</label>
-            <input type="number" id="fixed-count" placeholder="">
-            <label class="label-small">Qtd. Objetivos Móveis:</label>
-            <input type="number" id="mobile-count" placeholder="" oninput="checkObjectives()">
-            <button id="btn-map" class="btn-inactive" disabled onclick="showScreen('screen-map-config')">Configurar Mapa</button>
+            <label style="font-size:0.8rem; font-weight:bold;">Qtd. Objetivos Fixos:</label>
+            <input type="number" id="fixed-count" oninput="checkObjectives()">
+            <label style="font-size:0.8rem; font-weight:bold;">Qtd. Objetivos Móveis:</label>
+            <input type="number" id="mobile-count" oninput="checkObjectives()">
+            <button id="btn-map" class="btn-inactive" style="width:100%; border:none; padding:15px; border-radius:8px; font-family:'Special Elite'; font-weight:bold;" disabled onclick="showScreen('screen-map-config')">Configurar Mapa</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
     </div>
 
     <div id="screen-groups" class="screen bg-paper">
         <div class="vintage-box">
-            <h3 class="handwritten">Equipes</h3>
-            <label class="label-small">Número de Grupos:</label>
-            <input type="number" id="group-qty" placeholder="" oninput="logicGroups()">
-
-            <div id="area-people" style="display:none; margin-top:10px;">
-                <label class="label-small">Número de pessoas por grupo:</label>
-                <input type="number" id="people-1" placeholder="" oninput="logicPeopleHierarchy()">
-                <input type="number" id="people-2" placeholder="" style="display:none;" oninput="logicPeopleHierarchy()">
+            <input type="number" id="group-qty" placeholder="Número de Grupos" oninput="logicGroups()">
+            <div id="area-people" style="display:none;">
+                <input type="number" id="people-1" placeholder="Pessoas por grupo" oninput="logicPeopleHierarchy()">
+                <input type="number" id="people-2" style="display:none;" oninput="logicPeopleHierarchy()">
             </div>
-
-            <div id="area-leaders" style="display:none; margin-top:10px;">
-                <label class="label-small">Número de líderes por grupo:</label>
-                <input type="number" id="leaders-qty" placeholder="" oninput="validateFinalGroups()">
+            <div id="area-leaders" style="display:none;">
+                <input type="number" id="leaders-qty" placeholder="Líderes por grupo" oninput="validateFinalGroups()">
             </div>
-
-            <button id="btn-save-groups" class="btn-inactive" disabled onclick="saveGroupsFinal()">Confirmar Equipes</button>
-            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
+            <button id="btn-save-groups" class="btn-inactive" style="width:100%; border:none; padding:15px; border-radius:8px; font-family:'Special Elite'; font-weight:bold;" disabled onclick="saveGroupsFinal()">Confirmar</button>
         </div>
     </div>
 
     <div id="screen-map-config" class="screen">
-        <div class="map-wrapper">
-            <div id="map-container" onclick="addMarker(event)">
+        <div class="map-wrapper" id="zoom-area">
+            <div id="map-container">
                 <img id="map-img" src="" alt="Mapa">
+                <svg id="map-svg"></svg>
                 <div id="markers-layer"></div>
             </div>
         </div>
-        <div id="upload-panel" class="vintage-box" style="position:absolute; z-index:120;">
-            <h3 class="handwritten">Mapa da Trilha</h3>
-            <input type="file" id="map-upload" accept="image/*" onchange="handleMapUpload(event)">
-            <button class="back-link" onclick="showScreen('screen-objectives')">Cancelar</button>
+
+        <div id="marker-options" class="marker-menu">
+            <button onclick="optRename()">Nomear</button>
+            <button onclick="optChangeNum()">Mudar Número</button>
+            <button onclick="optQRCode()">Gerar QR Code</button>
+            <button class="btn-delete" onclick="optDelete()">Excluir</button>
         </div>
-        <div id="map-editor-controls" class="map-controls" style="display:none;">
-            <button class="btn-vintage" style="flex:1" onclick="zoomMap(1.2)">+</button>
-            <button class="btn-vintage" style="flex:1" onclick="zoomMap(0.8)">-</button>
-            <button id="btn-done-map" class="btn-vintage-alt" style="flex:2" onclick="finishMap()">OK</button>
+
+        <div id="upload-panel" class="vintage-box" style="position:absolute; z-index:120;">
+            <h3 style="font-family:'Satisfy'; margin-bottom:10px;">Upload do Mapa</h3>
+            <input type="file" id="map-upload" accept="image/*" onchange="handleMapUpload(event)">
+        </div>
+
+        <div id="map-footer-controls" class="map-footer" style="display:none;">
+            <div id="btn-add-toggle" class="btn-add-mode" onclick="toggleAddMode()">ADICIONAR OBJETIVOS</div>
+            <button class="btn-add-mode" style="background:#3e2723;" onclick="finishMap()">SALVAR E SAIR</button>
         </div>
     </div>
 
     <div id="screen-mobile-pin" class="screen bg-paper">
         <div class="vintage-box">
-            <h3 class="handwritten">Objetivo Móvel</h3>
-            <p style="font-size:0.8rem; margin-bottom:15px;">Registre o código do participante especial:</p>
             <input type="number" id="input-mobile-pin" placeholder="PIN Especial">
-            <button class="btn-vintage-alt" onclick="confirmMobilePin()">Registrar</button>
-            <button class="back-link" onclick="skipMobilePin()">Pular Registro</button>
+            <button class="btn-add-mode" style="width:100%;" onclick="showScreen('screen-final-pin')">Registrar</button>
+            <button class="back-link" onclick="skipMobilePin()">Pular</button>
         </div>
     </div>
 
     <div id="screen-final-pin" class="screen start-bg">
         <div class="vintage-box">
-            <h2 class="handwritten">Trilha Pronta!</h2>
-            <p style="font-size:0.9rem;">Código Geral para Participantes:</p>
-            <h1 style="font-size:3rem; color:#2e7d32; margin:15px 0;">882 190</h1>
-            <button class="btn-vintage" onclick="showScreen('screen-main-menu')">Concluir</button>
+            <h1 style="font-size:3rem; color:#2e7d32;">882 190</h1>
+            <button class="btn-add-mode" style="background:#3e2723; width:100%;" onclick="showScreen('screen-main-menu')">Concluir</button>
         </div>
     </div>
 
     <script>
         let currentScale = 1;
         let markers = [];
-        let mapReady = false;
-        let groupsReady = false;
+        let isAddMode = false;
+        let draggedIdx = null;
+        let activeMarkerIdx = null;
+        let mapReady = false, groupsReady = false;
 
+        // Funções de Navegação
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'flex';
+            document.getElementById('main-top-bar').style.display = 
+                (['screen-start', 'screen-login', 'screen-pin', 'screen-map-config'].includes(id)) ? 'none' : 'block';
+            document.getElementById('marker-options').style.display = 'none';
+        }
+
+        function sairLogin() { showScreen('screen-start'); }
+        function loginMestre() { showScreen('screen-main-menu'); }
         function toggleDropdown() {
             const d = document.getElementById("myDropdown");
             d.style.display = d.style.display === "block" ? "none" : "block";
         }
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-            document.getElementById(id).style.display = 'flex';
-            document.getElementById('main-top-bar').style.display = 
-                (id !== 'screen-start' && id !== 'screen-login' && id !== 'screen-pin' && id !== 'screen-map-config') ? 'block' : 'none';
-            document.getElementById("myDropdown").style.display = "none";
-        }
-
-        function sairLogin() {
-            document.getElementById('login-email').value = "";
-            document.getElementById('login-pass').value = "";
-            showScreen('screen-start');
-        }
-
-        function loginMestre() { showScreen('screen-main-menu'); }
-
         function checkObjectives() {
             const fixed = document.getElementById('fixed-count').value;
             const btn = document.getElementById('btn-map');
             btn.disabled = !fixed || fixed <= 0;
-            btn.className = (fixed > 0) ? 'btn-vintage-alt active-green' : 'btn-inactive';
-            checkGlobalReady();
+            btn.className = btn.disabled ? 'btn-inactive' : 'btn-add-mode';
         }
 
-        // --- LÓGICA DE GRUPOS (COM RESET E LIMPEZA) ---
+        // Lógica de Grupos
         function logicGroups() {
-            const qtyField = document.getElementById('group-qty');
-            const qty = parseInt(qtyField.value);
-            const areaPeople = document.getElementById('area-people');
-            const areaLeaders = document.getElementById('area-leaders');
-            const p1 = document.getElementById('people-1');
-            const p2 = document.getElementById('people-2');
-            const ldr = document.getElementById('leaders-qty');
-
-            if(qty >= 3) {
-                areaPeople.style.display = 'block';
-            } else {
-                // RESET TOTAL se o número de grupos for apagado ou < 3
-                areaPeople.style.display = 'none';
-                areaLeaders.style.display = 'none';
-                p1.value = "";
-                p2.value = "";
-                p2.style.display = 'none';
-                ldr.value = "";
-            }
+            const qty = parseInt(document.getElementById('group-qty').value);
+            document.getElementById('area-people').style.display = qty >= 3 ? 'block' : 'none';
             validateFinalGroups();
         }
-
         function logicPeopleHierarchy() {
-            const p1 = document.getElementById('people-1');
+            const p1 = document.getElementById('people-1').value;
             const p2 = document.getElementById('people-2');
-            const areaLeaders = document.getElementById('area-leaders');
-            const ldr = document.getElementById('leaders-qty');
-            
-            p2.style.display = p1.value.length > 0 ? 'block' : 'none';
-
-            // Se as pessoas forem apagadas, esconde os líderes e limpa o valor deles
-            if ((p1.value && parseInt(p1.value) >= 2) || (p2.value && parseInt(p2.value) >= 2)) {
-                areaLeaders.style.display = 'block';
-            } else {
-                areaLeaders.style.display = 'none';
-                ldr.value = ""; 
-            }
+            p2.style.display = p1 ? 'block' : 'none';
+            document.getElementById('area-leaders').style.display = (p1 >= 2 || p2.value >= 2) ? 'block' : 'none';
             validateFinalGroups();
         }
-
         function validateFinalGroups() {
             const qty = document.getElementById('group-qty').value;
-            const ldr = document.getElementById('leaders-qty');
-            const leadersVisible = document.getElementById('area-leaders').style.display === 'block';
+            const ldr = document.getElementById('leaders-qty').value;
             const btn = document.getElementById('btn-save-groups');
-
-            if (qty >= 3 && leadersVisible && ldr.value > 0) {
-                btn.disabled = false;
-                btn.className = 'btn-vintage-alt active-green';
-            } else {
-                btn.disabled = true;
-                btn.className = 'btn-inactive';
-            }
+            btn.disabled = !(qty >= 3 && ldr > 0);
+            btn.className = btn.disabled ? 'btn-inactive' : 'btn-add-mode';
         }
+        function saveGroupsFinal() { groupsReady = true; checkGlobalReady(); showScreen('screen-main-menu'); }
 
-        function saveGroupsFinal() {
-            groupsReady = true;
-            checkGlobalReady();
-            showScreen('screen-main-menu');
-        }
-
-        // --- MAPA E FLUXO FINAL ---
-        function finishMap() {
-            mapReady = true;
-            checkGlobalReady();
-            showScreen('screen-main-menu');
-        }
-
-        function checkGlobalReady() {
-            const btn = document.getElementById('btn-final-codes');
-            if(mapReady && groupsReady) {
-                btn.disabled = false;
-                btn.className = 'btn-vintage-alt active-green';
-            } else {
-                btn.disabled = true;
-                btn.className = 'btn-inactive';
-            }
-        }
-
-        function handleFinalStep() {
-            const mobileQty = parseInt(document.getElementById('mobile-count').value) || 0;
-            if (mobileQty >= 1) {
-                showScreen('screen-mobile-pin');
-            } else {
-                showScreen('screen-final-pin');
-            }
-        }
-
-        function confirmMobilePin() {
-            alert("Objetivo Móvel Registrado!");
-            showScreen('screen-final-pin');
-        }
-
-        function skipMobilePin() {
-            document.getElementById('menu-mobile-reg').style.display = 'block';
-            showScreen('screen-final-pin');
-        }
-
-        // --- MAPA ---
+        // --- LÓGICA DO MAPA ---
         function handleMapUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById('map-img');
-                img.src = e.target.result;
-                img.onload = function() {
-                    document.getElementById('upload-panel').style.display = 'none';
-                    document.getElementById('map-editor-controls').style.display = 'flex';
-                    currentScale = 1;
-                    document.getElementById('map-container').style.transform = `scale(1)`;
-                }
-            }
+            reader.onload = (e) => {
+                document.getElementById('map-img').src = e.target.result;
+                document.getElementById('upload-panel').style.display = 'none';
+                document.getElementById('map-footer-controls').style.display = 'flex';
+                initMapSystem();
+            };
             reader.readAsDataURL(file);
         }
 
-        function zoomMap(factor) {
-            currentScale *= factor;
-            document.getElementById('map-container').style.transform = `scale(${currentScale})`;
+        function initMapSystem() {
+            const container = document.getElementById('map-container');
+            
+            // Clique no mapa
+            container.onmousedown = (e) => {
+                if(!isAddMode || e.target.classList.contains('marker')) return;
+                const rect = container.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / currentScale;
+                const y = (e.clientY - rect.top) / currentScale;
+                
+                const limit = document.getElementById('fixed-count').value || 99;
+                if(markers.length < limit) {
+                    markers.push({x, y, name: "", code: Math.random().toString(36).substr(2, 6).toUpperCase()});
+                    renderMarkers();
+                }
+            };
+
+            // Drag and Drop
+            window.onmousemove = (e) => {
+                if (draggedIdx === null) return;
+                const rect = container.getBoundingClientRect();
+                markers[draggedIdx].x = (e.clientX - rect.left) / currentScale;
+                markers[draggedIdx].y = (e.clientY - rect.top) / currentScale;
+                renderMarkers();
+            };
+            window.onmouseup = () => { draggedIdx = null; };
+
+            // Zoom via Mouse Wheel / Touchpad
+            container.onwheel = (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                currentScale = Math.min(Math.max(0.5, currentScale * delta), 4);
+                container.style.transform = `scale(${currentScale})`;
+            };
         }
 
-        function addMarker(e) {
-            const container = document.getElementById('map-container');
-            const rect = container.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / currentScale;
-            const y = (e.clientY - rect.top) / currentScale;
-            const index = markers.findIndex(m => Math.hypot(m.x - x, m.y - y) < (20 / currentScale));
-            if(index > -1) markers.splice(index, 1);
-            else {
-                const limit = document.getElementById('fixed-count').value || 99;
-                if(markers.length < limit) markers.push({x, y});
-            }
-            renderMarkers();
+        function toggleAddMode() {
+            isAddMode = !isAddMode;
+            const btn = document.getElementById('btn-add-toggle');
+            btn.style.background = isAddMode ? "#d32f2f" : "#2e7d32";
+            btn.innerText = isAddMode ? "CANCELAR ADICIONAR" : "ADICIONAR OBJETIVOS";
+            document.getElementById('map-container').classList.toggle('editing', isAddMode);
         }
 
         function renderMarkers() {
             const layer = document.getElementById('markers-layer');
-            layer.innerHTML = "";
+            const svg = document.getElementById('map-svg');
+            layer.innerHTML = ""; svg.innerHTML = "";
+            let pathData = "";
+
             markers.forEach((m, i) => {
                 const div = document.createElement('div');
                 div.className = 'marker';
                 div.style.left = m.x + "px"; div.style.top = m.y + "px";
-                div.innerText = i + 1;
+                div.innerHTML = (i + 1) + (m.name ? `<div class="marker-label">${m.name}</div>` : "");
+
+                div.onmousedown = (e) => { e.stopPropagation(); draggedIdx = i; };
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    activeMarkerIdx = i;
+                    const menu = document.getElementById('marker-options');
+                    menu.style.display = 'block';
+                    menu.style.left = e.clientX + 'px';
+                    menu.style.top = e.clientY + 'px';
+                };
+
                 layer.appendChild(div);
+                if (i === 0) pathData = `M ${m.x} ${m.y}`;
+                else pathData += ` L ${m.x} ${m.y}`;
             });
+
+            if(markers.length >= 2) {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                line.setAttribute("d", pathData);
+                line.setAttribute("stroke", "white");
+                line.setAttribute("stroke-width", "3");
+                line.setAttribute("fill", "none");
+                line.setAttribute("stroke-dasharray", "8,5");
+                svg.appendChild(line);
+            }
         }
-    </script>
-</body>
-</html>
+
+        // Funções do Menu de Marcador
+        function optRename() {
+            const n = prompt("Nome do objetivo:", markers[activeMarkerIdx].name);
+            if(n !== null) markers[activeMarkerIdx].name = n;
+            closeMarkerMenu();
+        }
+        function optChangeNum() {
+            const n = parseInt(prompt("Novo número para este ponto:"));
+            if(n > 0 && n <= markers.length) {
+                const item = markers.splice(activeMarkerIdx, 1)[0];
+                markers.splice(n-1, 0, item);
+            }
+            closeMarkerMenu();
+        }
+        function optQRCode() {
+            alert("Código para QR: TQ-" + markers[activeMarkerIdx].code);
+            closeMarkerMenu();
+        }
+        function optDelete() {
+            if(confirm("Excluir este objetivo?")) markers.splice(activeMarkerIdx, 1);
+            closeMarkerMenu();
+        }
+        function closeMarkerMenu() {
+            document.getElementById('marker-options').style.display = 'none';
+            renderMarkers();
+        }
+
+        function finishMap() { mapReady = true; checkGlobalReady(); showScreen('screen-main-menu'); }
+        function checkGlobalReady() {
+            const btn = document.getElementById('btn-final-codes');
+            btn.disabled = !(mapReady && groupsReady);
+            btn.className = btn.disabled ? 'b
