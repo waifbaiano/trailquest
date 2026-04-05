@@ -3,40 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest Pro PWA</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>TrailQuest Pro - Reset</title>
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS INTEGRADO --- */
+        :root {
+            --verde: #2e7d32;
+            --marrom: #3e2723;
+            --creme: rgba(255, 253, 231, 0.96);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; overflow: hidden; background: #1a1a1a; }
+
+        .cenario {
+            width: 100vw; height: 100vh;
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.8s ease-in-out;
+        }
+
+        /* Imagens Vintage de Floresta */
+        .bg-inicio { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
+        .bg-menu { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000'); }
+
+        .painel-vintage {
+            background: var(--creme);
+            border: 3px solid var(--marrom);
+            padding: 25px; border-radius: 5px;
+            width: 85%; max-width: 380px;
+            box-shadow: 8px 8px 0px var(--marrom);
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        h1, h2 { font-family: 'Satisfy', cursive; color: var(--verde); margin-bottom: 15px; font-size: 2.2rem; }
+        input {
+            width: 100%; padding: 12px; margin: 8px 0;
+            border: 1px solid var(--marrom); background: rgba(255,255,255,0.4);
+            font-family: 'Special Elite', serif;
+        }
+
+        .btn-v {
+            width: 100%; padding: 15px; margin-top: 12px;
+            border: 2px solid var(--marrom); background: var(--verde);
+            color: white; cursor: pointer; font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .hidden { display: none; }
+        .campo-container { text-align: left; margin-top: 10px; }
+        .olhinho { cursor: pointer; float: right; margin-top: -38px; margin-right: 10px; font-size: 1.2rem; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-    <main id="app-container">
-        <section id="screen-start" class="screen active">
-            <div class="vintage-box">
-                <h1>TrailQuest</h1>
-                <button class="btn-f" data-nav="screen-login">Fazer Login</button>
-                <button class="btn-f secondary" data-nav="screen-guest">Participante</button>
-            </div>
-        </section>
 
-        <section id="screen-login" class="screen">
-            <div class="vintage-box">
-                <h2>Acesso Mestre</h2>
-                <input type="email" id="login-email" placeholder="E-mail">
-                <input type="password" id="login-pass" placeholder="Senha">
-                <button class="btn-f" id="btn-do-login">Entrar</button>
-                <button class="back-link" data-nav="screen-start">Voltar</button>
-            </div>
-        </section>
+    <div id="app-root"></div>
 
-        <section id="screen-map" class="screen">
-            <div id="map"></div>
-            <div class="map-controls">
-                <button id="btn-add-point" class="btn-circle">+</button>
-                <button id="btn-save-trail" class="btn-f">Salvar</button>
-            </div>
-        </section>
-    </main>
+    <script>
+        /* --- JAVASCRIPT INTEGRADO --- */
+        const App = {
+            root: document.getElementById('app-root'),
 
-    <script type="module" src="js/app.js"></script>
+            telas: {
+                inicio: () => `
+                    <div class="cenario bg-inicio">
+                        <div class="painel-vintage">
+                            <h1>TrailQuest</h1>
+                            <button class="btn-v" onclick="App.navegar('login')">Fazer Login</button>
+                            <button class="btn-v" style="background:#795548" onclick="App.pedirCodigo()">Participante</button>
+                        </div>
+                    </div>`,
+                
+                login: () => `
+                    <div class="cenario bg-inicio">
+                        <div class="painel-vintage">
+                            <h2>Bem-vindos</h2>
+                            <div style="text-align:left">
+                                <label>E-mail</label>
+                                <input type="email">
+                                <label>Senha</label>
+                                <input type="password" id="senha">
+                                <span class="olhinho" onclick="App.verSenha()">👁️</span>
+                            </div>
+                            <button class="btn-v" onclick="App.navegar('menuInicial')">Entrar</button>
+                        </div>
+                    </div>`,
+
+                menuInicial: () => `
+                    <div class="cenario bg-menu">
+                        <div class="painel-vintage">
+                            <button class="btn-v" onclick="App.navegar('mestre')">Organizador</button>
+                            <button class="btn-v" onclick="App.pedirCodigo()">Participante</button>
+                        </div>
+                    </div>`,
+
+                mestre: () => `
+                    <div class="cenario bg-menu">
+                        <div class="painel-vintage">
+                            <h2>Mestre</h2>
+                            <button class="btn-v" onclick="App.navegar('percursos')">Organizar Percursos</button>
+                            <button class="btn-v" onclick="App.navegar('grupos')">Organizar Grupos</button>
+                            <button class="btn-v" style="background:#6d4c41" onclick="App.navegar('menuInicial')">Voltar</button>
+                        </div>
+                    </div>`,
+
+                grupos: () => `
+                    <div class="cenario bg-menu">
+                        <div class="painel-vintage">
+                            <h2>Grupos</h2>
+                            <div class="campo-container">
+                                <label>Número de grupos (≥3):</label>
+                                <input type="number" id="nGrupos" oninput="App.logicaGrupos()">
+                            </div>
+                            <div id="boxPessoas" class="hidden campo-container">
+                                <label>Pessoas por grupo:</label>
+                                <input type="number" id="nPessoas" oninput="App.logicaGrupos()">
+                            </div>
+                            <div id="boxImpar" class="hidden campo-container">
+                                <label>Ajuste Ímpar (±1):</label>
+                                <input type="text" placeholder="Diferença permitida">
+                            </div>
+                            <div id="boxLideres" class="hidden campo-container">
+                                <label>Líderes por grupo:</label>
+                                <input type="number" id="nLideres">
+                            </div>
+                            <button id="btnConfirmar" class="hidden btn-v" onclick="App.navegar('mestre')">Confirmar</button>
+                        </div>
+                    </div>`,
+
+                percursos: () => `
+                    <div class="cenario bg-menu">
+                        <div class="painel-vintage">
+                            <h2>Percursos</h2>
+                            <div class="campo-container">
+                                <label>Objetivos Fixos:</label>
+                                <input type="number" id="fixos" oninput="App.logicaPercurso()">
+                            </div>
+                            <div id="boxMoveis" class="hidden campo-container">
+                                <label>Objetivos Móveis:</label>
+                                <input type="number">
+                                <button class="btn-v" style="background:#ffa000">Configurar Mapas</button>
+                            </div>
+                            <button class="btn-v" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button>
+                        </div>
+                    </div>`
+            },
+
+            navegar(tela) {
+                this.root.innerHTML = this.telas[tela]();
+            },
+
+            pedirCodigo() {
+                const c = prompt("Código de 6 dígitos:");
+                if(c?.length === 6) alert("Acesso Autorizado!");
+            },
+
+            verSenha() {
+                const s = document.getElementById('senha');
+                s.type = s.type === 'password' ? 'text' : 'password';
+            },
+
+            logicaGrupos() {
+                const nG = document.getElementById('nGrupos').value;
+                const nP = document.getElementById('nPessoas').value;
+                if(nG >= 3) document.getElementById('boxPessoas').classList.remove('hidden');
+                if(nP > 0) {
+                    document.getElementById('boxImpar').classList.remove('hidden');
+                    document.getElementById('btnConfirmar').classList.remove('hidden');
+                    const boxL = document.getElementById('boxLideres');
+                    nP == 1 ? boxL.classList.add('hidden') : boxL.classList.remove('hidden');
+                }
+            },
+
+            logicaPercurso() {
+                if(document.getElementById('fixos').value > 0) 
+                    document.getElementById('boxMoveis').classList.remove('hidden');
+            }
+        };
+
+        // Inicialização Garantida
+        window.onload = () => App.navegar('inicio');
+    </script>
 </body>
 </html>
