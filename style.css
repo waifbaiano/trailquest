@@ -1,17 +1,22 @@
-/* Reset e Base */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* 1. RESET E CONFIGURAÇÕES DE BASE */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent;
+}
 
 body, html {
     height: 100%;
     width: 100%;
     background-color: #1a1a1a;
     font-family: 'Special Elite', serif;
-    overflow: hidden;
+    overflow: hidden; /* Impede scroll indesejado no mobile */
 }
 
-/* Sistema de Telas */
+/* 2. SISTEMA DE TELAS CENTRALIZADAS */
 .screen {
-    display: none;
+    display: none; /* Controlado pelo JS */
     width: 100vw;
     height: 100vh;
     position: fixed;
@@ -22,9 +27,10 @@ body, html {
     align-items: center;
     background-size: cover;
     background-position: center;
+    z-index: 1;
 }
 
-/* Imagens de Fundo */
+/* 3. IMAGENS DE FUNDO (FLORESTA E PAPEL) */
 .start-bg {
     background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
                       url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1350&q=80');
@@ -35,22 +41,36 @@ body, html {
                       url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80');
 }
 
-/* A Caixa Vintage (O Formato do Site) */
+/* 4. A CAIXA VINTAGE (O FORMATO DO SITE) */
 .vintage-box {
-    background: rgba(245, 245, 220, 0.95);
+    background: rgba(245, 245, 220, 0.96);
     border: 5px solid #3e2723;
-    padding: 35px 25px;
+    padding: 30px 20px;
     width: 90%;
     max-width: 360px;
     border-radius: 15px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.7);
     text-align: center;
+    position: relative;
+    max-height: 95vh;
+    overflow-y: auto;
 }
 
-.logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.4rem; margin-bottom: 10px; }
-.handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.6rem; margin-bottom: 25px; }
+/* 5. TIPOGRAFIA */
+.logo-font { 
+    font-family: 'Permanent Marker', cursive; 
+    color: #2e7d32; 
+    font-size: 2.3rem; 
+    margin-bottom: 5px; 
+}
 
-/* Textos de Apoio */
+.handwritten { 
+    font-family: 'Satisfy', cursive; 
+    color: #5d4037; 
+    font-size: 1.5rem; 
+    margin-bottom: 20px; 
+}
+
 .label-small {
     font-size: 0.8rem;
     display: block;
@@ -60,52 +80,109 @@ body, html {
     font-weight: bold;
 }
 
-/* Entradas de Dados */
+/* 6. INPUTS E CAMPOS DE TEXTO */
 input {
     width: 100%;
-    padding: 15px;
-    margin-bottom: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
     border: 2px solid #8d6e63;
     border-radius: 8px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-family: 'Special Elite', serif;
     background: #fff;
+    outline: none;
 }
 
-/* Botões */
+input:focus {
+    border-color: #2e7d32;
+}
+
+/* 7. BOTÕES E ESTADOS */
 button {
     width: 100%;
-    padding: 18px;
-    margin-top: 10px;
+    padding: 16px;
+    margin-top: 8px;
     border: none;
     border-radius: 8px;
     font-family: 'Special Elite', serif;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
-.btn-vintage { background: #3e2723; color: #f5f5dc; }
-.btn-vintage-alt { background: #2e7d32; color: white; }
+.btn-vintage { 
+    background: #3e2723; 
+    color: #f5f5dc; 
+}
 
-/* Estados do Botão (Acordado/Inativo) */
-.active-green {
-    background-color: #2e7d32 !important;
-    color: white !important;
-    box-shadow: 0 0 15px rgba(46, 125, 50, 0.4);
+.btn-vintage-alt { 
+    background: #2e7d32; 
+    color: white; 
 }
 
 .btn-inactive {
     background-color: #ccc !important;
     color: #666 !important;
     cursor: not-allowed;
+    box-shadow: none;
+}
+
+.active-green {
+    background-color: #2e7d32 !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.4);
 }
 
 .back-link { 
     background: none; 
     color: #3e2723; 
     text-decoration: underline; 
-    font-size: 0.9rem; 
+    font-size: 0.85rem; 
     margin-top: 15px; 
+    padding: 5px;
+}
+
+/* 8. EDITOR DE MAPA E CANVAS */
+#map-canvas {
+    width: 100%;
+    max-height: 300px;
+    border: 3px solid #3e2723;
+    border-radius: 8px;
+    background-color: #ddd;
+    margin-top: 10px;
+    display: block;
+    object-fit: contain;
+}
+
+/* 9. LISTA DE GRUPOS (SCROLL) */
+#groups-inputs-list {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px dashed #8d6e63;
+    border-radius: 5px;
+}
+
+#groups-inputs-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#groups-inputs-list::-webkit-scrollbar-thumb {
+    background: #3e2723;
+    border-radius: 10px;
+}
+
+.group-name-input {
+    margin-bottom: 8px !important;
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+}
+
+/* 10. AJUSTES PARA TELAS PEQUENAS */
+@media (max-height: 600px) {
+    .vintage-box { padding: 15px; }
+    .logo-font { font-size: 1.8rem; }
+    button { padding: 12px; }
 }

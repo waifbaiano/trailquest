@@ -1,84 +1,35 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <div id="screen-start" class="screen start-bg">
-        <div class="vintage-box">
-            <h1 class="logo-font">TrailQuest</h1>
-            <p class="handwritten">Inicie sua jornada</p>
-            <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
-            <button class="btn-vintage-alt" onclick="showScreen('screen-pin')">Participante</button>
+<div id="screen-groups" class="screen bg-paper">
+    <div class="vintage-box">
+        <h3 class="handwritten">Equipes</h3>
+        <label class="label-small">Número de Grupos:</label>
+        <input type="number" id="group-qty" placeholder="Ex: 4" oninput="checkGroups()">
+        
+        <div id="groups-setup-area" style="display:none; margin-top: 10px;">
+            <p style="font-size: 0.7rem; color: #5d4037;">Defina os nomes das equipes:</p>
+            <div id="groups-inputs-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
+                </div>
         </div>
+        
+        <button id="btn-save-groups" class="btn-inactive" disabled onclick="saveGroupsData()">Confirmar Grupos</button>
+        <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
     </div>
+</div>
 
-    <div id="screen-login" class="screen start-bg">
-        <div class="vintage-box">
-            <h2 class="handwritten">Mestre da Trilha</h2>
-            <input type="email" id="login-email" placeholder="E-mail">
-            <input type="password" id="login-pass" placeholder="Senha">
-            <button class="btn-vintage" onclick="loginMestre()">Entrar</button>
-            <button class="back-link" onclick="sairLogin()">Voltar</button>
+<div id="screen-map-config" class="screen bg-paper">
+    <div class="vintage-box" style="max-width: 95%; width: 95%;">
+        <h3 class="handwritten">Marcar Pontos</h3>
+        
+        <div id="upload-area">
+            <input type="file" id="map-upload" accept="image/*" style="display:none;" onchange="handleMapUpload(event)">
+            <button class="btn-vintage" onclick="document.getElementById('map-upload').click()">Subir Imagem do Mapa</button>
         </div>
-    </div>
 
-    <div id="screen-pin" class="screen start-bg">
-        <div class="vintage-box">
-            <h2 class="handwritten">Código (6 dígitos)</h2>
-            <input type="number" id="input-pin" placeholder="000000" oninput="checkPIN(this.value)">
-            <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
+        <div id="editor-container" style="display:none; position: relative; margin-top: 10px;">
+            <canvas id="map-canvas" style="width: 100%; border: 2px solid #3e2723; border-radius: 5px; cursor: crosshair;"></canvas>
+            <p style="font-size: 0.7rem; margin-top: 5px;">Toque no mapa para marcar os <span id="points-needed">0</span> pontos.</p>
         </div>
-    </div>
 
-    <div id="screen-main-menu" class="screen bg-paper">
-        <div class="vintage-box">
-            <h2 class="logo-font">Menu Mestre</h2>
-            <button class="btn-vintage" onclick="showScreen('screen-objectives')">Objetivos</button>
-            <button class="btn-vintage" onclick="showScreen('screen-groups')">Grupos</button>
-            <button class="back-link" onclick="showScreen('screen-start')">Sair</button>
-        </div>
+        <button id="btn-save-map" class="btn-inactive" disabled onclick="saveMapPoints()">Salvar Coordenadas</button>
+        <button class="back-link" onclick="showScreen('screen-objectives')">Cancelar</button>
     </div>
-
-    <div id="screen-objectives" class="screen bg-paper">
-        <div class="vintage-box">
-            <h3 class="handwritten">Missão</h3>
-            <label class="label-small">Qtd. Objetivos Fixos:</label>
-            <input type="number" id="fixed-count" placeholder="0" oninput="checkObjectives()">
-            
-            <label class="label-small">Qtd. Objetivos Móveis:</label>
-            <input type="number" id="mobile-count" placeholder="0">
-            
-            <button id="btn-map" class="btn-inactive" disabled onclick="showScreen('screen-map-config')">Configurar Mapa</button>
-            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
-        </div>
-    </div>
-
-    <div id="screen-groups" class="screen bg-paper">
-        <div class="vintage-box">
-            <h3 class="handwritten">Equipes</h3>
-            <label class="label-small">Número de Grupos:</label>
-            <input type="number" id="group-qty" placeholder="Ex: 4" oninput="checkGroups()">
-            
-            <button id="btn-save-groups" class="btn-inactive" disabled onclick="alert('Grupos Salvos!')">Confirmar Grupos</button>
-            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
-        </div>
-    </div>
-
-    <div id="screen-map-config" class="screen bg-paper">
-        <div class="vintage-box">
-            <h3 class="handwritten">O Mapa</h3>
-            <p style="font-size: 0.8rem; margin-bottom: 15px;">Suba a imagem da trilha para marcar os pontos.</p>
-            <button class="btn-vintage" onclick="alert('Selecione o arquivo JPG/PNG')">Escolher Imagem</button>
-            <button class="back-link" onclick="showScreen('screen-objectives')">Voltar</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+</div>
