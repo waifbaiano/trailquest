@@ -33,7 +33,15 @@
             overflow: hidden;
         }
         .dropdown-menu button { background: none; color: #3e2723; padding: 12px; width: 100%; border: none; font-size: 0.9rem; cursor: pointer; text-align: left; font-family: 'Special Elite'; }
-        .dropdown-menu .btn-exit { color: #d32f2f; font-size: 0.75rem; border-top: 1px solid #ccc; }
+        
+        /* BOTÃO SAIR PEQUENO E VERMELHO */
+        .dropdown-menu .btn-exit { 
+            color: #d32f2f; 
+            font-size: 0.7rem; 
+            border-top: 1px solid rgba(62, 39, 35, 0.2); 
+            text-align: center;
+            font-weight: bold;
+        }
 
         .screen {
             display: none; width: 100vw; height: 100vh;
@@ -112,7 +120,7 @@
     <div id="screen-pin" class="screen start-bg">
         <div class="vintage-box">
             <h2 class="handwritten">Código da Trilha</h2>
-            <input type="number" id="input-pin" placeholder="000000" oninput="checkPIN(this.value)">
+            <input type="number" id="input-pin" placeholder="PIN">
             <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
         </div>
     </div>
@@ -130,9 +138,9 @@
         <div class="vintage-box">
             <h3 class="handwritten">Missão</h3>
             <label class="label-small">Qtd. Objetivos Fixos:</label>
-            <input type="number" id="fixed-count" placeholder="0" oninput="checkObjectives()">
+            <input type="number" id="fixed-count" placeholder="">
             <label class="label-small">Qtd. Objetivos Móveis:</label>
-            <input type="number" id="mobile-count" placeholder="0" oninput="checkObjectives()">
+            <input type="number" id="mobile-count" placeholder="" oninput="checkObjectives()">
             <button id="btn-map" class="btn-inactive" disabled onclick="showScreen('screen-map-config')">Configurar Mapa</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
@@ -142,17 +150,17 @@
         <div class="vintage-box">
             <h3 class="handwritten">Equipes</h3>
             <label class="label-small">Número de Grupos:</label>
-            <input type="number" id="group-qty" placeholder="Ex: 4" oninput="logicGroups()">
+            <input type="number" id="group-qty" placeholder="" oninput="logicGroups()">
 
             <div id="area-people" style="display:none; margin-top:10px;">
                 <label class="label-small">Número de pessoas por grupo:</label>
-                <input type="number" id="people-1" placeholder="Campo 1" oninput="logicPeopleHierarchy()">
-                <input type="number" id="people-2" placeholder="Campo 2" style="display:none;" oninput="logicPeopleHierarchy()">
+                <input type="number" id="people-1" placeholder="" oninput="logicPeopleHierarchy()">
+                <input type="number" id="people-2" placeholder="" style="display:none;" oninput="logicPeopleHierarchy()">
             </div>
 
             <div id="area-leaders" style="display:none; margin-top:10px;">
                 <label class="label-small">Número de líderes por grupo:</label>
-                <input type="number" id="leaders-qty" placeholder="Ex: 1" oninput="validateFinalGroups()">
+                <input type="number" id="leaders-qty" placeholder="" oninput="validateFinalGroups()">
             </div>
 
             <button id="btn-save-groups" class="btn-inactive" disabled onclick="saveGroupsFinal()">Confirmar Equipes</button>
@@ -183,7 +191,7 @@
         <div class="vintage-box">
             <h3 class="handwritten">Objetivo Móvel</h3>
             <p style="font-size:0.8rem; margin-bottom:15px;">Registre o código do participante especial:</p>
-            <input type="number" id="input-mobile-pin" placeholder="Código Especial">
+            <input type="number" id="input-mobile-pin" placeholder="PIN Especial">
             <button class="btn-vintage-alt" onclick="confirmMobilePin()">Registrar</button>
             <button class="back-link" onclick="skipMobilePin()">Pular Registro</button>
         </div>
@@ -228,15 +236,32 @@
         function checkObjectives() {
             const fixed = document.getElementById('fixed-count').value;
             const btn = document.getElementById('btn-map');
-            btn.disabled = fixed <= 0;
-            btn.className = fixed > 0 ? 'btn-vintage-alt active-green' : 'btn-inactive';
+            btn.disabled = !fixed || fixed <= 0;
+            btn.className = (fixed > 0) ? 'btn-vintage-alt active-green' : 'btn-inactive';
             checkGlobalReady();
         }
 
-        // --- LÓGICA DE GRUPOS HIERÁRQUICA ---
+        // --- LÓGICA DE GRUPOS (COM RESET E LIMPEZA) ---
         function logicGroups() {
-            const qty = parseInt(document.getElementById('group-qty').value);
-            document.getElementById('area-people').style.display = qty >= 3 ? 'block' : 'none';
+            const qtyField = document.getElementById('group-qty');
+            const qty = parseInt(qtyField.value);
+            const areaPeople = document.getElementById('area-people');
+            const areaLeaders = document.getElementById('area-leaders');
+            const p1 = document.getElementById('people-1');
+            const p2 = document.getElementById('people-2');
+            const ldr = document.getElementById('leaders-qty');
+
+            if(qty >= 3) {
+                areaPeople.style.display = 'block';
+            } else {
+                // RESET TOTAL se o número de grupos for apagado ou < 3
+                areaPeople.style.display = 'none';
+                areaLeaders.style.display = 'none';
+                p1.value = "";
+                p2.value = "";
+                p2.style.display = 'none';
+                ldr.value = "";
+            }
             validateFinalGroups();
         }
 
@@ -244,26 +269,27 @@
             const p1 = document.getElementById('people-1');
             const p2 = document.getElementById('people-2');
             const areaLeaders = document.getElementById('area-leaders');
+            const ldr = document.getElementById('leaders-qty');
             
-            // Aparece campo 2 se o campo 1 for preenchido
             p2.style.display = p1.value.length > 0 ? 'block' : 'none';
 
-            // Aparece líderes se um dos campos for >= 2
+            // Se as pessoas forem apagadas, esconde os líderes e limpa o valor deles
             if ((p1.value && parseInt(p1.value) >= 2) || (p2.value && parseInt(p2.value) >= 2)) {
                 areaLeaders.style.display = 'block';
             } else {
                 areaLeaders.style.display = 'none';
+                ldr.value = ""; 
             }
             validateFinalGroups();
         }
 
         function validateFinalGroups() {
             const qty = document.getElementById('group-qty').value;
-            const leaders = document.getElementById('leaders-qty').value;
+            const ldr = document.getElementById('leaders-qty');
             const leadersVisible = document.getElementById('area-leaders').style.display === 'block';
             const btn = document.getElementById('btn-save-groups');
 
-            if (qty >= 3 && leadersVisible && leaders > 0) {
+            if (qty >= 3 && leadersVisible && ldr.value > 0) {
                 btn.disabled = false;
                 btn.className = 'btn-vintage-alt active-green';
             } else {
@@ -290,6 +316,9 @@
             if(mapReady && groupsReady) {
                 btn.disabled = false;
                 btn.className = 'btn-vintage-alt active-green';
+            } else {
+                btn.disabled = true;
+                btn.className = 'btn-inactive';
             }
         }
 
@@ -312,7 +341,7 @@
             showScreen('screen-final-pin');
         }
 
-        // --- MAPA (MANTIDO) ---
+        // --- MAPA ---
         function handleMapUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -360,8 +389,6 @@
                 layer.appendChild(div);
             });
         }
-
-        function checkPIN(v) { if(v === "123456") alert("Sucesso!"); }
     </script>
 </body>
 </html>
