@@ -3,14 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest - Corrida de Orientação</title>
-    
+    <title>TrailQuest - Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
-    
-    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 
@@ -19,37 +14,57 @@
             <h1 class="logo-font">TrailQuest</h1>
             <p class="handwritten">Sua aventura começa aqui</p>
             <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
-            <button class="btn-vintage-alt" onclick="startQRScanner()">Participante</button>
+            <button class="btn-vintage-alt" onclick="showScreen('screen-pin-entry')">Participante</button>
         </div>
     </div>
 
     <div id="screen-login" class="screen start-bg">
         <div class="vintage-box">
             <h2 class="handwritten">Identifique-se</h2>
-            <input type="email" id="login-email" class="input-large" placeholder="E-mail do Explorador">
-            <input type="password" id="login-pass" class="input-large" placeholder="Senha Secreta">
+            <input type="email" id="login-email" class="input-large" placeholder="E-mail">
+            <input type="password" id="login-pass" class="input-large" placeholder="Senha">
             <button class="btn-vintage" onclick="loginAs('organizador')">Entrar</button>
             <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
         </div>
     </div>
 
-    <div id="screen-qr-reader" class="screen" style="background: #1a1a1a;">
+    <div id="screen-pin-entry" class="screen start-bg">
         <div class="vintage-box">
-            <h2 class="handwritten">Escaneie o Mapa</h2>
-            <div id="reader" style="width: 100%; border-radius: 10px; overflow: hidden;"></div>
-            <button class="btn-vintage" style="background: #b71c1c; margin-top: 20px;" onclick="stopQRScanner()">Cancelar</button>
+            <h2 class="handwritten">Código da Trilha</h2>
+            <p style="margin-bottom: 10px; font-size: 0.8rem;">Insira o código de 6 dígitos</p>
+            <input type="number" id="input-pin" class="input-large" placeholder="000000" 
+                   style="text-align: center; letter-spacing: 5px; font-size: 1.8rem;" 
+                   oninput="if(this.value.length > 6) this.value = this.value.slice(0,6);">
+            <button class="btn-vintage-alt" onclick="validatePIN()">Acessar Mapa</button>
+            <button class="back-link" onclick="showScreen('screen-start')">Voltar</button>
         </div>
     </div>
 
     <div id="screen-main-menu" class="screen bg-paper">
         <div class="vintage-box">
             <h2 class="logo-font">Menu Mestre</h2>
-            <button class="btn-vintage" onclick="alert('Em desenvolvimento')">Escolher Objetivos</button>
-            <button class="btn-vintage" onclick="alert('Em desenvolvimento')">Organizar Grupos</button>
+            <button class="btn-vintage" onclick="showScreen('screen-config-objectives')">Configurar Objetivos</button>
+            <button class="btn-vintage" onclick="showScreen('screen-config-groups')">Organizar Grupos</button>
+            <button id="btn-start-trail" class="btn-vintage-alt" onclick="showScreen('screen-admin-dashboard')">Gerenciar Trilha Ativa</button>
             <button class="back-link" onclick="showScreen('screen-start')">Sair</button>
+        </div>
+    </div>
+
+    <div id="screen-admin-dashboard" class="screen bg-paper">
+        <div class="vintage-box">
+            <h2 class="handwritten">Trilha em Curso</h2>
+            <div class="status-panel">
+                <p><strong>PIN Ativo:</strong> <span id="display-pin">654321</span></p>
+                <p><strong>Grupos Prontos:</strong> 0 / 4</p>
+            </div>
+            <hr style="margin: 15px 0; border: 1px dashed #3e2723;">
+            <button class="btn-vintage-alt" style="background: #2e7d32;" onclick="alert('Trilha Iniciada!')">LIBERAR LARGADA</button>
+            <button class="btn-vintage" style="background: #b71c1c;" onclick="alert('Trilha Encerrada')">ENCERRAR TUDO</button>
+            <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar ao Menu</button>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
+

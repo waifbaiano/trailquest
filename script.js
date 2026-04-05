@@ -1,6 +1,3 @@
-let html5QrCode;
-
-// Função Navegação
 function showScreen(id) {
     const screens = document.querySelectorAll('.screen');
     screens.forEach(s => s.style.display = 'none');
@@ -8,61 +5,43 @@ function showScreen(id) {
     const target = document.getElementById(id);
     if (target) {
         target.style.display = 'flex';
-        // Limpa campos ao voltar para telas iniciais
-        if (id === 'screen-start' || id === 'screen-login') {
-            const email = document.getElementById('login-email');
-            const pass = document.getElementById('login-pass');
-            if(email) email.value = "";
-            if(pass) pass.value = "";
-        }
+        
+        // Reset de campos ao entrar nas telas
+        if (id === 'screen-pin-entry') document.getElementById('input-pin').value = "";
     }
 }
 
 // Lógica de Login
 function loginAs(role) {
     const email = document.getElementById('login-email').value;
-    if (email.trim() === "") {
-        alert("Digite seu e-mail de explorador.");
+    const pass = document.getElementById('login-pass').value;
+
+    if (email.trim() === "" || pass.trim() === "") {
+        alert("Preencha as credenciais de Mestre.");
         return;
     }
     showScreen('screen-main-menu');
 }
 
-// Lógica da Câmera (QR Code)
-async function startQRScanner() {
-    showScreen('screen-qr-reader');
-    
-    // Delay para garantir que a div "reader" está pronta
-    setTimeout(async () => {
-        try {
-            html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            
-            await html5QrCode.start(
-                { facingMode: "environment" }, 
-                config,
-                (decodedText) => {
-                    alert("Código encontrado: " + decodedText);
-                    stopQRScanner();
-                }
-            );
-        } catch (err) {
-            alert("Câmera não disponível. Verifique as permissões do navegador.");
-            showScreen('screen-start');
-        }
-    }, 500);
-}
+// Validação do PIN de 6 Dígitos
+function validatePIN() {
+    const pin = document.getElementById('input-pin').value;
+    const PIN_CORRETO = "654321"; // Exemplo de PIN para teste
 
-function stopQRScanner() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            html5QrCode = null;
-            showScreen('screen-start');
-        }).catch(() => showScreen('screen-start'));
+    if (pin.length !== 6) {
+        alert("O código deve ter exatamente 6 dígitos.");
+        return;
+    }
+
+    if (pin === PIN_CORRETO) {
+        alert("Acesso Autorizado! Localizando equipe...");
+        // Futuro: showScreen('screen-player-map');
+    } else {
+        alert("Código inválido.");
+        document.getElementById('input-pin').value = "";
     }
 }
 
-// Inicia na tela inicial
 window.onload = () => {
     showScreen('screen-start');
 };
