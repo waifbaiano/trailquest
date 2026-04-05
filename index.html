@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest Pro</title>
+    <title>TrailQuest - Vintage Edition</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -11,65 +14,48 @@
 <body>
 
     <div id="screen-start" class="screen start-bg">
-        <div class="box overlay-box">
-            <h1>TrailQuest</h1>
-            <button class="btn-main" onclick="showScreen('screen-login')">Fazer Login</button>
-            <button class="btn-sec" onclick="startQRScanner()">Continuar como Participante</button>
+        <div class="box vintage-box">
+            <h1 class="logo-font">TrailQuest</h1>
+            <p class="handwritten">A aventura começa aqui...</p>
+            <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
+            <button class="btn-vintage-alt" onclick="startQRScanner()">Continuar como Participante</button>
         </div>
     </div>
 
-    <div id="screen-login" class="screen">
-        <div class="box">
-            <h2>Acesse sua conta</h2>
-            <input type="email" id="login-email" placeholder="E-mail">
-            <input type="password" id="login-pass" placeholder="Senha">
-            <div class="role-selection">
-                <button onclick="loginAs('organizador')">Entrar como Organizador</button>
-                <button onclick="loginAs('participante')">Entrar como Participante</button>
-            </div>
-            <button class="back" onclick="showScreen('screen-start')">Voltar</button>
+    <div id="screen-login" class="screen start-bg">
+        <div class="box vintage-box">
+            <h2 class="handwritten">Identifique-se</h2>
+            <input type="email" id="login-email" placeholder="E-mail do Explorador">
+            <input type="password" id="login-pass" placeholder="Senha Secreta">
+            <button class="btn-vintage" onclick="showScreen('screen-role-choice')">Entrar</button>
+            <button class="back-link" onclick="showScreen('screen-start')">Voltar ao Início</button>
         </div>
     </div>
 
-    <div id="screen-main-menu" class="screen" style="display:none;">
-        <div class="box">
-            <h2>Menu Organizador</h2>
+    <div id="screen-role-choice" class="screen start-bg">
+        <div class="box vintage-box">
+            <h2 class="handwritten">Qual seu papel hoje?</h2>
+            <button class="btn-vintage" onclick="showScreen('screen-main-menu')">Organizador</button>
+            <button class="btn-vintage" onclick="startQRScanner()">Participante</button>
+        </div>
+    </div>
+
+    <div id="screen-main-menu" class="screen bg-paper">
+        <div class="box vintage-box">
+            <h2 class="logo-font">Menu Mestre</h2>
             <button id="nav-objectives" onclick="showScreen('screen-objectives')">Escolher Objetivos</button>
             <button id="nav-groups" onclick="showScreen('screen-groups')">Organizar Grupos</button>
-            <button id="btn-proceed" class="btn-disabled" onclick="showFinalQR()" disabled>Prosseguir para o Jogo</button>
-            <button class="back" onclick="showScreen('screen-start')">Sair</button>
+            <button id="btn-proceed" class="locked" disabled>Prosseguir para o Jogo</button>
+            <button class="back-link" onclick="showScreen('screen-start')">Sair</button>
         </div>
     </div>
 
-    <div id="screen-objectives" class="screen" style="display:none;">
-        <div class="box">
-            <h3>Objetivos</h3>
-            <label>Qtd. Objetivos Fixos (Obrigatório):</label>
-            <input type="number" id="fixed-obj" oninput="validateObjectives()">
-            
-            <label>Qtd. Objetivos Móveis:</label>
-            <input type="number" id="mobile-obj">
-            
-            <button id="btn-config-map" class="btn-inactive" onclick="startMapEditor()" disabled>Configurar Mapa</button>
-            <button class="back" onclick="showScreen('screen-main-menu')">Voltar</button>
-        </div>
-    </div>
-
-    <div id="screen-qr-reader" class="screen" style="display:none;">
-        <div class="box">
-            <h3>Escaneie o QR Code</h3>
+    <div id="screen-qr-reader" class="screen bg-dark">
+        <div class="box vintage-box">
+            <h2 class="handwritten">Buscando Sinal...</h2>
             <div id="reader"></div>
-            <button class="back" onclick="stopQRScanner()">Cancelar</button>
+            <button class="btn-vintage-alt" onclick="stopQRScanner()">Cancelar</button>
         </div>
-    </div>
-
-    <div id="screen-map-editor" class="screen" style="display:none;">
-        <header>
-            <span id="obj-counter">Pontos: 0 / 0</span>
-            <button onclick="saveMap()">Finalizar Edição</button>
-            <input type="file" id="map-upload" accept="image/*">
-        </header>
-        <div id="map"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
