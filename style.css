@@ -1,30 +1,93 @@
-/* ... (mantenha o que já tínhamos e adicione/atualize abaixo) ... */
+/* Reset total para evitar quebras */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-.status-panel {
-    background: rgba(255, 255, 255, 0.5);
+body, html {
+    height: 100%;
+    width: 100%;
+    background-color: #1a1a1a;
+    font-family: 'Special Elite', serif;
+    overflow: hidden; /* Evita que a tela role para os lados */
+}
+
+/* Base das Telas */
+.screen {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    flex-direction: column;
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center;     /* Centraliza horizontalmente */
+    background-size: cover;
+    background-position: center;
+}
+
+/* Imagens de Fundo */
+.start-bg {
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                      url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1350&q=80');
+}
+
+.bg-paper {
+    background-image: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), 
+                      url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80');
+}
+
+/* A CAIXA (O Formato que você quer) */
+.vintage-box {
+    background: rgba(245, 245, 220, 0.95);
+    border: 5px solid #3e2723;
+    padding: 35px 25px;
+    width: 90%;
+    max-width: 360px; /* Mantém o formato de cartão */
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    text-align: center;
+}
+
+.logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.4rem; margin-bottom: 10px; }
+.handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.6rem; margin-bottom: 25px; }
+
+/* Inputs e Botões */
+input {
+    width: 100%;
     padding: 15px;
-    border-radius: 8px;
-    text-align: left;
-    border: 1px solid #8d6e63;
     margin-bottom: 15px;
+    border: 2px solid #8d6e63;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-family: 'Special Elite', serif;
 }
 
-.status-panel p {
-    font-size: 0.9rem;
-    margin: 5px 0;
-    color: #3e2723;
-}
-
-#display-pin {
+button {
+    width: 100%;
+    padding: 18px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Special Elite', serif;
     font-weight: bold;
-    font-size: 1.2rem;
-    color: #2e7d32;
-    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
 }
 
-/* Garante que o input de PIN não mostre setas de número */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.btn-vintage { background: #3e2723; color: #f5f5dc; }
+.btn-vintage-alt { background: #2e7d32; color: white; }
+
+/* O BOTÃO VERDE (Acordado) */
+.active-green {
+    background-color: #2e7d32 !important;
+    color: white !important;
+    box-shadow: 0 0 15px rgba(46, 125, 50, 0.4);
 }
+
+.btn-inactive {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed;
+}
+
+.back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.9rem; margin-top: 15px; }
+

@@ -5,40 +5,34 @@ function showScreen(id) {
     const target = document.getElementById(id);
     if (target) {
         target.style.display = 'flex';
-        
-        // Reset de campos ao entrar nas telas
-        if (id === 'screen-pin-entry') document.getElementById('input-pin').value = "";
     }
 }
 
-// Lógica de Login
-function loginAs(role) {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-
-    if (email.trim() === "" || pass.trim() === "") {
-        alert("Preencha as credenciais de Mestre.");
-        return;
-    }
-    showScreen('screen-main-menu');
-}
-
-// Validação do PIN de 6 Dígitos
-function validatePIN() {
-    const pin = document.getElementById('input-pin').value;
-    const PIN_CORRETO = "654321"; // Exemplo de PIN para teste
-
-    if (pin.length !== 6) {
-        alert("O código deve ter exatamente 6 dígitos.");
-        return;
-    }
-
-    if (pin === PIN_CORRETO) {
-        alert("Acesso Autorizado! Localizando equipe...");
-        // Futuro: showScreen('screen-player-map');
+// Verifica se o Organizador preencheu os objetivos para o botão "acordar"
+function checkObjectives() {
+    const val = document.getElementById('fixed-count').value;
+    const btn = document.getElementById('btn-map');
+    
+    if (val > 0) {
+        btn.disabled = false;
+        btn.classList.remove('btn-inactive');
+        btn.classList.add('active-green');
     } else {
-        alert("Código inválido.");
-        document.getElementById('input-pin').value = "";
+        btn.disabled = true;
+        btn.classList.add('btn-inactive');
+        btn.classList.remove('active-green');
+    }
+}
+
+// PIN de 6 dígitos
+function checkPIN(val) {
+    if (val.length === 6) {
+        if (val === "123456") {
+            alert("Código de Trilha Aceito!");
+        } else {
+            alert("Código Inválido");
+            document.getElementById('input-pin').value = "";
+        }
     }
 }
 
