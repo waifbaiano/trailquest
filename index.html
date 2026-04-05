@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest Pro - Reset</title>
-    <link href="https://fonts.googleapis.com/css2?family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
+    <title>TrailQuest Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Special+Elite&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CSS INTEGRADO --- */
         :root {
             --verde: #2e7d32;
             --marrom: #3e2723;
-            --creme: rgba(255, 253, 231, 0.96);
+            --creme-bg: #f5f5dc;
+            --creme-painel: rgba(255, 253, 231, 0.96);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; overflow: hidden; background: #1a1a1a; }
+
+        .fonte-manuscrita { font-family: 'Dancing Script', cursive; }
+        .fonte-forte { font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
 
         .cenario {
             width: 100vw; height: 100vh;
@@ -23,39 +26,47 @@
             transition: background 0.8s ease-in-out;
         }
 
-        /* Imagens Vintage de Floresta */
         .bg-inicio { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
         .bg-menu { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000'); }
 
         .painel-vintage {
-            background: var(--creme);
+            background: var(--creme-painel);
             border: 3px solid var(--marrom);
             padding: 25px; border-radius: 5px;
             width: 85%; max-width: 380px;
             box-shadow: 8px 8px 0px var(--marrom);
             text-align: center;
-            animation: fadeIn 0.5s ease;
         }
 
-        h1, h2 { font-family: 'Satisfy', cursive; color: var(--verde); margin-bottom: 15px; font-size: 2.2rem; }
+        .painel-bege { background: var(--creme-bg) !important; }
+
+        h1, h2 { color: var(--verde); margin-bottom: 15px; font-size: 2.8rem; line-height: 1; }
+        
         input {
             width: 100%; padding: 12px; margin: 8px 0;
             border: 1px solid var(--marrom); background: rgba(255,255,255,0.4);
-            font-family: 'Special Elite', serif;
+            font-family: 'Special Elite', serif; text-align: center; font-size: 1rem;
         }
 
         .btn-v {
             width: 100%; padding: 15px; margin-top: 12px;
             border: 2px solid var(--marrom); background: var(--verde);
             color: white; cursor: pointer; font-weight: bold;
-            text-transform: uppercase;
+            text-transform: uppercase; transition: all 0.3s;
+        }
+
+        .btn-desativado {
+            background: rgba(0,0,0,0.1) !important;
+            color: rgba(0,0,0,0.3) !important;
+            border-color: rgba(0,0,0,0.1) !important;
+            cursor: not-allowed;
         }
 
         .hidden { display: none; }
         .campo-container { text-align: left; margin-top: 10px; }
         .olhinho { cursor: pointer; float: right; margin-top: -38px; margin-right: 10px; font-size: 1.2rem; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        label { font-size: 0.9rem; color: var(--marrom); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -63,91 +74,101 @@
     <div id="app-root"></div>
 
     <script>
-        /* --- JAVASCRIPT INTEGRADO --- */
         const App = {
             root: document.getElementById('app-root'),
+            usuarioLogado: false, // Controle de navegação
 
             telas: {
                 inicio: () => `
                     <div class="cenario bg-inicio">
                         <div class="painel-vintage">
-                            <h1>TrailQuest</h1>
-                            <button class="btn-v" onclick="App.navegar('login')">Fazer Login</button>
-                            <button class="btn-v" style="background:#795548" onclick="App.pedirCodigo()">Participante</button>
+                            <h1 class="fonte-manuscrita">TrailQuest</h1>
+                            <button class="btn-v fonte-forte" onclick="App.navegar('login')">Fazer Login</button>
+                            <button class="btn-v fonte-forte" style="background:#795548" onclick="App.navegar('participanteAcesso')">Continuar como Participante</button>
                         </div>
                     </div>`,
                 
+                participanteAcesso: () => `
+                    <div class="cenario bg-inicio">
+                        <div class="painel-vintage painel-bege">
+                            <h2 class="fonte-manuscrita" style="font-size:2.2rem">Código de Acesso</h2>
+                            <input type="text" id="codInput" maxlength="6" oninput="App.validarCodigo(this)">
+                            <button id="btnContinuar" class="btn-v btn-desativado fonte-forte" onclick="App.confirmarAcesso()">Continuar</button>
+                            <button class="btn-v fonte-forte" style="background:transparent; color:var(--marrom); border:none; font-size:0.7rem" 
+                                onclick="App.navegar(App.usuarioLogado ? 'menuInicial' : 'inicio')">Voltar</button>
+                        </div>
+                    </div>`,
+
                 login: () => `
                     <div class="cenario bg-inicio">
                         <div class="painel-vintage">
-                            <h2>Bem-vindos</h2>
+                            <h2 class="fonte-manuscrita">Bem-vindos</h2>
                             <div style="text-align:left">
-                                <label>E-mail</label>
+                                <label class="fonte-forte">E-mail</label>
                                 <input type="email">
-                                <label>Senha</label>
+                                <label class="fonte-forte">Senha</label>
                                 <input type="password" id="senha">
                                 <span class="olhinho" onclick="App.verSenha()">👁️</span>
                             </div>
-                            <button class="btn-v" onclick="App.navegar('menuInicial')">Entrar</button>
+                            <button class="btn-v fonte-forte" onclick="App.fazerLogin()">Entrar</button>
                         </div>
                     </div>`,
 
                 menuInicial: () => `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
-                            <button class="btn-v" onclick="App.navegar('mestre')">Organizador</button>
-                            <button class="btn-v" onclick="App.pedirCodigo()">Participante</button>
+                            <button class="btn-v fonte-forte" onclick="App.navegar('mestre')">Organizador</button>
+                            <button class="btn-v fonte-forte" onclick="App.navegar('participanteAcesso')">Participante</button>
                         </div>
                     </div>`,
 
                 mestre: () => `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
-                            <h2>Mestre</h2>
-                            <button class="btn-v" onclick="App.navegar('percursos')">Organizar Percursos</button>
-                            <button class="btn-v" onclick="App.navegar('grupos')">Organizar Grupos</button>
-                            <button class="btn-v" style="background:#6d4c41" onclick="App.navegar('menuInicial')">Voltar</button>
+                            <h2 class="fonte-manuscrita">Mestre</h2>
+                            <button class="btn-v fonte-forte" onclick="App.navegar('percursos')">Organizar Percursos</button>
+                            <button class="btn-v fonte-forte" onclick="App.navegar('grupos')">Organizar Grupos</button>
+                            <button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('menuInicial')">Voltar</button>
                         </div>
                     </div>`,
 
                 grupos: () => `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
-                            <h2>Grupos</h2>
+                            <h2 class="fonte-manuscrita" style="font-size:2.2rem">Grupos</h2>
                             <div class="campo-container">
-                                <label>Número de grupos (≥3):</label>
+                                <label class="fonte-forte">Número de grupos:</label>
                                 <input type="number" id="nGrupos" oninput="App.logicaGrupos()">
                             </div>
                             <div id="boxPessoas" class="hidden campo-container">
-                                <label>Pessoas por grupo:</label>
+                                <label class="fonte-forte">Pessoas por grupo:</label>
                                 <input type="number" id="nPessoas" oninput="App.logicaGrupos()">
                             </div>
                             <div id="boxImpar" class="hidden campo-container">
-                                <label>Ajuste Ímpar (±1):</label>
-                                <input type="text" placeholder="Diferença permitida">
+                                <input type="text" placeholder="">
                             </div>
                             <div id="boxLideres" class="hidden campo-container">
-                                <label>Líderes por grupo:</label>
+                                <label class="fonte-forte">Líderes por grupo:</label>
                                 <input type="number" id="nLideres">
                             </div>
-                            <button id="btnConfirmar" class="hidden btn-v" onclick="App.navegar('mestre')">Confirmar</button>
+                            <button id="btnConfirmar" class="hidden btn-v fonte-forte" onclick="App.navegar('mestre')">Confirmar</button>
                         </div>
                     </div>`,
 
                 percursos: () => `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
-                            <h2>Percursos</h2>
+                            <h2 class="fonte-manuscrita" style="font-size:2.2rem">Percursos</h2>
                             <div class="campo-container">
-                                <label>Objetivos Fixos:</label>
+                                <label class="fonte-forte">Objetivos Fixos:</label>
                                 <input type="number" id="fixos" oninput="App.logicaPercurso()">
                             </div>
                             <div id="boxMoveis" class="hidden campo-container">
-                                <label>Objetivos Móveis:</label>
-                                <input type="number">
-                                <button class="btn-v" style="background:#ffa000">Configurar Mapas</button>
+                                <label class="fonte-forte">Objetivos Móveis:</label>
+                                <input type="number" id="moveis">
+                                <button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.iniciarConfigMapa()">Configurar Mapas</button>
                             </div>
-                            <button class="btn-v" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button>
+                            <button class="btn-v fonte-forte" style="background:#6d4c41; margin-top:20px" onclick="App.navegar('mestre')">Voltar</button>
                         </div>
                     </div>`
             },
@@ -156,9 +177,26 @@
                 this.root.innerHTML = this.telas[tela]();
             },
 
-            pedirCodigo() {
-                const c = prompt("Código de 6 dígitos:");
-                if(c?.length === 6) alert("Acesso Autorizado!");
+            fazerLogin() {
+                this.usuarioLogado = true;
+                this.navegar('menuInicial');
+            },
+
+            validarCodigo(input) {
+                const btn = document.getElementById('btnContinuar');
+                if (input.value.length === 6) {
+                    btn.classList.remove('btn-desativado');
+                    btn.style.background = "var(--verde)";
+                } else {
+                    btn.classList.add('btn-desativado');
+                    btn.style.background = "rgba(0,0,0,0.1)";
+                }
+            },
+
+            confirmarAcesso() {
+                if (!document.getElementById('btnContinuar').classList.contains('btn-desativado')) {
+                    alert("Acesso Autorizado à Trilha!");
+                }
             },
 
             verSenha() {
@@ -169,22 +207,34 @@
             logicaGrupos() {
                 const nG = document.getElementById('nGrupos').value;
                 const nP = document.getElementById('nPessoas').value;
-                if(nG >= 3) document.getElementById('boxPessoas').classList.remove('hidden');
+                if(nG > 0) document.getElementById('boxPessoas').classList.remove('hidden');
+                else document.getElementById('boxPessoas').classList.add('hidden');
+
                 if(nP > 0) {
                     document.getElementById('boxImpar').classList.remove('hidden');
                     document.getElementById('btnConfirmar').classList.remove('hidden');
                     const boxL = document.getElementById('boxLideres');
                     nP == 1 ? boxL.classList.add('hidden') : boxL.classList.remove('hidden');
+                } else {
+                    document.getElementById('boxImpar').classList.add('hidden');
+                    document.getElementById('btnConfirmar').classList.add('hidden');
+                    document.getElementById('boxLideres').classList.add('hidden');
                 }
             },
 
             logicaPercurso() {
-                if(document.getElementById('fixos').value > 0) 
-                    document.getElementById('boxMoveis').classList.remove('hidden');
+                const f = document.getElementById('fixos').value;
+                const boxM = document.getElementById('boxMoveis');
+                if(f && f > 0) boxM.classList.remove('hidden');
+                else boxM.classList.add('hidden');
+            },
+
+            iniciarConfigMapa() {
+                alert("Prepare-se: Vamos abrir o motor de mapas agora!");
+                // Próximo passo: integrar Leaflet aqui
             }
         };
 
-        // Inicialização Garantida
         window.onload = () => App.navegar('inicio');
     </script>
 </body>
