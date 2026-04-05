@@ -5,14 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TrailQuest Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Satisfy&family=Special+Elite&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* CSS INTEGRADO - EVITA ERRO DE FICHEIRO NÃO ENCONTRADO */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body, html {
+            height: 100%; width: 100%;
+            background-color: #1a1a1a;
+            font-family: 'Special Elite', serif;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            width: 100vw; height: 100vh;
+            position: fixed; top: 0; left: 0;
+            flex-direction: column; justify-content: center; align-items: center;
+            background-size: cover; background-position: center;
+        }
+
+        .start-bg { background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1350'); }
+        .bg-paper { background-image: linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1350'); }
+
+        .vintage-box {
+            background: rgba(245, 245, 220, 0.98);
+            border: 5px solid #3e2723;
+            padding: 25px; width: 90%; max-width: 360px;
+            border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            text-align: center; max-height: 90vh; overflow-y: auto;
+        }
+
+        .logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; font-size: 2.2rem; margin-bottom: 5px; }
+        .handwritten { font-family: 'Satisfy', cursive; color: #5d4037; font-size: 1.5rem; margin-bottom: 20px; }
+        .label-small { font-size: 0.8rem; display: block; text-align: left; margin: 10px 0 5px 0; color: #3e2723; font-weight: bold; }
+
+        input {
+            width: 100%; padding: 12px; margin-bottom: 10px;
+            border: 2px solid #8d6e63; border-radius: 8px;
+            font-size: 1rem; font-family: 'Special Elite', serif;
+        }
+
+        button {
+            width: 100%; padding: 15px; margin-top: 8px;
+            border: none; border-radius: 8px;
+            font-family: 'Special Elite'; font-weight: bold;
+            text-transform: uppercase; cursor: pointer;
+        }
+
+        .btn-vintage { background: #3e2723; color: #f5f5dc; }
+        .btn-vintage-alt { background: #2e7d32; color: white; }
+        .btn-inactive { background: #ccc !important; color: #666 !important; cursor: not-allowed; }
+        .active-green { background: #2e7d32 !important; color: white !important; }
+
+        .back-link { background: none; color: #3e2723; text-decoration: underline; font-size: 0.8rem; margin-top: 15px; }
+
+        #map-canvas { width: 100%; border: 2px solid #3e2723; border-radius: 5px; margin-top: 10px; background: #eee; }
+        #groups-inputs-list { max-height: 150px; overflow-y: auto; margin: 10px 0; border: 1px dashed #8d6e63; padding: 5px; }
+    </style>
 </head>
 <body>
 
-    <div id="screen-start" class="screen start-bg">
+    <div id="screen-start" class="screen start-bg" style="display: flex;">
         <div class="vintage-box">
             <h1 class="logo-font">TrailQuest</h1>
-            <p class="handwritten">Inicie sua jornada</p>
+            <p class="handwritten">Sua jornada começa aqui</p>
             <button class="btn-vintage" onclick="showScreen('screen-login')">Fazer Login</button>
             <button class="btn-vintage-alt" onclick="showScreen('screen-pin')">Participante</button>
         </div>
@@ -50,10 +107,8 @@
             <h3 class="handwritten">Missão</h3>
             <label class="label-small">Qtd. Objetivos Fixos:</label>
             <input type="number" id="fixed-count" placeholder="0" oninput="checkObjectives()">
-            
             <label class="label-small">Qtd. Objetivos Móveis:</label>
             <input type="number" id="mobile-count" placeholder="0">
-            
             <button id="btn-map" class="btn-inactive" disabled onclick="showScreen('screen-map-config')">Configurar Mapa</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
@@ -64,11 +119,9 @@
             <h3 class="handwritten">Equipes</h3>
             <label class="label-small">Número de Grupos:</label>
             <input type="number" id="group-qty" placeholder="Ex: 4" oninput="checkGroups()">
-            
             <div id="groups-setup-area" style="display:none;">
                 <div id="groups-inputs-list"></div>
             </div>
-            
             <button id="btn-save-groups" class="btn-inactive" disabled onclick="alert('Grupos Salvos!')">Confirmar</button>
             <button class="back-link" onclick="showScreen('screen-main-menu')">Voltar</button>
         </div>
@@ -90,6 +143,89 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // JS INTEGRADO - TUDO AQUI PARA GARANTIR FUNCIONAMENTO
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(id);
+            if(target) target.style.display = 'flex';
+        }
+
+        function sairLogin() {
+            document.getElementById('login-email').value = "";
+            document.getElementById('login-pass').value = "";
+            showScreen('screen-start');
+        }
+
+        function loginMestre() {
+            document.getElementById('login-email').value = "";
+            document.getElementById('login-pass').value = "";
+            showScreen('screen-main-menu');
+        }
+
+        function checkObjectives() {
+            const fixed = document.getElementById('fixed-count').value;
+            const btn = document.getElementById('btn-map');
+            if (fixed > 0) {
+                btn.disabled = false;
+                btn.classList.remove('btn-inactive');
+                btn.classList.add('active-green');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('btn-inactive');
+                btn.classList.remove('active-green');
+            }
+        }
+
+        function checkGroups() {
+            const qty = document.getElementById('group-qty').value;
+            const container = document.getElementById('groups-setup-area');
+            const list = document.getElementById('groups-inputs-list');
+            const btn = document.getElementById('btn-save-groups');
+
+            if (qty > 1) {
+                container.style.display = 'block';
+                list.innerHTML = "";
+                for(let i=1; i<=qty; i++) {
+                    list.innerHTML += `<input type="text" placeholder="Equipe ${i}" style="margin-bottom:5px;">`;
+                }
+                btn.disabled = false;
+                btn.classList.remove('btn-inactive');
+                btn.classList.add('active-green');
+            } else {
+                container.style.display = 'none';
+                btn.disabled = true;
+            }
+        }
+
+        function checkPIN(val) {
+            if (val.length === 6 && val === "123456") alert("Sucesso!");
+        }
+
+        let mapImage = new Image();
+        function handleMapUpload(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                mapImage.src = e.target.result;
+                mapImage.onload = function() {
+                    document.getElementById('upload-area').style.display = 'none';
+                    document.getElementById('editor-container').style.display = 'block';
+                    const canvas = document.getElementById('map-canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 400; canvas.height = 300;
+                    ctx.drawImage(mapImage, 0, 0, 400, 300);
+                    document.getElementById('btn-save-map').disabled = false;
+                    document.getElementById('btn-save-map').classList.add('active-green');
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function saveMapPoints() {
+            alert("Mapa configurado!");
+            showScreen('screen-main-menu');
+        }
+    </script>
 </body>
 </html>
