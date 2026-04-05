@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TrailQuest Pro</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Special+Elite&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         :root {
             --verde: #2e7d32;
@@ -14,7 +18,7 @@
             --creme-painel: rgba(255, 253, 231, 0.96);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; overflow: hidden; background: #1a1a1a; }
+        body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; background: #1a1a1a; overflow: hidden; }
 
         .fonte-manuscrita { font-family: 'Dancing Script', cursive; }
         .fonte-forte { font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
@@ -23,7 +27,6 @@
             width: 100vw; height: 100vh;
             background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.8s ease-in-out;
         }
 
         .bg-inicio { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
@@ -36,36 +39,44 @@
             width: 85%; max-width: 380px;
             box-shadow: 8px 8px 0px var(--marrom);
             text-align: center;
+            z-index: 10;
         }
 
-        .painel-bege { background: var(--creme-bg) !important; }
+        /* Mapa e Botões Flutuantes */
+        #map-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 9999; display: none; background: #000;
+        }
+        #map { width: 100%; height: 100%; }
+        
+        .map-overlay {
+            position: absolute; top: 15px; left: 15px; right: 15px;
+            z-index: 10000; display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none;
+        }
+        .map-btn {
+            pointer-events: auto; padding: 12px; background: var(--marrom);
+            color: white; border: 2px solid white; font-family: 'Montserrat'; 
+            font-weight: bold; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+        }
+        .btn-gps { background: #1976d2; } /* Azul para destacar o GPS */
 
         h1, h2 { color: var(--verde); margin-bottom: 15px; font-size: 2.8rem; line-height: 1; }
-        
         input {
             width: 100%; padding: 12px; margin: 8px 0;
             border: 1px solid var(--marrom); background: rgba(255,255,255,0.4);
             font-family: 'Special Elite', serif; text-align: center; font-size: 1rem;
         }
-
         .btn-v {
             width: 100%; padding: 15px; margin-top: 12px;
             border: 2px solid var(--marrom); background: var(--verde);
-            color: white; cursor: pointer; font-weight: bold;
-            text-transform: uppercase; transition: all 0.3s;
+            color: white; cursor: pointer; font-weight: bold; text-transform: uppercase;
         }
-
-        .btn-desativado {
-            background: rgba(0,0,0,0.1) !important;
-            color: rgba(0,0,0,0.3) !important;
-            border-color: rgba(0,0,0,0.1) !important;
-            cursor: not-allowed;
-        }
-
+        .btn-desativado { background: rgba(0,0,0,0.1) !important; color: rgba(0,0,0,0.3) !important; border-color: rgba(0,0,0,0.1) !important; }
         .hidden { display: none; }
         .campo-container { text-align: left; margin-top: 10px; }
         .olhinho { cursor: pointer; float: right; margin-top: -38px; margin-right: 10px; font-size: 1.2rem; }
-        
         label { font-size: 0.9rem; color: var(--marrom); font-weight: bold; }
     </style>
 </head>
@@ -73,10 +84,20 @@
 
     <div id="app-root"></div>
 
+    <div id="map-container">
+        <div class="map-overlay">
+            <button class="map-btn" onclick="App.fecharMapa()">← SALVAR E VOLTAR</button>
+            <button class="map-btn btn-gps" onclick="App.localizarUsuario()">📍 MINHA POSIÇÃO</button>
+        </div>
+        <div id="map"></div>
+    </div>
+
     <script>
         const App = {
             root: document.getElementById('app-root'),
             usuarioLogado: false,
+            mapa: null,
+            marcos: [],
 
             telas: {
                 inicio: () => `
@@ -88,17 +109,6 @@
                         </div>
                     </div>`,
                 
-                participanteAcesso: () => `
-                    <div class="cenario bg-inicio">
-                        <div class="painel-vintage painel-bege">
-                            <h2 class="fonte-manuscrita" style="font-size:2.2rem">Código de Acesso</h2>
-                            <input type="text" id="codInput" maxlength="6" oninput="App.validarCodigo(this)">
-                            <button id="btnContinuar" class="btn-v btn-desativado fonte-forte" onclick="App.confirmarAcesso()">Continuar</button>
-                            <button class="btn-v fonte-forte" style="background:transparent; color:var(--marrom); border:none; font-size:0.7rem" 
-                                onclick="App.navegar(App.usuarioLogado ? 'menuInicial' : 'inicio')">Voltar</button>
-                        </div>
-                    </div>`,
-
                 login: () => `
                     <div class="cenario bg-inicio">
                         <div class="painel-vintage">
@@ -135,7 +145,7 @@
                 grupos: () => `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita" style="font-size:2.2rem">Grupos</h2>
+                            <h2 class="fonte-manuscrita">Grupos</h2>
                             <div class="campo-container">
                                 <label class="fonte-forte">Número de grupos:</label>
                                 <input type="number" id="nGrupos" oninput="App.logicaGrupos()">
@@ -149,7 +159,7 @@
                             </div>
                             <div id="boxLideres" class="hidden campo-container">
                                 <label class="fonte-forte">Líderes por grupo:</label>
-                                <input type="number" id="nLideres">
+                                <input type="number">
                             </div>
                             <button id="btnConfirmar" class="hidden btn-v fonte-forte" onclick="App.navegar('mestre')">Confirmar</button>
                         </div>
@@ -158,7 +168,7 @@
                 percursos: () => `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita" style="font-size:2.2rem">Percursos</h2>
+                            <h2 class="fonte-manuscrita">Percursos</h2>
                             <div class="campo-container">
                                 <label class="fonte-forte">Objetivos Fixos:</label>
                                 <input type="number" id="fixos" oninput="App.logicaPercurso()">
@@ -166,9 +176,20 @@
                             <div id="boxMoveis" class="hidden campo-container">
                                 <label class="fonte-forte">Objetivos Móveis:</label>
                                 <input type="number" id="moveis">
-                                <button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.iniciarConfigMapa()">Configurar Mapas</button>
+                                <button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.abrirMapa()">Configurar Mapas</button>
                             </div>
                             <button class="btn-v fonte-forte" style="background:#6d4c41; margin-top:20px" onclick="App.navegar('mestre')">Voltar</button>
+                        </div>
+                    </div>`,
+
+                participanteAcesso: () => `
+                    <div class="cenario bg-inicio">
+                        <div class="painel-vintage" style="background:#f5f5dc !important">
+                            <h2 class="fonte-manuscrita">Código de Acesso</h2>
+                            <input type="text" id="codInput" maxlength="6" oninput="App.validarCodigo(this)">
+                            <button id="btnContinuar" class="btn-v btn-desativado fonte-forte" onclick="App.confirmarAcesso()">Continuar</button>
+                            <button class="btn-v fonte-forte" style="background:none; color:var(--marrom); border:none; font-size:0.7rem" 
+                                onclick="App.navegar(App.usuarioLogado ? 'menuInicial' : 'inicio')">Voltar</button>
                         </div>
                     </div>`
             },
@@ -177,72 +198,66 @@
                 this.root.innerHTML = this.telas[tela]();
             },
 
-            fazerLogin() {
-                this.usuarioLogado = true;
-                this.navegar('menuInicial');
-            },
-
-            validarCodigo(input) {
-                const btn = document.getElementById('btnContinuar');
-                if (input.value.length === 6) {
-                    btn.classList.remove('btn-desativado');
-                    btn.style.background = "var(--verde)";
-                } else {
-                    btn.classList.add('btn-desativado');
-                    btn.style.background = "rgba(0,0,0,0.1)";
-                }
-            },
-
-            confirmarAcesso() {
-                if (!document.getElementById('btnContinuar').classList.contains('btn-desativado')) {
-                    alert("Acesso Autorizado à Trilha!");
-                }
-            },
-
-            verSenha() {
-                const s = document.getElementById('senha');
-                s.type = s.type === 'password' ? 'text' : 'password';
-            },
+            fazerLogin() { this.usuarioLogado = true; this.navegar('menuInicial'); },
+            verSenha() { const s = document.getElementById('senha'); s.type = s.type === 'password' ? 'text' : 'password'; },
 
             logicaGrupos() {
                 const nG = parseInt(document.getElementById('nGrupos').value) || 0;
                 const nP = parseInt(document.getElementById('nPessoas').value) || 0;
-                
-                // Campo "Pessoas por grupo" aparece se nG >= 1 (você digitou algo)
-                if(nG > 0) document.getElementById('boxPessoas').classList.remove('hidden');
-                else document.getElementById('boxPessoas').classList.add('hidden');
-
-                if(nP > 0) {
-                    const boxI = document.getElementById('boxImpar');
-                    const boxL = document.getElementById('boxLideres');
-                    const btnC = document.getElementById('btnConfirmar');
-
-                    // CORREÇÃO: Campo em branco (Ímpar) só aparece se grupos >= 2 E pessoas >= 2
-                    if (nG >= 2 && nP >= 2) boxI.classList.remove('hidden');
-                    else boxI.classList.add('hidden');
-
-                    // Líderes só aparece se pessoas >= 2
-                    if (nP >= 2) boxL.classList.remove('hidden');
-                    else boxL.classList.add('hidden');
-
-                    btnC.classList.remove('hidden');
-                } else {
-                    document.getElementById('boxImpar').classList.add('hidden');
-                    document.getElementById('btnConfirmar').classList.add('hidden');
-                    document.getElementById('boxLideres').classList.add('hidden');
-                }
+                const boxP = document.getElementById('boxPessoas'), boxI = document.getElementById('boxImpar'), boxL = document.getElementById('boxLideres'), btnC = document.getElementById('btnConfirmar');
+                if(nG >= 2) boxP.classList.remove('hidden'); else { boxP.classList.add('hidden'); return; }
+                if(nP >= 1) { btnC.classList.remove('hidden'); if (nP >= 2) { boxI.classList.remove('hidden'); boxL.classList.remove('hidden'); } else { boxI.classList.add('hidden'); boxL.classList.add('hidden'); } } else { btnC.classList.add('hidden'); }
             },
 
             logicaPercurso() {
                 const f = document.getElementById('fixos').value;
-                const boxM = document.getElementById('boxMoveis');
-                if(f && f > 0) boxM.classList.remove('hidden');
-                else boxM.classList.add('hidden');
+                if(f && f > 0) document.getElementById('boxMoveis').classList.remove('hidden');
+                else document.getElementById('boxMoveis').classList.add('hidden');
             },
 
-            iniciarConfigMapa() {
-                alert("Redirecionando para Configuração de Mapas...");
-            }
+            validarCodigo(input) {
+                const btn = document.getElementById('btnContinuar');
+                if (input.value.length === 6) { btn.classList.remove('btn-desativado'); btn.style.background = "var(--verde)"; }
+                else { btn.classList.add('btn-desativado'); btn.style.background = "rgba(0,0,0,0.1)"; }
+            },
+
+            confirmarAcesso() { if (!document.getElementById('btnContinuar').classList.contains('btn-desativado')) alert("Acesso Autorizado!"); },
+
+            // --- SISTEMA DE MAPAS ---
+            abrirMapa() {
+                document.getElementById('map-container').style.display = 'block';
+                if (!this.mapa) {
+                    this.mapa = L.map('map').setView([-12.5, -38.3], 13);
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: 'Esri World Imagery'
+                    }).addTo(this.mapa);
+
+                    this.mapa.on('click', (e) => {
+                        const { lat, lng } = e.latlng;
+                        L.marker([lat, lng]).addTo(this.mapa).bindPopup(`Objetivo ${this.marcos.length + 1}`).openPopup();
+                        this.marcos.push({ lat, lng });
+                    });
+                }
+                setTimeout(() => { this.mapa.invalidateSize(); }, 300);
+            },
+
+            localizarUsuario() {
+                if (!navigator.geolocation) {
+                    alert("Seu navegador não suporta geolocalização.");
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const { latitude, longitude } = pos.coords;
+                        this.mapa.setView([latitude, longitude], 16); // Foco com zoom aproximado
+                        L.circle([latitude, longitude], { radius: 20, color: 'blue' }).addTo(this.mapa).bindPopup("Você está aqui").openPopup();
+                    },
+                    () => { alert("Não foi possível obter sua localização. Verifique as permissões do GPS."); },
+                    { enableHighAccuracy: true }
+                );
+            },
+
+            fecharMapa() { document.getElementById('map-container').style.display = 'none'; }
         };
 
         window.onload = () => App.navegar('inicio');
