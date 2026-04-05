@@ -76,7 +76,7 @@
     <script>
         const App = {
             root: document.getElementById('app-root'),
-            usuarioLogado: false, // Controle de navegação
+            usuarioLogado: false,
 
             telas: {
                 inicio: () => `
@@ -205,16 +205,27 @@
             },
 
             logicaGrupos() {
-                const nG = document.getElementById('nGrupos').value;
-                const nP = document.getElementById('nPessoas').value;
+                const nG = parseInt(document.getElementById('nGrupos').value) || 0;
+                const nP = parseInt(document.getElementById('nPessoas').value) || 0;
+                
+                // Campo "Pessoas por grupo" aparece se nG >= 1 (você digitou algo)
                 if(nG > 0) document.getElementById('boxPessoas').classList.remove('hidden');
                 else document.getElementById('boxPessoas').classList.add('hidden');
 
                 if(nP > 0) {
-                    document.getElementById('boxImpar').classList.remove('hidden');
-                    document.getElementById('btnConfirmar').classList.remove('hidden');
+                    const boxI = document.getElementById('boxImpar');
                     const boxL = document.getElementById('boxLideres');
-                    nP == 1 ? boxL.classList.add('hidden') : boxL.classList.remove('hidden');
+                    const btnC = document.getElementById('btnConfirmar');
+
+                    // CORREÇÃO: Campo em branco (Ímpar) só aparece se grupos >= 2 E pessoas >= 2
+                    if (nG >= 2 && nP >= 2) boxI.classList.remove('hidden');
+                    else boxI.classList.add('hidden');
+
+                    // Líderes só aparece se pessoas >= 2
+                    if (nP >= 2) boxL.classList.remove('hidden');
+                    else boxL.classList.add('hidden');
+
+                    btnC.classList.remove('hidden');
                 } else {
                     document.getElementById('boxImpar').classList.add('hidden');
                     document.getElementById('btnConfirmar').classList.add('hidden');
@@ -230,8 +241,7 @@
             },
 
             iniciarConfigMapa() {
-                alert("Prepare-se: Vamos abrir o motor de mapas agora!");
-                // Próximo passo: integrar Leaflet aqui
+                alert("Redirecionando para Configuração de Mapas...");
             }
         };
 
