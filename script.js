@@ -1,7 +1,6 @@
-let markers = [];
-let maxFixedPoints = 0;
+let html5QrCode;
 
-// Função Navegação
+// FUNÇÃO DE NAVEGAÇÃO
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     const target = document.getElementById(screenId);
@@ -11,58 +10,68 @@ function showScreen(screenId) {
     }
 }
 
-// VALIDAÇÃO EXCLUSIVA DO MENU DE OBJETIVOS
+// CORREÇÃO: Função que decide para onde o usuário vai
+function loginAs(role) {
+    if (role === 'organizador') {
+        showScreen('screen-main-menu');
+    } else {
+        // Se for participante, abre a câmera direto
+        startQRScanner();
+    }
+}
+
+// VALIDAÇÃO DOS OBJETIVOS (BOTÃO ACORDA VERDE)
 function validateObjectives() {
     const fixedInput = document.getElementById('fixed-obj');
     const btnConfig = document.getElementById('btn-config-map');
-    
-    maxFixedPoints = parseInt(fixedInput.value);
+    const val = parseInt(fixedInput.value);
 
-    // Regra: Se preencheu os fixos, o botão "acorda" em VERDE
-    if (maxFixedPoints > 0) {
+    if (val > 0) {
         btnConfig.disabled = false;
         btnConfig.classList.remove('btn-inactive');
-        btnConfig.classList.add('active-green');
+        btnConfig.classList.add('btn-active-green');
     } else {
         btnConfig.disabled = true;
         btnConfig.classList.add('btn-inactive');
-        btnConfig.classList.remove('active-green');
+        btnConfig.classList.remove('btn-active-green');
     }
 }
 
-// SALVAR MAPA E LIBERAR PROSSEGUIR
-function saveMap() {
-    if (markers.length < maxFixedPoints) {
-        alert(`Atenção Mestre: Você definiu ${maxFixedPoints} pontos, mas só marcou ${markers.length}. Complete a marcação!`);
-        return;
-    }
-    
-    alert("Mapa da trilha configurado com sucesso!");
-    localStorage.setItem('mapReady', 'true');
-    showScreen('screen-main-menu');
-    checkMasterButton();
+// CÂMERA
+function startQRScanner() {
+    showScreen('screen-qr-reader');
+    setTimeout(() => {
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 10, qrbox: 250 },
+            (text) => { alert("Código: " + text); stopQRScanner(); }
+        ).catch(err => {
+            alert("Câmera não autorizada.");
+            showScreen('screen-start');
+        });
+    }, 300);
 }
 
-// Botão "Prosseguir" no Menu Principal também acorda verde
-function checkMasterButton() {
-    const isReady = localStorage.getItem('mapReady') === 'true';
-    const btnProceed = document.getElementById('btn-proceed');
-    
-    if (isReady && btnProceed) {
-        btnProceed.disabled = false;
-        btnProceed.classList.remove('locked');
-        btnProceed.classList.add('active-green');
+function stopQRScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode = null;
+            showScreen('screen-start');
+        });
     }
 }
 
-// Limpeza de campos ao voltar
+// SAIR E LIMPAR
 function logout() {
     localStorage.clear();
-    location.reload(); // Recarrega para limpar tudo
+    // Limpa campos de texto fisicamente
+    document.getElementById('login-email').value = "";
+    document.getElementById('login-pass').value = "";
+    showScreen('screen-start');
 }
 
 window.onload = () => {
     const last = localStorage.getItem('currentScreen');
     showScreen(last || 'screen-start');
-    checkMasterButton();
 };

@@ -1,45 +1,74 @@
-/* Fontes e Reset */
+/* Reset e Centralização Total */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-.logo-font { font-family: 'Permanent Marker', cursive; color: #2e7d32; text-shadow: 2px 2px #1b5e20; }
-.handwritten { font-family: 'Satisfy', cursive; color: #f5f5dc; font-size: 1.6rem; }
 
-/* Backgrounds de Florestas pelo Mundo */
-.start-bg {
-    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-                url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1350&q=80'); /* Floresta Alemã/Norueguesa */
+body, html {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a;
+}
+
+.screen {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center;     /* Centraliza verticalmente */
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Imagens de Fundo Mais Visíveis */
+.start-bg {
+    background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                      url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1350&q=80');
 }
 
 .bg-paper { 
-    background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)),
-                url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80'); /* Amazônia/Selva */
-    background-size: cover;
+    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)),
+                      url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1350&q=80');
 }
 
-/* Caixa Vintage Estilizada */
+/* Caixa Vintage Centralizada */
 .vintage-box {
-    background: rgba(245, 245, 220, 0.9) url('https://www.transparenttextures.com/patterns/papyrus.png');
-    border: 5px solid #3e2731;
-    border-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+    background: rgba(245, 245, 220, 0.92) url('https://www.transparenttextures.com/patterns/papyrus.png');
+    border: 5px solid #3e2723;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 15px 25px rgba(0,0,0,0.5);
+    width: 90%;
+    max-width: 350px;
+    border-radius: 10px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    text-align: center;
 }
 
-/* Botões de Ação */
-.btn-vintage {
-    background-color: #3e2723;
-    color: #f5f5dc;
-    border: none;
-    padding: 15px;
-    font-family: 'Special Elite', serif;
-    width: 100%;
-    margin-top: 15px;
-    box-shadow: 0 4px #1b1311;
-}
-
-/* O BOTÃO QUE "ACORDA" (Verde) */
-.active-green {
+/* Botões que "Acordam" em Verde */
+.btn-active-green {
     background-color: #2e7d32 !important;
-    color
+    color: white !important;
+    border: 2px solid #1b5e20 !important;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(46, 125, 50, 0.5);
+}
+
+.btn-inactive {
+    background-color: #ffffff !important;
+    color: #999 !important;
+    border: 1px solid #ccc !important;
+    cursor: not-allowed;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    font-family: 'Special Elite', serif;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
