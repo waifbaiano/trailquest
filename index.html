@@ -82,15 +82,19 @@
 </head>
 <body>
 
-    <div id="app-root"></div>
-
     <div id="map-container">
-        <div class="map-overlay">
-            <button class="map-btn" onclick="App.fecharMapa()">← SALVAR E VOLTAR</button>
-            <button class="map-btn btn-gps" onclick="App.localizarUsuario()">📍 MINHA POSIÇÃO</button>
+        <button class="map-btn btn-gps" onclick="App.localizarUsuario()" 
+            style="position: absolute; bottom: 130px; right: 15px; z-index: 10000; background: #1976d2; color: white; border: 2px solid white; padding: 12px; border-radius: 5px; font-family: 'Montserrat'; font-weight: bold;">
+            📍 MINHA POSIÇÃO
+        </button>
+
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8); padding: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 10000;">
+            <button id="btnAcaoMapa" class="btn-v fonte-forte" onclick="App.alternarModoEdicao()" style="margin: 0;">ADICIONAR PONTOS</button>
+            <button id="btnVoltarMapa" class="btn-v fonte-forte" onclick="App.fecharMapa()" style="background: #6d4c41; margin: 0;">VOLTAR</button>
         </div>
         <div id="map"></div>
     </div>
+
 
     <script>
         const App = {
@@ -99,6 +103,9 @@
             mapa: null,
             marcos: [],
             meuCirculo: null,
+            modoEdicao: false,
+            corAtual: '#2e7d32',
+            dadosConfig: {},
 
             telas: {
                 inicio: () => `
@@ -133,13 +140,31 @@
                         </div>
                     </div>`,
 
-                mestre: () => `
+                mestre: () => {
+                    // O botão continuar só aparece se grupos e percursos forem configurados
+                    const liberado = App.dadosConfig.grupos && App.dadosConfig.objetivos;
+                    return `
                     <div class="cenario bg-menu">
                         <div class="painel-vintage">
                             <h2 class="fonte-manuscrita">Mestre</h2>
                             <button class="btn-v fonte-forte" onclick="App.navegar('percursos')">Organizar Percursos</button>
                             <button class="btn-v fonte-forte" onclick="App.navegar('grupos')">Organizar Grupos</button>
+                            ${liberado ? `<button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.navegar('loginObjetivoMovel')">CONTINUAR</button>` : ''}
                             <button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('menuInicial')">Voltar</button>
+                        </div>
+                    </div>`;
+                },
+
+                loginObjetivoMovel: () => `
+                    <div class="cenario bg-menu">
+                        <div class="painel-vintage">
+                            <h2 class="fonte-manuscrita">Objetivo Móvel</h2>
+                            <div class="campo-container">
+                                <label class="fonte-forte">Código do Responsável:</label>
+                                <input type="text" id="codMovel" placeholder="Digite o código">
+                            </div>
+                            <button class="btn-v fonte-forte" onclick="alert('Login realizado com sucesso!')">Entrar</button>
+                            <button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button>
                         </div>
                     </div>`,
 
@@ -148,21 +173,21 @@
                         <div class="painel-vintage">
                             <h2 class="fonte-manuscrita">Grupos</h2>
                             <div class="campo-container">
-                                <label class="fonte-forte">Número de grupos:</label>
+                                <label class="fonte-forte">Nº Grupos (Máx 30):</label>
                                 <input type="number" id="nGrupos" oninput="App.logicaGrupos()">
                             </div>
                             <div id="boxPessoas" class="hidden campo-container">
                                 <label class="fonte-forte">Pessoas por grupo:</label>
                                 <input type="number" id="nPessoas" oninput="App.logicaGrupos()">
                             </div>
-                            <div id="boxImpar" class="hidden campo-container">
-                                <input type="text" placeholder="">
-                            </div>
                             <div id="boxLideres" class="hidden campo-container">
                                 <label class="fonte-forte">Líderes por grupo:</label>
-                                <input type="number">
+                                <input type="number" id="nLideres" oninput="App.logicaGrupos()">
                             </div>
-                            <button id="btnConfirmar" class="hidden btn-v fonte-forte" onclick="App.navegar('mestre')">Confirmar</button>
+                            <div style="display:flex; gap:10px; margin-top:20px;">
+                                <button class="btn-v fonte-forte" style="background:#6d4c41; margin:0;" onclick="App.navegar('mestre')">Voltar</button>
+                                <button id="btnConfirmar" class="hidden btn-v fonte-forte" style="margin:0;" onclick="App.confirmarDadosMestre('grupos')">Confirmar</button>
+                            </div>
                         </div>
                     </div>`,
 
@@ -179,7 +204,10 @@
                                 <input type="number" id="moveis">
                                 <button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.abrirMapa()">Configurar Mapas</button>
                             </div>
-                            <button class="btn-v fonte-forte" style="background:#6d4c41; margin-top:20px" onclick="App.navegar('mestre')">Voltar</button>
+                            <div style="display:flex; gap:10px; margin-top:20px;">
+                                <button class="btn-v fonte-forte" style="background:#6d4c41; margin:0;" onclick="App.navegar('mestre')">Voltar</button>
+                                <button id="btnConfirmarPercurso" class="hidden btn-v fonte-forte" style="margin:0;" onclick="App.confirmarDadosMestre('percurso')">Confirmar</button>
+                            </div>
                         </div>
                     </div>`,
 
@@ -195,25 +223,23 @@
                     </div>`
             },
 
-            navegar(tela) {
-                this.root.innerHTML = this.telas[tela]();
-            },
-
+            navegar(tela) { this.root.innerHTML = this.telas[tela](); },
             fazerLogin() { this.usuarioLogado = true; this.navegar('menuInicial'); },
             verSenha() { const s = document.getElementById('senha'); s.type = s.type === 'password' ? 'text' : 'password'; },
-
+            
             logicaGrupos() {
-                const nG = parseInt(document.getElementById('nGrupos').value) || 0;
-                const nP = parseInt(document.getElementById('nPessoas').value) || 0;
-                const boxP = document.getElementById('boxPessoas'), boxI = document.getElementById('boxImpar'), boxL = document.getElementById('boxLideres'), btnC = document.getElementById('btnConfirmar');
-                if(nG >= 2) boxP.classList.remove('hidden'); else { boxP.classList.add('hidden'); return; }
-                if(nP >= 1) { btnC.classList.remove('hidden'); if (nP >= 2) { boxI.classList.remove('hidden'); boxL.classList.remove('hidden'); } else { boxI.classList.add('hidden'); boxL.classList.add('hidden'); } } else { btnC.classList.add('hidden'); }
+                const nG = document.getElementById('nGrupos'), nP = document.getElementById('nPessoas'), nL = document.getElementById('nLideres'), btn = document.getElementById('btnConfirmar');
+                if (nG.value > 30) { alert("Inválido: Limite de 30 grupos."); nG.value = 30; }
+                if (nG.value >= 1) document.getElementById('boxPessoas').classList.remove('hidden');
+                if (nP.value >= 1) { 
+                    document.getElementById('boxLideres').classList.remove('hidden'); btn.classList.remove('hidden');
+                    if (nL.value && parseInt(nL.value) > parseInt(nP.value)) { alert("Inválido: Líderes não podem ser mais que pessoas."); nL.value = nP.value; }
+                }
             },
 
             logicaPercurso() {
-                const f = document.getElementById('fixos').value;
-                if(f && f > 0) document.getElementById('boxMoveis').classList.remove('hidden');
-                else document.getElementById('boxMoveis').classList.add('hidden');
+                const f = document.getElementById('fixos').value, btn = document.getElementById('btnConfirmarPercurso');
+                if(f && f > 0) { document.getElementById('boxMoveis').classList.remove('hidden'); btn.classList.remove('hidden'); }
             },
 
             validarCodigo(input) {
@@ -224,444 +250,133 @@
 
             confirmarAcesso() { if (!document.getElementById('btnContinuar').classList.contains('btn-desativado')) alert("Acesso Autorizado!"); },
 
-            // --- SISTEMA DE MAPAS E LOCALIZAÇÃO ---
-            solicitarPermissaoGPS() {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        () => console.log("GPS ok"),
-                        () => alert("Ative o GPS para localizar sua posição exata na trilha."),
-                        { enableHighAccuracy: true, timeout: 5000 }
-                    );
-                }
+            confirmarDadosMestre(tipo) {
+                if(tipo === 'grupos') this.dadosConfig.grupos = document.getElementById('nGrupos').value;
+                if(tipo === 'percurso') this.dadosConfig.objetivos = document.getElementById('fixos').value;
+                this.navegar('mestre');
             },
 
-            abrirMapa() {
-                document.getElementById('map-container').style.display = 'block';
-                if (!this.mapa) {
-                    // Centro inicial padrão
-                    this.mapa = L.map('map').setView([-12.5, -38.3], 13);
-                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                        attribution: 'Esri World Imagery'
+            abrirMapa() { /* Será definido no script final */ },
+            fecharMapa() { document.getElementById('map-container').style.display = 'none'; this.navegar('mestre'); }
+        };
+
+        window.onload = () => App.navegar('inicio');
+    </script>
+
+<script>
+    // GARANTE QUE O OBJETO APP EXISTE ANTES DE ADICIONAR AS FUNÇÕES
+    if (typeof App !== 'undefined') {
+
+        // 1. LÓGICA DE EDIÇÃO E BOTÕES DO MAPA
+        App.alternarModoEdicao = function() {
+            const btn = document.getElementById('btnAcaoMapa');
+            const btnVoltar = document.getElementById('btnVoltarMapa');
+            
+            this.modoEdicao = !this.modoEdicao;
+
+            if (this.modoEdicao) {
+                btn.innerText = "SALVAR EDIÇÃO";
+                btn.style.background = "#d32f2f"; // Vermelho enquanto edita
+                btnVoltar.style.display = "none"; // Esconde o voltar para não sair sem salvar
+                alert("MODO EDIÇÃO: Clique no mapa para marcar os pontos.");
+            } else {
+                btn.innerText = "ADICIONAR PONTOS";
+                btn.style.background = "var(--verde)";
+                btnVoltar.style.display = "block";
+                
+                // MUDANÇA DE COR: Gera uma cor aleatória para o próximo grupo de pontos
+                this.corAtual = '#' + Math.floor(Math.random()*16777215).toString(16);
+                alert("EDIÇÃO SALVA! Se adicionar novos pontos agora, eles terão outra cor.");
+            }
+        };
+
+        // 2. CONFIGURAÇÃO E ABERTURA DO MAPA
+        App.abrirMapa = function() {
+            document.getElementById('map-container').style.display = 'block';
+            
+            if (!this.mapa) {
+                // Inicializa o mapa focado em uma região padrão
+                this.mapa = L.map('map').setView([-12.5, -38.3], 13);
+                
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Esri World Imagery'
+                }).addTo(this.mapa);
+
+                // Evento de clique no mapa
+                this.mapa.on('click', (e) => {
+                    if (!this.modoEdicao) {
+                        alert("AVISO: Clique em 'ADICIONAR PONTOS' no rodapé para conseguir marcar o mapa.");
+                        return;
+                    }
+
+                    const limite = parseInt(document.getElementById('fixos').value) || 0;
+                    if (this.marcos.length >= limite) {
+                        alert("LIMITE ATINGIDO: Você já marcou o número de objetivos fixos definidos.");
+                        return;
+                    }
+
+                    // Adiciona o marcador circular com a cor atual
+                    const marker = L.circleMarker([e.latlng.lat, e.latlng.lng], {
+                        radius: 10,
+                        fillColor: this.corAtual,
+                        color: "#ffffff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
                     }).addTo(this.mapa);
 
-                    this.mapa.on('click', (e) => {
-                        const { lat, lng } = e.latlng;
-                        L.marker([lat, lng]).addTo(this.mapa).bindPopup(`Objetivo ${this.marcos.length + 1}`).openPopup();
-                        this.marcos.push({ lat, lng });
-                    });
-                }
-                setTimeout(() => { this.mapa.invalidateSize(); }, 300);
-            },
-
-            localizarUsuario() {
-                if (!navigator.geolocation) { alert("Navegador sem suporte a GPS."); return; }
-
-                const btn = document.querySelector('.btn-gps');
-                const originalText = btn.innerText;
-                btn.innerText = "🔍 BUSCANDO SATÉLITE...";
-
-                const gpsOptions = {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 0
-                };
-
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        const { latitude, longitude, accuracy } = pos.coords;
-                        
-                        if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
-
-                        this.mapa.setView([latitude, longitude], 17);
-
-                        this.meuCirculo = L.circle([latitude, longitude], {
-                            radius: accuracy,
-                            color: '#1976d2',
-                            fillColor: '#1976d2',
-                            fillOpacity: 0.3
-                        }).addTo(this.mapa).bindPopup(`Você está aqui (Precisão: ${Math.round(accuracy)}m)`).openPopup();
-
-                        btn.innerText = originalText;
-                    },
-                    (err) => {
-                        btn.innerText = originalText;
-                        alert("Erro de Sinal: Vá para um local aberto e verifique se o GPS está em 'Alta Precisão'.");
-                    },
-                    gpsOptions
-                );
-            },
-
-            fecharMapa() { document.getElementById('map-container').style.display = 'none'; }
-        };
-
-        window.onload = () => {
-            App.navegar('inicio');
-            App.solicitarPermissaoGPS();
-        };
-    </script>
-    <script>
-    // Esta parte garante que a função antiga seja substituída pela nova com diagnóstico
-    if (typeof App !== 'undefined') {
-        
-        App.localizarUsuario = function() {
-            if (!navigator.geolocation) {
-                alert("ERRO: O seu navegador não tem suporte para GPS.");
-                return;
+                    this.marcos.push({ marker: marker });
+                    this.desenharLinhaRoteiro();
+                });
             }
-
-            const btn = document.querySelector('.btn-gps');
-            const textoOriginal = btn ? btn.innerText : "📍 MINHA POSIÇÃO";
-            if(btn) btn.innerText = "🔍 ACESSANDO SATÉLITE...";
-
-            const sucesso = (pos) => {
-                const { latitude, longitude, accuracy } = pos.coords;
-                
-                // Limpa círculo anterior se existir
-                if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
-                
-                // Foca o mapa na posição real
-                this.mapa.setView([latitude, longitude], 17);
-                
-                // Desenha o marcador de precisão
-                this.meuCirculo = L.circle([latitude, longitude], {
-                    radius: accuracy,
-                    color: '#1976d2',
-                    fillOpacity: 0.3
-                }).addTo(this.mapa).bindPopup(`Você está aqui (Precisão: ${Math.round(accuracy)}m)`).openPopup();
-                
-                if(btn) btn.innerText = textoOriginal;
-            };
-
-            const erro = (err) => {
-                if(btn) btn.innerText = textoOriginal;
-                
-                // DIAGNÓSTICO REAL
-                switch(err.code) {
-                    case 1:
-                        alert("PERMISSÃO NEGADA: O seu navegador ou celular bloqueou o GPS. \n\nSOLUÇÃO: Vá nas configurações do Chrome > Configurações do Site > Localização e permita este site.");
-                        break;
-                    case 2:
-                        alert("SINAL INDISPONÍVEL: Não foi possível detectar os satélites. \n\nSOLUÇÃO: Saia de ambientes cobertos ou ligue o GPS do celular.");
-                        break;
-                    case 3:
-                        alert("TEMPO ESGOTADO: O GPS demorou muito a responder. Tente novamente em local aberto.");
-                        break;
-                    default:
-                        alert("ERRO: " + err.message);
-                }
-            };
-
-            // Executa a busca com máxima prioridade de hardware
-            navigator.geolocation.getCurrentPosition(sucesso, erro, {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 0
-            });
-        };
-
-        console.log("Sistema de localização atualizado com sucesso!");
-    }
-</script>
-<script>
-    if (typeof App !== 'undefined') {
-        
-        // Sobrescrevemos a função abrirMapa para incluir a lógica de edição
-        const originalAbrirMapa = App.abrirMapa;
-        
-        App.abrirMapa = function() {
-            // Chama a função original primeiro
-            originalAbrirMapa.apply(this);
             
-            // Removemos o evento de clique antigo para não duplicar pontos
-            this.mapa.off('click');
-            
-            // Novo evento de clique com funções de edição
-            this.mapa.on('click', (e) => {
-                const { lat, lng } = e.latlng;
-                this.adicionarPontoEditavel(lat, lng);
-            });
+            // Corrige o tamanho do mapa caso ele carregue cinza
+            setTimeout(() => { this.mapa.invalidateSize(); }, 200);
         };
 
-        App.adicionarPontoEditavel = function(lat, lng) {
-            const id = Date.now(); // ID único para o ponto
-            
-            // Cria o marcador configurado para ser arrastável
-            const marker = L.marker([lat, lng], {
-                draggable: true,
-                autoPan: true
-            }).addTo(this.mapa);
-
-            const atualizarPopup = () => {
-                const pos = marker.getLatLng();
-                const conteudo = `
-                    <div style="text-align:center; font-family:'Montserrat',sans-serif;">
-                        <b style="color:var(--verde)">Objetivo</b><br>
-                        <small>${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}</small><br><br>
-                        <button onclick="App.removerPonto(${id})" 
-                            style="background:#d32f2f; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">
-                            🗑️ EXCLUIR
-                        </button>
-                    </div>
-                `;
-                marker.bindPopup(conteudo).openPopup();
-            };
-
-            // Evento: Quando terminar de arrastar, atualiza a posição na lista
-            marker.on('dragend', function() {
-                atualizarPopup();
-                App.salvarEstadoPontos();
-            });
-
-            // Guarda o marcador num array com o seu ID
-            this.marcos.push({ id: id, marker: marker });
-            atualizarPopup();
-            this.salvarEstadoPontos();
-        };
-
-        App.removerPonto = function(id) {
-            const index = this.marcos.findIndex(m => m.id === id);
-            if (index !== -1) {
-                this.mapa.removeLayer(this.marcos[index].marker);
-                this.marcos.splice(index, 1);
-                this.salvarEstadoPontos();
-            }
-        };
-
-        App.salvarEstadoPontos = function() {
-            // Aqui você pode adicionar lógica para salvar no LocalStorage se desejar
-            console.log("Pontos atuais:", this.marcos.map(m => m.marker.getLatLng()));
-        };
-    }
-</script>
-<script>
-    if (typeof App !== 'undefined') {
-        // Ajuste de fonte global para campos de entrada conforme solicitado
-        const style = document.createElement('style');
-        style.innerHTML = `input, select, textarea { font-family: 'Roboto', 'Canvas', sans-serif !important; }`;
-        document.head.appendChild(style);
-
-        // Extensão do objeto App para novas funcionalidades
-        App.linhaRoteiro = null;
-        
-        const originalAbrirMapa = App.abrirMapa;
-        App.abrirMapa = function() {
-            originalAbrirMapa.apply(this);
-            this.mapa.off('click');
-            this.mapa.on('click', (e) => {
-                const limite = parseInt(document.getElementById('fixos').value) || 0;
-                if (this.marcos.length >= limite) {
-                    alert("Limite atingido! Você só pode marcar " + limite + " pontos (conforme Objetivos Fixos).");
-                    return;
-                }
-                this.adicionarPontoAvancado(e.latlng.lat, e.latlng.lng);
-            });
-            this.desenharLinhaRoteiro();
-        };
-
-        App.adicionarPontoAvancado = function(lat, lng) {
-            const id = Date.now();
-            const ordem = this.marcos.length + 1;
-            
-            const marker = L.marker([lat, lng], {
-                draggable: true
-            }).addTo(this.mapa);
-
-            const ponto = {
-                id: id,
-                nome: "Ponto " + ordem,
-                ordem: ordem,
-                marker: marker,
-                codigoQR: `TQ-${id}-${ordem}`
-            };
-
-            marker.on('dragend', () => {
-                this.desenharLinhaRoteiro();
-                this.atualizarPopup(ponto);
-            });
-
-            this.marcos.push(ponto);
-            this.atualizarPopup(ponto);
-            this.desenharLinhaRoteiro();
-        };
-
-        App.atualizarPopup = function(ponto) {
-            const conteudo = `
-                <div style="font-family:'Roboto',sans-serif; min-width:150px;">
-                    <label style="font-size:10px; font-weight:bold;">NOME DO PONTO:</label><br>
-                    <input type="text" value="${ponto.nome}" onchange="App.editarNome(${ponto.id}, this.value)" 
-                        style="width:100%; margin-bottom:5px; text-align:left; padding:4px;"><br>
-                    
-                    <label style="font-size:10px; font-weight:bold;">ORDEM NO ROTEIRO:</label><br>
-                    <input type="number" value="${ponto.ordem}" onchange="App.alterarOrdem(${ponto.id}, this.value)"
-                        style="width:100%; margin-bottom:10px; text-align:left; padding:4px;"><br>
-                    
-                    <div style="background:#eee; padding:5px; font-size:9px; border-radius:3px; margin-bottom:10px;">
-                        <strong>QR CODE:</strong><br>${ponto.codigoQR}
-                    </div>
-
-                    <button onclick="App.removerPonto(${ponto.id})" 
-                        style="background:#d32f2f; color:white; border:none; width:100%; padding:8px; border-radius:3px; font-weight:bold;">
-                        EXCLUIR PONTO
-                    </button>
-                </div>
-            `;
-            ponto.marker.bindPopup(conteudo).openPopup();
-        };
-
-        App.editarNome = function(id, novoNome) {
-            const p = this.marcos.find(m => m.id === id);
-            if (p) p.nome = novoNome;
-        };
-
-        App.alterarOrdem = function(id, novaOrdem) {
-            const p = this.marcos.find(m => m.id === id);
-            if (p) {
-                p.ordem = parseInt(novaOrdem);
-                // Reordenar array baseado na nova ordem
-                this.marcos.sort((a, b) => a.ordem - b.ordem);
-                this.desenharLinhaRoteiro();
-            }
-        };
-
+        // 3. LINHA LARANJA (ROTEIRO)
         App.desenharLinhaRoteiro = function() {
             if (this.linhaRoteiro) this.mapa.removeLayer(this.linhaRoteiro);
             
-            const coordenadas = this.marcos
-                .sort((a, b) => a.ordem - b.ordem)
-                .map(p => p.marker.getLatLng());
-
+            const coordenadas = this.marcos.map(m => m.marker.getLatLng());
+            
             if (coordenadas.length > 1) {
                 this.linhaRoteiro = L.polyline(coordenadas, {
-                    color: '#ffa000',
+                    color: '#ffa000', // Laranja
                     weight: 4,
-                    opacity: 0.7,
-                    dashArray: '10, 10'
+                    dashArray: '10, 10',
+                    opacity: 0.8
                 }).addTo(this.mapa);
             }
         };
 
-        App.removerPonto = function(id) {
-            const idx = this.marcos.findIndex(m => m.id === id);
-            if (idx !== -1) {
-                this.mapa.removeLayer(this.marcos[idx].marker);
-                this.marcos.splice(idx, 1);
-                this.desenharLinhaRoteiro();
-            }
-        };
-    }
-</script>
-<script>
-    if (typeof App !== 'undefined') {
-        
-        // 1. AJUSTE DE FONTE (Roboto/Canvas)
-        const style = document.createElement('style');
-        style.innerHTML = `input, select, textarea { font-family: 'Roboto', sans-serif !important; }`;
-        document.head.appendChild(style);
-
-        App.linhaRoteiro = null;
-        App.meuCirculo = null;
-
-        // 2. FUNÇÃO DE LOCALIZAÇÃO (GPS)
+        // 4. LOCALIZAÇÃO GPS (NOVA LÓGICA)
         App.localizarUsuario = function() {
             if (!navigator.geolocation) {
-                alert("Erro: Seu navegador não suporta GPS.");
+                alert("Seu aparelho não suporta GPS.");
                 return;
             }
-            const btn = document.querySelector('.btn-gps');
-            if(btn) btn.innerText = "🔍 BUSCANDO SATÉLITE...";
 
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const { latitude, longitude, accuracy } = pos.coords;
+                    
                     if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
+
                     this.mapa.setView([latitude, longitude], 17);
+
                     this.meuCirculo = L.circle([latitude, longitude], {
                         radius: accuracy,
                         color: '#1976d2',
+                        fillColor: '#1976d2',
                         fillOpacity: 0.3
-                    }).addTo(this.mapa).bindPopup(`Você está aqui (Precisão: ${Math.round(accuracy)}m)`).openPopup();
-                    if(btn) btn.innerText = "📍 MINHA POSIÇÃO";
+                    }).addTo(this.mapa);
                 },
                 (err) => {
-                    if(btn) btn.innerText = "📍 MINHA POSIÇÃO";
-                    alert("Erro ao localizar. Verifique se o GPS está ligado em 'Alta Precisão'.");
+                    alert("Erro ao acessar GPS. Verifique se a localização está ativa.");
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                { enableHighAccuracy: true }
             );
-        };
-
-        // 3. FUNÇÃO DE MAPA E ROTEIRO
-        const originalAbrirMapa = App.abrirMapa;
-        App.abrirMapa = function() {
-            originalAbrirMapa.apply(this);
-            this.mapa.off('click');
-            this.mapa.on('click', (e) => {
-                const limite = parseInt(document.getElementById('fixos').value) || 0;
-                if (this.marcos.length >= limite) {
-                    alert("Limite atingido! Você só pode marcar " + limite + " pontos fixos.");
-                    return;
-                }
-                this.adicionarPontoAvancado(e.latlng.lat, e.latlng.lng);
-            });
-            this.desenharLinhaRoteiro();
-        };
-
-        App.adicionarPontoAvancado = function(lat, lng) {
-            const id = Date.now();
-            const ordem = this.marcos.length + 1;
-            const marker = L.marker([lat, lng], { draggable: true }).addTo(this.mapa);
-            const ponto = { id, nome: "Ponto " + ordem, ordem, marker, codigoQR: `TQ-${id}-${ordem}` };
-
-            marker.on('dragend', () => { this.desenharLinhaRoteiro(); this.atualizarPopup(ponto); });
-            this.marcos.push(ponto);
-            this.atualizarPopup(ponto);
-            this.desenharLinhaRoteiro();
-        };
-
-        App.atualizarPopup = function(ponto) {
-            const conteudo = `
-                <div style="font-family:'Roboto',sans-serif; min-width:160px;">
-                    <label style="font-size:10px; font-weight:bold;">NOME:</label><br>
-                    <input type="text" value="${ponto.nome}" onchange="App.editarNome(${ponto.id}, this.value)" style="width:100%; padding:4px;"><br>
-                    <label style="font-size:10px; font-weight:bold;">ORDEM:</label><br>
-                    <input type="number" value="${ponto.ordem}" onchange="App.alterarOrdem(${ponto.id}, this.value)" style="width:100%; padding:4px;"><br>
-                    <div style="background:#f0f0f0; padding:5px; font-size:9px; margin:10px 0; border-radius:3px;">
-                        <strong>QR DATA:</strong><br>${ponto.codigoQR}
-                    </div>
-                    <button onclick="App.removerPonto(${ponto.id})" style="background:#d32f2f; color:white; border:none; width:100%; padding:8px; border-radius:3px; font-weight:bold; cursor:pointer;">EXCLUIR</button>
-                </div>`;
-            ponto.marker.bindPopup(conteudo).openPopup();
-        };
-
-        App.editarNome = function(id, novoNome) {
-            const p = this.marcos.find(m => m.id === id);
-            if (p) p.nome = novoNome;
-        };
-
-        App.alterarOrdem = function(id, novaOrdem) {
-            const p = this.marcos.find(m => m.id === id);
-            if (p) {
-                p.ordem = parseInt(novaOrdem);
-                this.marcos.sort((a, b) => a.ordem - b.ordem);
-                this.desenharLinhaRoteiro();
-            }
-        };
-
-        App.desenharLinhaRoteiro = function() {
-            if (this.linhaRoteiro) this.mapa.removeLayer(this.linhaRoteiro);
-            const coords = this.marcos.sort((a, b) => a.ordem - b.ordem).map(p => p.marker.getLatLng());
-            if (coords.length > 1) {
-                this.linhaRoteiro = L.polyline(coords, { color: '#ffa000', weight: 4, opacity: 0.7, dashArray: '10, 10' }).addTo(this.mapa);
-            }
-        };
-
-        App.removerPonto = function(id) {
-            const idx = this.marcos.findIndex(m => m.id === id);
-            if (idx !== -1) {
-                this.mapa.removeLayer(this.marcos[idx].marker);
-                this.marcos.splice(idx, 1);
-                this.desenharLinhaRoteiro();
-            }
         };
     }
 </script>
