@@ -1,105 +1,155 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
-
-<style>
-    :root {
-        --verde: #2e7d32;
-        --marrom: #3e2723;
-        --creme-bg: #f5f5dc;
-        --creme-painel: rgba(255, 253, 231, 0.96);
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TrailQuest - Base System</title>
     
-    body, html { 
-        height: 100%; width: 100%; 
-        font-family: 'Special Elite', serif; 
-        background: #1a1a1a; 
-        overflow: hidden; 
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        /* SISTEMA DE TRANSMISSÃO CSS INTEGRADO */
+        :root {
+            --verde-selva: #2e7d32;
+            --marrom-couro: #3e2723;
+            --creme-papel: rgba(255, 253, 231, 0.98);
+            --preto-noite: #1a1a1a;
+            --laranja-mapa: #ffa000;
+        }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        body, html { 
+            height: 100%; 
+            width: 100%; 
+            font-family: 'Special Elite', serif; 
+            background-color: var(--preto-noite);
+            color: var(--marrom-couro);
+            overflow: hidden; 
+        }
+        /* Definição de Backgrounds por Página */
+        .cenario {
+            width: 100vw; 
+            height: 100vh;
+            background-size: cover; 
+            background-position: center;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        .bg-inicio { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
+        .bg-geral { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000'); }
+        /* Painel Vintage */
+        .painel-vintage {
+            background: var(--creme-papel);
+            border: 3px solid var(--marrom-couro);
+            padding: 30px;
+            border-radius: 4px;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 12px 12px 0px var(--marrom-couro);
+            text-align: center;
+        }
+        /* Configuração solicitada: Campos em Branco e Roboto */
+        input {
+            font-family: 'Roboto', sans-serif !important;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid var(--marrom-couro);
+            background-color: #ffffff !important; /* Totalmente branco */
+            color: #333;
+            text-align: center;
+            font-size: 1rem;
+            border-radius: 4px;
+        }
+        /* Botões */
+        .btn-trail {
+            width: 100%;
+            padding: 16px;
+            margin-top: 15px;
+            border: 2px solid var(--marrom-couro);
+            background: var(--verde-selva);
+            color: white;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s;
+        }
+        .btn-trail:active { transform: scale(0.98); }
+        /* Utilitários de Texto */
+        .titulo-manuscrito { font-family: 'Dancing Script', cursive; font-size: 3.2rem; color: var(--verde-selva); margin-bottom: 10px; }
+        .subtitulo-forte { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin-bottom: 20px; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
 
-    /* Fontes */
-    .fonte-manuscrita { font-family: 'Dancing Script', cursive; }
-    .fonte-forte { font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
-    
-    /* CORREÇÃO: Roboto para campos de entrada */
-    input, select, textarea {
-        font-family: 'Roboto', sans-serif !important;
-        width: 100%;
-        padding: 12px;
-        margin: 8px 0;
-        border: 1px solid var(--marrom);
-        background: #ffffff !important; /* Campos em branco */
-        color: #333;
-        text-align: center;
-        font-size: 1rem;
-        border-radius: 4px;
-    }
+    <div id="page-container">
+        </div>
 
-    .cenario {
-        width: 100vw; height: 100vh;
-        background-size: cover; background-position: center;
-        display: flex; align-items: center; justify-content: center;
-    }
+    <script>
+        // COMANDOS DE MUDANÇA DE PÁGINAS (ESTRUTURA BASE)
+        const AppBase = {
+            container: document.getElementById('page-container'),
+            
+            // Definição das Telas (Templates)
+            templates: {
+                inicio: `
+                    <div class="cenario bg-inicio">
+                        <div class="painel-vintage">
+                            <h1 class="titulo-manuscrito">TrailQuest</h1>
+                            <p class="subtitulo-forte">EXPLORAÇÃO & AVENTURA</p>
+                            <button class="btn-trail" onclick="AppBase.mudarPagina('menu')">Iniciar</button>
+                        </div>
+                    </div>`,
+                
+                menu: `
+                    <div class="cenario bg-geral">
+                        <div class="painel-vintage">
+                            <h2 class="subtitulo-forte">MENU PRINCIPAL</h2>
+                            <button class="btn-trail" onclick="AppBase.mudarPagina('grupos')">Organizar Grupos</button>
+                            <button class="btn-trail" onclick="AppBase.mudarPagina('percursos')">Organizar Percursos</button>
+                            <button class="btn-trail" style="background:#6d4c41" onclick="AppBase.mudarPagina('inicio')">Voltar</button>
+                        </div>
+                    </div>`,
+                grupos: `
+                    <div class="cenario bg-geral">
+                        <div class="painel-vintage">
+                            <h2 class="subtitulo-forte">CONFIGURAÇÃO DE GRUPOS</h2>
+                            <input type="number" id="inputGrupos" placeholder="Qtd de Grupos">
+                            <button class="btn-trail" onclick="AppBase.mudarPagina('menu')">Salvar</button>
+                        </div>
+                    </div>`,
 
-    .bg-inicio { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
-    .bg-menu { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000'); }
+                percursos: `
+                    <div class="cenario bg-geral">
+                        <div class="painel-vintage">
+                            <h2 class="subtitulo-forte">MAPEAMENTO DE ROTA</h2>
+                            <input type="number" id="inputPontos" placeholder="Qtd de Objetivos">
+                            <button class="btn-trail" onclick="AppBase.mudarPagina('menu')">Salvar</button>
+                        </div>
+                    </div>`
+            },
 
-    .painel-vintage {
-        background: var(--creme-painel);
-        border: 3px solid var(--marrom);
-        padding: 25px; border-radius: 5px;
-        width: 85%; max-width: 380px;
-        box-shadow: 8px 8px 0px var(--marrom);
-        text-align: center;
-        z-index: 10;
-    }
+            // Comando de Transição
+            mudarPagina(p) {
+                this.container.innerHTML = this.templates[p];
+            },
 
-    .btn-v {
-        width: 100%; padding: 15px; margin-top: 12px;
-        border: 2px solid var(--marrom); background: var(--verde);
-        color: white; cursor: pointer; font-weight: bold; text-transform: uppercase;
-    }
+            init() {
+                this.mudarPagina('inicio');
+            }
+        };
 
-    /* Elementos do Mapa */
-    #map-container { background: #000; }
-    
-    .map-btn {
-        pointer-events: auto; background: var(--marrom);
-        color: white; border: 2px solid white; 
-        font-family: 'Roboto', sans-serif; font-weight: bold; 
-        border-radius: 5px; font-size: 0.8rem;
-    }
-
-    .leaflet-popup-content {
-        font-family: 'Roboto', sans-serif;
-        text-align: center;
-        color: var(--marrom);
-    }
-
-    .btn-excluir { background: #d32f2f; color: white; border: none; padding: 8px; cursor: pointer; border-radius: 4px; margin-top: 5px; width: 100%; font-weight: bold; }
-    .btn-salvar-pop { background: var(--verde); color: white; border: none; padding: 8px; cursor: pointer; border-radius: 4px; margin-top: 5px; width: 100%; font-weight: bold; }
-
-    .hidden { display: none; }
-    h1, h2 { color: var(--verde); margin-bottom: 15px; font-size: 2.5rem; }
-</style>
->
-
-<div id="app-root"></div>
-
-<div id="map-container" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;">
-    <button class="map-btn btn-gps" onclick="App.localizarUsuario()" 
-        style="position: absolute; bottom: 180px; right: 15px; z-index: 10000; background: #1976d2; color: white; border: 2px solid white; padding: 12px; border-radius: 5px;">
-        📍 POSIÇÃO
-    </button>
-
-    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 10000;">
-        <button id="btnAcaoMapa" class="btn-v fonte-forte" onclick="App.alternarModoEdicao()" style="margin: 0;">ADICIONAR PONTOS</button>
-        <button id="btnVoltarMapa" class="btn-v fonte-forte" onclick="App.fecharMapa()" style="background: #6d4c41; margin: 0;">VOLTAR AO MENU</button>
-    </div>
-    <div id="map" style="width: 100%; height: 100%;"></div>
-</div>
+        // Inicialização
+        window.onload = () => AppBase.init();
+    </script>
 </body>
 </html>
