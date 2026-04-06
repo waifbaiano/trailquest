@@ -3,153 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest - Base System</title>
+    <title>TrailQuest - Reset Clean</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+
     <style>
-        /* SISTEMA DE TRANSMISSÃO CSS INTEGRADO */
+        /* CSS DE LIMPEZA E BASE VISUAL */
         :root {
-            --verde-selva: #2e7d32;
-            --marrom-couro: #3e2723;
-            --creme-papel: rgba(255, 253, 231, 0.98);
-            --preto-noite: #1a1a1a;
-            --laranja-mapa: #ffa000;
+            --verde: #2e7d32;
+            --marrom: #3e2723;
+            --creme: rgba(255, 253, 231, 0.98);
+            --branco: #ffffff;
         }
+
         * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
+            margin: 0; padding: 0; box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
         }
+
         body, html { 
-            height: 100%; 
-            width: 100%; 
+            height: 100%; width: 100%; 
             font-family: 'Special Elite', serif; 
-            background-color: var(--preto-noite);
-            color: var(--marrom-couro);
+            background: #1a1a1a; 
             overflow: hidden; 
         }
-        /* Definição de Backgrounds por Página */
-        .cenario {
-            width: 100vw; 
-            height: 100vh;
-            background-size: cover; 
-            background-position: center;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-        .bg-inicio { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
-        .bg-geral { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000'); }
-        /* Painel Vintage */
-        .painel-vintage {
-            background: var(--creme-papel);
-            border: 3px solid var(--marrom-couro);
-            padding: 30px;
-            border-radius: 4px;
-            width: 85%;
-            max-width: 400px;
-            box-shadow: 12px 12px 0px var(--marrom-couro);
-            text-align: center;
-        }
-        /* Configuração solicitada: Campos em Branco e Roboto */
-        input {
+
+        /* Aplicação da Fonte Roboto e Fundo Branco nos Inputs */
+        input, select, textarea {
             font-family: 'Roboto', sans-serif !important;
-            width: 100%;
+            background-color: var(--branco) !important;
+            color: #333 !important;
+            border: 2px solid var(--marrom);
             padding: 12px;
-            margin: 10px 0;
-            border: 2px solid var(--marrom-couro);
-            background-color: #ffffff !important; /* Totalmente branco */
-            color: #333;
+            width: 100%;
+            border-radius: 4px;
             text-align: center;
             font-size: 1rem;
-            border-radius: 4px;
+            margin: 10px 0;
         }
-        /* Botões */
-        .btn-trail {
+
+        .cenario-base {
+            width: 100vw; height: 100vh;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000');
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .painel-limpo {
+            background: var(--creme);
+            border: 3px solid var(--marrom);
+            padding: 30px;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 10px 10px 0px var(--marrom);
+            text-align: center;
+        }
+
+        .btn-base {
             width: 100%;
             padding: 16px;
-            margin-top: 15px;
-            border: 2px solid var(--marrom-couro);
-            background: var(--verde-selva);
+            background: var(--verde);
             color: white;
-            cursor: pointer;
+            border: 2px solid var(--marrom);
             font-family: 'Montserrat', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.1s;
+            cursor: pointer;
+            margin-top: 15px;
         }
-        .btn-trail:active { transform: scale(0.98); }
-        /* Utilitários de Texto */
-        .titulo-manuscrito { font-family: 'Dancing Script', cursive; font-size: 3.2rem; color: var(--verde-selva); margin-bottom: 10px; }
-        .subtitulo-forte { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin-bottom: 20px; }
-        
-        .hidden { display: none; }
+
+        .titulo-v { font-family: 'Dancing Script', cursive; color: var(--verde); font-size: 3rem; }
     </style>
 </head>
 <body>
 
-    <div id="page-container">
+    <div id="app-root">
+        <div class="cenario-base">
+            <div class="painel-limpo">
+                <h1 class="titulo-v">TrailQuest</h1>
+                <p style="font-family: 'Montserrat'; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA REINICIADO E LIMPO</p>
+                <input type="text" placeholder="Teste de Fonte Roboto">
+                <button class="btn-base" onclick="console.log('Sistema pronto')">Aguardando Idealização...</button>
+            </div>
         </div>
+    </div>
 
     <script>
-        // COMANDOS DE MUDANÇA DE PÁGINAS (ESTRUTURA BASE)
-        const AppBase = {
-            container: document.getElementById('page-container'),
-            
-            // Definição das Telas (Templates)
-            templates: {
-                inicio: `
-                    <div class="cenario bg-inicio">
-                        <div class="painel-vintage">
-                            <h1 class="titulo-manuscrito">TrailQuest</h1>
-                            <p class="subtitulo-forte">EXPLORAÇÃO & AVENTURA</p>
-                            <button class="btn-trail" onclick="AppBase.mudarPagina('menu')">Iniciar</button>
-                        </div>
-                    </div>`,
-                
-                menu: `
-                    <div class="cenario bg-geral">
-                        <div class="painel-vintage">
-                            <h2 class="subtitulo-forte">MENU PRINCIPAL</h2>
-                            <button class="btn-trail" onclick="AppBase.mudarPagina('grupos')">Organizar Grupos</button>
-                            <button class="btn-trail" onclick="AppBase.mudarPagina('percursos')">Organizar Percursos</button>
-                            <button class="btn-trail" style="background:#6d4c41" onclick="AppBase.mudarPagina('inicio')">Voltar</button>
-                        </div>
-                    </div>`,
-                grupos: `
-                    <div class="cenario bg-geral">
-                        <div class="painel-vintage">
-                            <h2 class="subtitulo-forte">CONFIGURAÇÃO DE GRUPOS</h2>
-                            <input type="number" id="inputGrupos" placeholder="Qtd de Grupos">
-                            <button class="btn-trail" onclick="AppBase.mudarPagina('menu')">Salvar</button>
-                        </div>
-                    </div>`,
-
-                percursos: `
-                    <div class="cenario bg-geral">
-                        <div class="painel-vintage">
-                            <h2 class="subtitulo-forte">MAPEAMENTO DE ROTA</h2>
-                            <input type="number" id="inputPontos" placeholder="Qtd de Objetivos">
-                            <button class="btn-trail" onclick="AppBase.mudarPagina('menu')">Salvar</button>
-                        </div>
-                    </div>`
-            },
-
-            // Comando de Transição
-            mudarPagina(p) {
-                this.container.innerHTML = this.templates[p];
-            },
-
-            init() {
-                this.mudarPagina('inicio');
-            }
+        /* SCRIPT DE LIMPEZA - RESET DE MEMÓRIA */
+        console.clear();
+        const App = {
+            versao: "1.0.0-reset",
+            status: "Pronto para novos comandos"
         };
-
-        // Inicialização
-        window.onload = () => AppBase.init();
+        // O código está propositalmente simples para garantir que nada trave.
     </script>
 </body>
 </html>
