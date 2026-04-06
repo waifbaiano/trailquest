@@ -81,21 +81,19 @@
     </style>
 </head>
 <body>
+    <div id="app-root"></div>
 
-    <div id="map-container">
+    <div id="map-container" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999;">
         <button class="map-btn btn-gps" onclick="App.localizarUsuario()" 
             style="position: absolute; bottom: 130px; right: 15px; z-index: 10000; background: #1976d2; color: white; border: 2px solid white; padding: 12px; border-radius: 5px; font-family: 'Montserrat'; font-weight: bold;">
             📍 MINHA POSIÇÃO
         </button>
-
         <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8); padding: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 10000;">
             <button id="btnAcaoMapa" class="btn-v fonte-forte" onclick="App.alternarModoEdicao()" style="margin: 0;">ADICIONAR PONTOS</button>
             <button id="btnVoltarMapa" class="btn-v fonte-forte" onclick="App.fecharMapa()" style="background: #6d4c41; margin: 0;">VOLTAR</button>
         </div>
-        <div id="map"></div>
+        <div id="map" style="width: 100%; height: 100%;"></div>
     </div>
-
-
     <script>
         const App = {
             root: document.getElementById('app-root'),
@@ -108,132 +106,50 @@
             dadosConfig: {},
 
             telas: {
-                inicio: () => `
-                    <div class="cenario bg-inicio">
-                        <div class="painel-vintage">
-                            <h1 class="fonte-manuscrita">TrailQuest</h1>
-                            <button class="btn-v fonte-forte" onclick="App.navegar('login')">Fazer Login</button>
-                            <button class="btn-v fonte-forte" style="background:#795548" onclick="App.navegar('participanteAcesso')">Continuar como Participante</button>
-                        </div>
-                    </div>`,
+                inicio: () => `<div class="cenario bg-inicio"><div class="painel-vintage"><h1 class="fonte-manuscrita">TrailQuest</h1><button class="btn-v fonte-forte" onclick="App.navegar('login')">Fazer Login</button><button class="btn-v fonte-forte" style="background:#795548" onclick="App.navegar('participanteAcesso')">Participante</button></div></div>`,
                 
-                login: () => `
-                    <div class="cenario bg-inicio">
-                        <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita">Bem-vindos</h2>
-                            <div style="text-align:left">
-                                <label class="fonte-forte">E-mail</label>
-                                <input type="email">
-                                <label class="fonte-forte">Senha</label>
-                                <input type="password" id="senha">
-                                <span class="olhinho" onclick="App.verSenha()">👁️</span>
-                            </div>
-                            <button class="btn-v fonte-forte" onclick="App.fazerLogin()">Entrar</button>
-                        </div>
-                    </div>`,
+                login: () => `<div class="cenario bg-inicio"><div class="painel-vintage"><h2 class="fonte-manuscrita">Bem-vindos</h2><input type="email" placeholder="E-mail"><input type="password" id="senha" placeholder="Senha"><button class="btn-v fonte-forte" onclick="App.fazerLogin()">Entrar</button></div></div>`,
 
-                menuInicial: () => `
-                    <div class="cenario bg-menu">
-                        <div class="painel-vintage">
-                            <button class="btn-v fonte-forte" onclick="App.navegar('mestre')">Organizador</button>
-                            <button class="btn-v fonte-forte" onclick="App.navegar('participanteAcesso')">Participante</button>
-                        </div>
-                    </div>`,
+                menuInicial: () => `<div class="cenario bg-menu"><div class="painel-vintage"><button class="btn-v fonte-forte" onclick="App.navegar('mestre')">Organizador</button><button class="btn-v fonte-forte" onclick="App.navegar('participanteAcesso')">Participante</button></div></div>`,
 
                 mestre: () => {
-                    // O botão continuar só aparece se grupos e percursos forem configurados
-                    const liberado = App.dadosConfig.grupos && App.dadosConfig.objetivos;
-                    return `
-                    <div class="cenario bg-menu">
-                        <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita">Mestre</h2>
-                            <button class="btn-v fonte-forte" onclick="App.navegar('percursos')">Organizar Percursos</button>
-                            <button class="btn-v fonte-forte" onclick="App.navegar('grupos')">Organizar Grupos</button>
-                            ${liberado ? `<button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.navegar('loginObjetivoMovel')">CONTINUAR</button>` : ''}
-                            <button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('menuInicial')">Voltar</button>
-                        </div>
-                    </div>`;
+                    const pronto = App.dadosConfig.grupos && App.dadosConfig.objetivos;
+                    return `<div class="cenario bg-menu"><div class="painel-vintage"><h2 class="fonte-manuscrita">Mestre</h2>
+                        <button class="btn-v fonte-forte" onclick="App.navegar('percursos')">Organizar Percursos</button>
+                        <button class="btn-v fonte-forte" onclick="App.navegar('grupos')">Organizar Grupos</button>
+                        ${pronto ? `<button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.navegar('loginObjetivoMovel')">CONTINUAR</button>` : ''}
+                        <button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('menuInicial')">Voltar</button></div></div>`;
                 },
 
-                loginObjetivoMovel: () => `
-                    <div class="cenario bg-menu">
-                        <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita">Objetivo Móvel</h2>
-                            <div class="campo-container">
-                                <label class="fonte-forte">Código do Responsável:</label>
-                                <input type="text" id="codMovel" placeholder="Digite o código">
-                            </div>
-                            <button class="btn-v fonte-forte" onclick="alert('Login realizado com sucesso!')">Entrar</button>
-                            <button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button>
-                        </div>
-                    </div>`,
+                loginObjetivoMovel: () => `<div class="cenario bg-menu"><div class="painel-vintage"><h2 class="fonte-manuscrita">Objetivo Móvel</h2><input type="text" id="codMovel" placeholder="Código"><button class="btn-v fonte-forte" onclick="alert('Acesso OK')">Entrar</button><button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button></div></div>`,
 
-                grupos: () => `
-                    <div class="cenario bg-menu">
-                        <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita">Grupos</h2>
-                            <div class="campo-container">
-                                <label class="fonte-forte">Nº Grupos (Máx 30):</label>
-                                <input type="number" id="nGrupos" oninput="App.logicaGrupos()">
-                            </div>
-                            <div id="boxPessoas" class="hidden campo-container">
-                                <label class="fonte-forte">Pessoas por grupo:</label>
-                                <input type="number" id="nPessoas" oninput="App.logicaGrupos()">
-                            </div>
-                            <div id="boxLideres" class="hidden campo-container">
-                                <label class="fonte-forte">Líderes por grupo:</label>
-                                <input type="number" id="nLideres" oninput="App.logicaGrupos()">
-                            </div>
-                            <div style="display:flex; gap:10px; margin-top:20px;">
-                                <button class="btn-v fonte-forte" style="background:#6d4c41; margin:0;" onclick="App.navegar('mestre')">Voltar</button>
-                                <button id="btnConfirmar" class="hidden btn-v fonte-forte" style="margin:0;" onclick="App.confirmarDadosMestre('grupos')">Confirmar</button>
-                            </div>
-                        </div>
-                    </div>`,
+                grupos: () => `<div class="cenario bg-menu"><div class="painel-vintage"><h2 class="fonte-manuscrita">Grupos</h2>
+                    <input type="number" id="nGrupos" placeholder="Nº Grupos (Máx 30)" oninput="App.logicaGrupos()">
+                    <div id="boxPessoas" class="hidden"><input type="number" id="nPessoas" placeholder="Pessoas por Grupo" oninput="App.logicaGrupos()"></div>
+                    <div id="boxLideres" class="hidden"><input type="number" id="nLideres" placeholder="Líderes por Grupo" oninput="App.logicaGrupos()"></div>
+                    <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button>
+                    <button id="btnConfirmar" class="hidden btn-v fonte-forte" onclick="App.confirmarDadosMestre('grupos')">Confirmar</button></div></div></div>`,
 
-                percursos: () => `
-                    <div class="cenario bg-menu">
-                        <div class="painel-vintage">
-                            <h2 class="fonte-manuscrita">Percursos</h2>
-                            <div class="campo-container">
-                                <label class="fonte-forte">Objetivos Fixos:</label>
-                                <input type="number" id="fixos" oninput="App.logicaPercurso()">
-                            </div>
-                            <div id="boxMoveis" class="hidden campo-container">
-                                <label class="fonte-forte">Objetivos Móveis:</label>
-                                <input type="number" id="moveis">
-                                <button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.abrirMapa()">Configurar Mapas</button>
-                            </div>
-                            <div style="display:flex; gap:10px; margin-top:20px;">
-                                <button class="btn-v fonte-forte" style="background:#6d4c41; margin:0;" onclick="App.navegar('mestre')">Voltar</button>
-                                <button id="btnConfirmarPercurso" class="hidden btn-v fonte-forte" style="margin:0;" onclick="App.confirmarDadosMestre('percurso')">Confirmar</button>
-                            </div>
-                        </div>
-                    </div>`,
+                percursos: () => `<div class="cenario bg-menu"><div class="painel-vintage"><h2 class="fonte-manuscrita">Percursos</h2>
+                    <input type="number" id="fixos" placeholder="Objetivos Fixos" oninput="App.logicaPercurso()">
+                    <div id="boxMoveis" class="hidden"><input type="number" id="moveis" placeholder="Objetivos Móveis">
+                    <button class="btn-v fonte-forte" style="background:#ffa000" onclick="App.abrirMapa()">Configurar Mapas</button></div>
+                    <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-v fonte-forte" style="background:#6d4c41" onclick="App.navegar('mestre')">Voltar</button>
+                    <button id="btnConfirmarPercurso" class="hidden btn-v fonte-forte" onclick="App.confirmarDadosMestre('percurso')">Confirmar</button></div></div></div>`,
 
-                participanteAcesso: () => `
-                    <div class="cenario bg-inicio">
-                        <div class="painel-vintage" style="background:#f5f5dc !important">
-                            <h2 class="fonte-manuscrita">Código de Acesso</h2>
-                            <input type="text" id="codInput" maxlength="6" oninput="App.validarCodigo(this)">
-                            <button id="btnContinuar" class="btn-v btn-desativado fonte-forte" onclick="App.confirmarAcesso()">Continuar</button>
-                            <button class="btn-v fonte-forte" style="background:none; color:var(--marrom); border:none; font-size:0.7rem" 
-                                onclick="App.navegar(App.usuarioLogado ? 'menuInicial' : 'inicio')">Voltar</button>
-                        </div>
-                    </div>`
+                participanteAcesso: () => `<div class="cenario bg-inicio"><div class="painel-vintage"><h2 class="fonte-manuscrita">Código</h2><input type="text" id="codInput" maxlength="6" oninput="App.validarCodigo(this)"><button id="btnContinuar" class="btn-v btn-desativado fonte-forte" onclick="alert('Acesso OK')">Continuar</button><button class="btn-v fonte-forte" style="background:none; color:var(--marrom); border:none; font-size:0.7rem" onclick="App.navegar('inicio')">Voltar</button></div></div>`
             },
 
             navegar(tela) { this.root.innerHTML = this.telas[tela](); },
             fazerLogin() { this.usuarioLogado = true; this.navegar('menuInicial'); },
-            verSenha() { const s = document.getElementById('senha'); s.type = s.type === 'password' ? 'text' : 'password'; },
             
             logicaGrupos() {
                 const nG = document.getElementById('nGrupos'), nP = document.getElementById('nPessoas'), nL = document.getElementById('nLideres'), btn = document.getElementById('btnConfirmar');
-                if (nG.value > 30) { alert("Inválido: Limite de 30 grupos."); nG.value = 30; }
+                if (nG.value > 30) { alert("Máximo 30 grupos!"); nG.value = 30; }
                 if (nG.value >= 1) document.getElementById('boxPessoas').classList.remove('hidden');
-                if (nP.value >= 1) { 
+                if (nP && nP.value >= 1) { 
                     document.getElementById('boxLideres').classList.remove('hidden'); btn.classList.remove('hidden');
-                    if (nL.value && parseInt(nL.value) > parseInt(nP.value)) { alert("Inválido: Líderes não podem ser mais que pessoas."); nL.value = nP.value; }
+                    if (nL && nL.value && parseInt(nL.value) > parseInt(nP.value)) { alert("Líderes inválidos!"); nL.value = nP.value; }
                 }
             },
 
@@ -245,10 +161,7 @@
             validarCodigo(input) {
                 const btn = document.getElementById('btnContinuar');
                 if (input.value.length === 6) { btn.classList.remove('btn-desativado'); btn.style.background = "var(--verde)"; }
-                else { btn.classList.add('btn-desativado'); btn.style.background = "rgba(0,0,0,0.1)"; }
             },
-
-            confirmarAcesso() { if (!document.getElementById('btnContinuar').classList.contains('btn-desativado')) alert("Acesso Autorizado!"); },
 
             confirmarDadosMestre(tipo) {
                 if(tipo === 'grupos') this.dadosConfig.grupos = document.getElementById('nGrupos').value;
@@ -256,130 +169,45 @@
                 this.navegar('mestre');
             },
 
-            abrirMapa() { /* Será definido no script final */ },
+            alternarModoEdicao() {
+                const btn = document.getElementById('btnAcaoMapa');
+                const btnVoltar = document.getElementById('btnVoltarMapa');
+                this.modoEdicao = !this.modoEdicao;
+                if (this.modoEdicao) {
+                    btn.innerText = "SALVAR EDIÇÃO"; btn.style.background = "#d32f2f"; btnVoltar.style.display = "none";
+                } else {
+                    btn.innerText = "ADICIONAR PONTOS"; btn.style.background = "var(--verde)"; btnVoltar.style.display = "block";
+                    this.corAtual = '#' + Math.floor(Math.random()*16777215).toString(16);
+                }
+            },
+
+            abrirMapa() {
+                document.getElementById('map-container').style.display = 'block';
+                if (!this.mapa) {
+                    this.mapa = L.map('map').setView([-12.5, -38.3], 13);
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.mapa);
+                    this.mapa.on('click', (e) => {
+                        if (!this.modoEdicao) { alert("Ative 'ADICIONAR PONTOS' primeiro!"); return; }
+                        L.circleMarker([e.latlng.lat, e.latlng.lng], { radius: 10, fillColor: this.corAtual, color: "#fff", weight: 2, fillOpacity: 0.8 }).addTo(this.mapa);
+                        this.marcos.push(e.latlng);
+                    });
+                }
+                setTimeout(() => this.mapa.invalidateSize(), 200);
+            },
+
+            localizarUsuario() {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const { latitude, longitude, accuracy } = pos.coords;
+                    if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
+                    this.mapa.setView([latitude, longitude], 17);
+                    this.meuCirculo = L.circle([latitude, longitude], { radius: accuracy, color: '#1976d2' }).addTo(this.mapa);
+                }, () => alert("Erro GPS"), { enableHighAccuracy: true });
+            },
+
             fecharMapa() { document.getElementById('map-container').style.display = 'none'; this.navegar('mestre'); }
         };
 
         window.onload = () => App.navegar('inicio');
     </script>
-
-<script>
-    // GARANTE QUE O OBJETO APP EXISTE ANTES DE ADICIONAR AS FUNÇÕES
-    if (typeof App !== 'undefined') {
-
-        // 1. LÓGICA DE EDIÇÃO E BOTÕES DO MAPA
-        App.alternarModoEdicao = function() {
-            const btn = document.getElementById('btnAcaoMapa');
-            const btnVoltar = document.getElementById('btnVoltarMapa');
-            
-            this.modoEdicao = !this.modoEdicao;
-
-            if (this.modoEdicao) {
-                btn.innerText = "SALVAR EDIÇÃO";
-                btn.style.background = "#d32f2f"; // Vermelho enquanto edita
-                btnVoltar.style.display = "none"; // Esconde o voltar para não sair sem salvar
-                alert("MODO EDIÇÃO: Clique no mapa para marcar os pontos.");
-            } else {
-                btn.innerText = "ADICIONAR PONTOS";
-                btn.style.background = "var(--verde)";
-                btnVoltar.style.display = "block";
-                
-                // MUDANÇA DE COR: Gera uma cor aleatória para o próximo grupo de pontos
-                this.corAtual = '#' + Math.floor(Math.random()*16777215).toString(16);
-                alert("EDIÇÃO SALVA! Se adicionar novos pontos agora, eles terão outra cor.");
-            }
-        };
-
-        // 2. CONFIGURAÇÃO E ABERTURA DO MAPA
-        App.abrirMapa = function() {
-            document.getElementById('map-container').style.display = 'block';
-            
-            if (!this.mapa) {
-                // Inicializa o mapa focado em uma região padrão
-                this.mapa = L.map('map').setView([-12.5, -38.3], 13);
-                
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Esri World Imagery'
-                }).addTo(this.mapa);
-
-                // Evento de clique no mapa
-                this.mapa.on('click', (e) => {
-                    if (!this.modoEdicao) {
-                        alert("AVISO: Clique em 'ADICIONAR PONTOS' no rodapé para conseguir marcar o mapa.");
-                        return;
-                    }
-
-                    const limite = parseInt(document.getElementById('fixos').value) || 0;
-                    if (this.marcos.length >= limite) {
-                        alert("LIMITE ATINGIDO: Você já marcou o número de objetivos fixos definidos.");
-                        return;
-                    }
-
-                    // Adiciona o marcador circular com a cor atual
-                    const marker = L.circleMarker([e.latlng.lat, e.latlng.lng], {
-                        radius: 10,
-                        fillColor: this.corAtual,
-                        color: "#ffffff",
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.9
-                    }).addTo(this.mapa);
-
-                    this.marcos.push({ marker: marker });
-                    this.desenharLinhaRoteiro();
-                });
-            }
-            
-            // Corrige o tamanho do mapa caso ele carregue cinza
-            setTimeout(() => { this.mapa.invalidateSize(); }, 200);
-        };
-
-        // 3. LINHA LARANJA (ROTEIRO)
-        App.desenharLinhaRoteiro = function() {
-            if (this.linhaRoteiro) this.mapa.removeLayer(this.linhaRoteiro);
-            
-            const coordenadas = this.marcos.map(m => m.marker.getLatLng());
-            
-            if (coordenadas.length > 1) {
-                this.linhaRoteiro = L.polyline(coordenadas, {
-                    color: '#ffa000', // Laranja
-                    weight: 4,
-                    dashArray: '10, 10',
-                    opacity: 0.8
-                }).addTo(this.mapa);
-            }
-        };
-
-        // 4. LOCALIZAÇÃO GPS (NOVA LÓGICA)
-        App.localizarUsuario = function() {
-            if (!navigator.geolocation) {
-                alert("Seu aparelho não suporta GPS.");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const { latitude, longitude, accuracy } = pos.coords;
-                    
-                    if (this.meuCirculo) this.mapa.removeLayer(this.meuCirculo);
-
-                    this.mapa.setView([latitude, longitude], 17);
-
-                    this.meuCirculo = L.circle([latitude, longitude], {
-                        radius: accuracy,
-                        color: '#1976d2',
-                        fillColor: '#1976d2',
-                        fillOpacity: 0.3
-                    }).addTo(this.mapa);
-                },
-                (err) => {
-                    alert("Erro ao acessar GPS. Verifique se a localização está ativa.");
-                },
-                { enableHighAccuracy: true }
-            );
-        };
-    }
-</script>
-
 </body>
 </html>
