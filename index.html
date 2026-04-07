@@ -86,6 +86,7 @@
             pontosTemporarios: [],
             currentPos: null,
             firstFix: false,
+            activeSlotIdx: 0,
             db: {
                 user: { nick: "" },
                 grupos: { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false },
@@ -148,6 +149,7 @@
                     <div id="modal-slots" class="modal-slots hidden">
                         <h2>Salvar no Slot</h2>
                         <div id="lista-slots"></div>
+                        <button class="btn btn-verde" onclick="App.novoMapaLimpo()">+ Novo Mapa</button>
                         <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Cancelar</button>
                     </div>
                     <div class="controles-mapa">
@@ -155,7 +157,7 @@
                     </div>
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
-                        <div class="icon-nav" onclick="App.mestre()"><span>🗺</span>Mapas</div>
+                        <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
                         <div class="icon-nav" style="opacity:0.3"><span>⚪</span>Começar</div>
                         <div class="icon-nav" onclick="App.telaGrupos()"><span>🔺</span>Grupos</div>
                         <div class="icon-nav" onclick="alert('Perfil de ${this.db.user.nick}')"><span>👤</span>Perfil</div>
@@ -166,8 +168,9 @@
 
             renderMenuEdicao() {
                 const p = this.pontoSelecionadoIdx !== null ? this.pontosTemporarios[this.pontoSelecionadoIdx] : null;
+                const corAtual = this.db.coresSlots[this.activeSlotIdx];
                 return `
-                <div class="header-edicao">
+                <div class="header-edicao" style="border-top: 5px solid ${corAtual}">
                     ${p ? `
                         <h2 style="margin:0">Editar Ponto ${this.pontoSelecionadoIdx + 1}</h2>
                         <div style="display:flex; gap:5px; margin-top:10px">
@@ -179,8 +182,8 @@
                             <button class="btn btn-marrom" style="padding:8px; margin:0; font-size:0.7rem; background:#d32f2f" onclick="App.excluirPonto()">Excluir</button>
                         </div>
                     ` : `
-                        <h2 style="margin:0">Marcar Pontos (${this.pontosTemporarios.length}/${this.db.percurso.fixos})</h2>
-                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Salvar Mapas</button>
+                        <h2 style="margin:0">Mapa ${this.activeSlotIdx + 1} (${this.pontosTemporarios.length}/${this.db.percurso.fixos})</h2>
+                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Salvar Percurso</button>
                     `}
                 </div>`;
             },
@@ -222,20 +225,23 @@
             atualizarMapaVisual() {
                 if(!this.map) return;
                 this.map.eachLayer(l => { if(l instanceof L.Marker || l instanceof L.Polyline) if(l !== this.userMarker) this.map.removeLayer(l); });
+                
+                const corPercurso = this.db.coresSlots[this.activeSlotIdx];
                 const coords = this.pontosTemporarios.map(p => p.latlng);
+
                 this.pontosTemporarios.forEach((p, i) => {
                     L.marker(p.latlng, {
                         icon: L.divIcon({
                             className: 'p-icon',
-                            html: `<div style="background:${this.db.coresSlots[0]}; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold">${i+1}</div>`
+                            html: `<div style="background:${corPercurso}; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold">${i+1}</div>`
                         })
                     }).addTo(this.map).on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
                         this.pontoSelecionadoIdx = i;
-                        this.atualizarInterfaceSuperior(); // Troca o menu sem dar zoom no mapa
+                        this.atualizarInterfaceSuperior();
                     });
                 });
-                if(coords.length > 1) L.polyline(coords, {color: this.db.coresSlots[0], weight: 3}).addTo(this.map);
+                if(coords.length > 1) L.polyline(coords, {color: corPercurso, weight: 3, dashArray: '5, 10'}).addTo(this.map);
             },
 
             salvarDetalhePonto() {
@@ -265,7 +271,7 @@
                 this.db.mapasSalvos.forEach((m, i) => {
                     container.innerHTML += `<div class="slot-card" onclick="App.finalizarSave(${i})">
                         <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
-                        <span>Mapa Slot ${i+1}</span>
+                        <span>Slot ${i+1} ${m ? '(Ocupado)' : '(Vazio)'}</span>
                     </div>`;
                 });
                 document.getElementById('modal-slots').classList.remove('hidden');
@@ -273,9 +279,21 @@
 
             finalizarSave(i) {
                 this.db.mapasSalvos[i] = { pontos: [...this.pontosTemporarios] };
-                alert("Mapa Salvo no Slot " + (i+1));
-                this.modoEdicao = false;
-                this.mestre();
+                this.activeSlotIdx = i; 
+                alert("Mapa " + (i+1) + " Salvo com Sucesso!");
+                document.getElementById('modal-slots').classList.add('hidden');
+                this.atualizarInterfaceSuperior();
+            },
+
+            novoMapaLimpo() {
+                // Procura o próximo slot vazio para sugerir a cor
+                let next = this.db.mapasSalvos.findIndex(s => s === null);
+                this.activeSlotIdx = next !== -1 ? next : 0;
+                this.pontosTemporarios = [];
+                this.pontoSelecionadoIdx = null;
+                document.getElementById('modal-slots').classList.add('hidden');
+                this.atualizarMapaVisual();
+                this.atualizarInterfaceSuperior();
             },
 
             mestre() {
@@ -348,7 +366,7 @@
             checkP() { if(document.getElementById('ip1').value >= 1) { document.getElementById('sp-mov').classList.remove('hidden'); document.getElementById('btn-p-ok').classList.add('btn-ativo'); } },
             saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; this.mestre(); },
 
-            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
+            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.activeSlotIdx = 0; this.comando(); },
             focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 18); }
         };
 
