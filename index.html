@@ -3,733 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest PRO - Ultimate Edition</title>
+    <title>TrailQuest Ultra PRO | Enterprise Edition</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&family=Roboto:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Roboto+Mono:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --verde-comando: #2e7d32;
-            --verde-neon: #4caf50;
-            --marrom-voltar: #3e2723;
-            --bege-menu: rgba(255, 253, 231, 0.98);
-            --amarelo-ativo: #ffeb3b;
-            --branco: #ffffff;
-            --vermelho-erro: #c62828;
-            --sombra: 0 4px 15px rgba(0,0,0,0.4);
+            --primary: #1b5e20;
+            --primary-light: #4c8c4a;
+            --accent: #ffd600;
+            --danger: #d32f2f;
+            --bg-paper: #f5f5f0;
+            --text-dark: #212121;
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
-        /* Reset e Base */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body, html { 
             height: 100%; width: 100%; 
-            font-family: 'Special Elite', serif; 
-            background: #121212; 
-            overflow: hidden; 
-            color: #333;
+            font-family: 'Roboto Mono', monospace; 
+            background: #000; color: var(--text-dark);
+            overflow: hidden;
         }
 
-        /* Mapa em Tela Cheia */
-        #map { 
-            width: 100%; height: 100%; 
-            position: absolute; top: 0; left: 0; 
-            z-index: 1; background: #000; 
-        }
+        /* Mapa e UI Base */
+        #map { width: 100%; height: 100%; position: absolute; z-index: 1; }
 
-        /* UI de Camadas Superiores */
-        .overlay-ui { position: relative; z-index: 10; pointer-events: none; }
-        .overlay-ui * { pointer-events: auto; }
+        .app-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1000; pointer-events: none;
+            display: flex; flex-direction: column;
+        }
+        .app-layer * { pointer-events: auto; }
 
-        /* Estilização do Perfil Estilo Strava */
-        .perfil-card-header {
-            background: var(--bege-menu);
-            padding: 20px;
-            border: 2px solid var(--marrom-voltar);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: var(--sombra);
-        }
-        .nick-display { font-family: 'Montserrat'; font-size: 1.8rem; font-weight: 700; color: var(--marrom-voltar); display: block; }
-        .email-display { font-family: 'Roboto'; font-size: 0.8rem; color: #777; font-weight: 300; }
-
-        .metricas-container {
-            background: var(--bege-menu);
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
-        }
-        .grafico-flex {
-            height: 100px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #ccc;
-        }
-        .barra-metrica {
-            background: linear-gradient(to top, var(--verde-comando), var(--verde-neon));
-            width: 14px;
-            border-radius: 3px 3px 0 0;
-            transition: height 1s ease-out;
-        }
-        
-        .calendario-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .dia-box {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6rem;
-            font-weight: bold;
-            color: #444;
-            position: relative;
-            border: 1px solid #eee;
-        }
-        .dia-fogo::after {
-            content: '🔥';
-            position: absolute;
-            font-size: 1rem;
-            color: white;
-            -webkit-text-stroke: 1px #888;
-            top: -5px;
-        }
-
-        /* Menu de Edição de Mapa */
-        .painel-edicao {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bege-menu);
-            padding: 15px;
-            border: 2px solid var(--marrom-voltar);
-            border-radius: 12px;
-            width: 92%;
-            max-width: 480px;
-            text-align: center;
-            box-shadow: var(--sombra);
-            z-index: 1005;
-        }
-
-        /* Botões e Inputs Customizados */
-        .cenario-full {
-            width: 100vw; height: 100vh;
-            background-size: cover; background-position: center;
+        /* Telas Fullscreen */
+        .screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
             display: flex; align-items: center; justify-content: center;
-            overflow-y: auto; padding: 20px;
-        }
-        .menu-wrapper {
-            background: var(--bege-menu);
-            border: 3px solid var(--marrom-voltar);
-            padding: 30px;
-            width: 100%;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 12px 12px 0px var(--marrom-voltar);
-            z-index: 1000;
+            z-index: 2000; transition: opacity 0.3s;
         }
 
-        .input-quest {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-family: 'Roboto';
-            font-size: 1rem;
-            text-align: center;
-            transition: border 0.3s;
+        .container-bege {
+            background: var(--bg-paper);
+            width: 90%; max-width: 450px;
+            padding: 30px; border-radius: 4px;
+            border: 3px solid var(--primary);
+            box-shadow: 12px 12px 0px var(--primary);
+            max-height: 90vh; overflow-y: auto;
         }
-        .input-quest:focus { border-color: var(--verde-comando); outline: none; }
 
-        .btn-base {
-            width: 100%;
-            padding: 18px;
-            margin-top: 15px;
-            font-family: 'Montserrat';
-            font-weight: 700;
-            text-transform: uppercase;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: transform 0.1s, filter 0.2s;
+        /* Tipografia */
+        h1 { font-family: 'Special Elite', serif; color: var(--primary); font-size: 2.5rem; text-align: center; }
+        h2 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; margin: 15px 0 8px; color: #444; border-left: 4px solid var(--primary); padding-left: 10px; }
+
+        /* Inputs e Botões Estilizados */
+        .input-group { margin-bottom: 15px; }
+        input {
+            width: 100%; padding: 15px; border: 2px solid #ddd;
+            background: white; font-family: inherit; font-size: 1rem;
+            border-radius: 4px; transition: 0.3s;
         }
-        .btn-base:active { transform: scale(0.98); }
-        .btn-verde { background: var(--verde-comando); color: white; }
-        .btn-marrom { background: var(--marrom-voltar); color: white; }
-        .btn-locked { background: #999 !important; cursor: not-allowed; opacity: 0.6; }
-        .btn-glow { background: var(--amarelo-ativo) !important; color: #000 !important; box-shadow: 0 0 15px var(--amarelo-ativo); }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(27,94,32,0.2); }
 
-        /* Rodapé de Navegação */
-        .nav-footer {
-            position: fixed;
-            bottom: 0; width: 100%;
-            background: #ffffff;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0 25px 0;
-            border-top: 2px solid var(--marrom-voltar);
-            z-index: 1001;
+        .btn {
+            width: 100%; padding: 18px; border: none; border-radius: 4px;
+            font-family: 'Montserrat', sans-serif; font-weight: 700;
+            text-transform: uppercase; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { transform: translateY(2px); filter: brightness(1.2); }
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; }
+
+        /* Componentes de Status e Cards */
+        .card-user {
+            background: white; padding: 15px; margin-bottom: 10px;
+            border-radius: 4px; border-left: 6px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 10px; background: #e0e0e0; }
+
+        /* Rodapé de Navegação Alta Performance */
+        .navbar {
+            position: fixed; bottom: 0; width: 100%;
+            background: white; display: flex; justify-content: space-around;
+            padding: 10px 0 25px; border-top: 2px solid var(--primary);
+            z-index: 1500;
         }
         .nav-item {
-            flex: 1;
-            text-align: center;
-            color: #666;
-            font-family: 'Montserrat';
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
+            flex: 1; text-align: center; font-size: 0.65rem;
+            font-weight: 700; color: #666; font-family: 'Montserrat';
         }
-        .nav-item span { font-size: 1.6rem; display: block; margin-bottom: 3px; }
-        .nav-active { color: var(--verde-comando); }
+        .nav-item span { font-size: 1.5rem; display: block; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary); }
 
-        /* Pin do Mapa */
-        .custom-marker {
-            background: var(--verde-comando);
-            color: white;
-            border: 3px solid white;
-            border-radius: 50%;
-            width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 16px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.5);
-        }
-
-        /* Modais */
-        .modal-background {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.7); z-index: 1099;
-        }
-        .modal-content {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--bege-menu); border: 3px solid var(--marrom-voltar);
-            padding: 25px; width: 85%; max-width: 340px; z-index: 1100;
-        }
-        .card-item {
-            background: white; border: 1px solid #ccc;
-            margin: 10px 0; padding: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            font-family: 'Montserrat'; font-size: 0.8rem; cursor: pointer;
+        /* Elementos de Mapa */
+        .custom-pin {
+            background: var(--primary); color: white;
+            border: 2px solid white; border-radius: 50%;
+            width: 30px; height: 30px; display: flex;
+            align-items: center; justify-content: center;
+            font-weight: bold; box-shadow: var(--shadow);
         }
 
         .hidden { display: none !important; }
-        .bg-forest { background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
     </style>
 </head>
 <body>
 
-    <div id="main-app"></div>
+    <div id="map"></div>
+
+    <div id="ui-engine" class="app-layer">
+        </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        const TrailApp = {
-            container: document.getElementById('main-app'),
+        /**
+         * TRAILQUEST CORE ENGINE v5.0
+         * Sistema otimizado para alta escala e resiliência de conexão.
+         */
+        const TQ = {
+            state: {
+                user: JSON.parse(localStorage.getItem('tq_user')) || { nick: '', role: '', session: null },
+                config: JSON.parse(localStorage.getItem('tq_config')) || { groups: null, percurso: null },
+                slots: JSON.parse(localStorage.getItem('tq_slots')) || [null, null, null, null, null],
+                activeSlot: 0,
+                points: [],
+                onlineUsers: 100, // Simulação de carga
+                isOnline: navigator.onLine
+            },
+
             map: null,
-            userPos: null,
+            markers: [],
             userMarker: null,
-            editMode: false,
-            selectedPoint: null,
-            tempPoints: [],
-            activeSlot: 0,
-            generatedCode: null,
 
-            // Banco de Dados Local Estendido
-            db: {
-                user: { nickname: "", email: "explorer@trailquest.com.br" },
-                config: {
-                    grupos: { total: 0, integrantes: 0, lideres: 0, extra: "", status: false },
-                    percurso: { fixos: 0, moveis: 0, status: false }
-                },
-                mapSlots: [null, null, null, null, null],
-                history: [
-                    { data: "01/04/2026", hora: "10:30", p: ["Marcos", "Julia"] },
-                    { data: "05/04/2026", hora: "16:45", p: ["Equipe Alfa"] }
-                ],
-                colors: ['#2e7d32', '#c62828', '#f9a825', '#1565c0', '#424242']
+            init() {
+                this.renderSplash();
+                window.addEventListener('online', () => this.updateConnection(true));
+                window.addEventListener('offline', () => this.updateConnection(false));
             },
 
-            init() { this.screenSplash(); },
-
-            render(html) { this.container.innerHTML = html; },
-
-            // --- TELAS INICIAIS ---
-            screenSplash() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h1 style="font-family:'Dancing Script'; font-size:4rem; color:var(--verde-comando); margin-bottom:10px">TrailQuest</h1>
-                        <p style="font-size:0.8rem; margin-bottom:30px">SISTEMA DE ORIENTAÇÃO PROFISSIONAL</p>
-                        <button class="btn-base btn-verde" onclick="TrailApp.screenLogin()">Entrar como Organizador</button>
-                        <button class="btn-base btn-verde" onclick="TrailApp.screenGuest()">Código de Participante</button>
-                    </div>
-                </div>`);
+            updateConnection(status) {
+                this.state.isOnline = status;
+                console.log(status ? "Sinal Restaurado" : "Modo Offline Ativado");
             },
 
-            screenLogin() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Acesso Administrativo</h2>
-                        <input type="email" class="input-quest" id="l-email" placeholder="E-mail">
-                        <input type="password" class="input-quest" id="l-pass" placeholder="Senha" oninput="TrailApp.validaLogin()">
-                        <button id="btn-login-go" class="btn-base btn-locked" disabled onclick="TrailApp.screenNick()">Acessar Painel</button>
-                        <button class="btn-base" style="background:none; color:black" onclick="TrailApp.screenSplash()">Voltar</button>
-                    </div>
-                </div>`);
+            save() {
+                localStorage.setItem('tq_user', JSON.stringify(this.state.user));
+                localStorage.setItem('tq_config', JSON.stringify(this.state.config));
+                localStorage.setItem('tq_slots', JSON.stringify(this.state.slots));
             },
 
-            validaLogin() {
-                const pass = document.getElementById('l-pass').value;
-                const btn = document.getElementById('btn-login-go');
-                if(pass.length >= 8) {
-                    btn.disabled = false; btn.classList.remove('btn-locked'); btn.classList.add('btn-glow');
-                } else {
-                    btn.disabled = true; btn.classList.add('btn-locked'); btn.classList.remove('btn-glow');
+            // --- ROTEAMENTO ---
+            renderSplash() {
+                document.getElementById('ui-engine').innerHTML = `
+                    <div class="screen" style="background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000') center/cover">
+                        <div class="container-bege">
+                            <h1>TrailQuest</h1>
+                            <p style="text-align:center; font-size:0.7rem; letter-spacing:2px; margin-bottom:30px">SISTEMA DE ALTA PERFORMANCE</p>
+                            <button class="btn btn-primary" onclick="TQ.go('login')">Painel Administrativo</button>
+                            <button class="btn btn-primary" onclick="TQ.go('guest')">Entrar como Participante</button>
+                        </div>
+                    </div>`;
+            },
+
+            go(page) {
+                const ui = document.getElementById('ui-engine');
+                switch(page) {
+                    case 'login': this.viewLogin(); break;
+                    case 'guest': this.viewGuest(); break;
+                    case 'nick': this.viewNick(); break;
+                    case 'main': this.viewMain(); break;
+                    case 'config': this.viewConfig(); break;
+                    case 'monitor': this.viewMonitor(); break;
                 }
             },
 
-            screenGuest() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Código da Trilha</h2>
-                        <input type="text" class="input-quest" id="guest-code" placeholder="Ex: 554321">
-                        <button class="btn-base btn-verde" onclick="TrailApp.screenNick()">Entrar na Missão</button>
-                        <button class="btn-base btn-marrom" onclick="TrailApp.screenSplash()">Voltar</button>
+            // --- VIEWS ---
+            viewLogin() {
+                document.getElementById('ui-engine').innerHTML = `
+                <div class="screen">
+                    <div class="container-bege">
+                        <h2>Autenticação</h2>
+                        <input type="email" placeholder="E-mail Administrativo" class="input-group">
+                        <input type="password" id="pass" placeholder="Senha de Acesso" class="input-group" oninput="TQ.checkPass(this.value)">
+                        <button id="btn-auth" class="btn btn-disabled" disabled onclick="TQ.go('nick')">Acessar Sistema</button>
+                        <button class="btn btn-outline" onclick="TQ.renderSplash()">Voltar</button>
                     </div>
-                </div>`);
+                </div>`;
             },
 
-            screenNick() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
+            checkPass(v) {
+                const btn = document.getElementById('btn-auth');
+                if(v.length >= 8) { btn.disabled = false; btn.className = 'btn btn-primary'; }
+                else { btn.disabled = true; btn.className = 'btn btn-disabled'; }
+            },
+
+            viewNick() {
+                document.getElementById('ui-engine').innerHTML = `
+                <div class="screen">
+                    <div class="container-bege">
                         <h2>Identificação</h2>
-                        <p style="font-size:0.7rem; margin-bottom:10px">Como você será visto pelos outros?</p>
-                        <input type="text" class="input-quest" id="u-nick" placeholder="Nickname">
-                        <button class="btn-base btn-verde" onclick="TrailApp.saveProfile()">Salvar Perfil</button>
-                    </div>
-                </div>`);
-            },
-
-            saveProfile() {
-                const nick = document.getElementById('u-nick').value;
-                this.db.user.nickname = nick || "Explorador";
-                this.screenHome();
-            },
-
-            screenHome() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h1>Bem-vindo, ${this.db.user.nickname}</h1>
-                        <button class="btn-base btn-verde" onclick="TrailApp.startOrganizador()">Painel Organizador</button>
-                        <button class="btn-base btn-verde" onclick="TrailApp.screenGuest()">Mudar de Trilha</button>
-                        <button class="btn-base btn-marrom" style="margin-top:40px" onclick="TrailApp.screenSplash()">Sair</button>
-                    </div>
-                </div>`);
-            },
-
-            // --- NAVEGAÇÃO PRINCIPAL (MAPA) ---
-            startOrganizador() {
-                this.editMode = false;
-                const temMapa = this.db.mapSlots.some(s => s !== null);
-                
-                this.render(`
-                    <div id="map"></div>
-                    <div id="ui-layer" class="overlay-ui">
-                        ${this.generatedCode ? `<div class="painel-edicao" style="top:60px; background:white; font-weight:bold; font-size:1.2rem; border-color:var(--verde-comando)">CÓDIGO ATIVO: ${this.generatedCode}</div>` : ''}
-                    </div>
-
-                    <div id="modal-container" class="hidden"></div>
-
-                    <div class="nav-footer">
-                        <div class="nav-item" onclick="TrailApp.screenHome()"><span>🏠</span>Home</div>
-                        <div class="nav-item" onclick="TrailApp.screenMestre()"><span>🗺️</span>Mapas</div>
-                        <div class="nav-item ${temMapa ? '' : 'hidden'}" style="color:var(--verde-comando)" onclick="alert('Iniciando monitoramento...')"><span>⚪</span>Começar</div>
-                        <div class="nav-item" onclick="TrailApp.screenHistory()"><span>🔺</span>Atividades</div>
-                        <div class="nav-item" onclick="TrailApp.screenPerfil()"><span>👤</span>Perfil</div>
-                    </div>
-                `);
-                this.initLeaflet();
-            },
-
-            // --- GESTÃO DE MAPAS E CONFIGURAÇÕES ---
-            screenMestre() {
-                const pronto = this.db.config.grupos.status && this.db.config.percurso.status;
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2 style="font-size:1.2rem">Mestre de Trilha</h2>
-                        <button class="btn-base btn-verde" onclick="TrailApp.configGrupos()">1. Definir Grupos</button>
-                        <button class="btn-base btn-verde" onclick="TrailApp.configPercurso()">2. Definir Objetivos</button>
-                        <hr style="margin:20px 0; opacity:0.1">
-                        <button class="btn-base ${pronto ? 'btn-glow' : 'btn-locked'}" ${pronto ? '' : 'disabled'} onclick="TrailApp.startEditMode()">
-                            Continuar para o Mapa
-                        </button>
-                        <button class="btn-base btn-marrom" onclick="TrailApp.startOrganizador()">Cancelar</button>
-                    </div>
-                </div>`);
-            },
-
-            configGrupos() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Qtd de Grupos</h2>
-                        <input type="number" class="input-quest" id="g-qtd" value="${this.db.config.grupos.total || ''}" placeholder="Ex: 5" oninput="TrailApp.logicG()">
-                        
-                        <div id="step-p" class="${this.db.config.grupos.total > 0 ? '' : 'hidden'}">
-                            <h2>Pessoas por Grupo</h2>
-                            <input type="number" class="input-quest" id="g-pes" value="${this.db.config.grupos.integrantes || ''}" placeholder="Ex: 3" oninput="TrailApp.logicG()">
-                        </div>
-
-                        <div id="step-l" class="${this.db.config.grupos.integrantes > 0 ? '' : 'hidden'}">
-                            <input type="text" class="input-quest" id="g-ext" value="${this.db.config.grupos.extra || ''}" placeholder="Info Adicional (Opcional)">
-                            <h2>Líderes por Grupo</h2>
-                            <input type="number" class="input-quest" id="g-lid" value="${this.db.config.grupos.lideres || ''}" placeholder="Ex: 1" oninput="TrailApp.logicG()">
-                            <button id="btn-g-save" class="btn-base btn-locked" disabled onclick="TrailApp.saveG()">Salvar Grupos</button>
-                        </div>
-                        <button class="btn-base btn-marrom" onclick="TrailApp.screenMestre()">Voltar</button>
-                    </div>
-                </div>`);
-                this.logicG();
-            },
-
-            logicG() {
-                const g1 = document.getElementById('g-qtd').value;
-                const g2 = document.getElementById('g-pes').value;
-                const g4 = document.getElementById('g-lid').value;
-                if(g1 > 0) document.getElementById('step-p').classList.remove('hidden');
-                if(g2 > 0) document.getElementById('step-l').classList.remove('hidden');
-                const btn = document.getElementById('btn-g-save');
-                if(g1 > 0 && g2 > 0 && g4 > 0) { btn.disabled=false; btn.classList.remove('btn-locked'); btn.classList.add('btn-verde'); }
-            },
-
-            saveG() {
-                this.db.config.grupos = {
-                    total: parseInt(document.getElementById('g-qtd').value),
-                    integrantes: parseInt(document.getElementById('g-pes').value),
-                    lideres: parseInt(document.getElementById('g-lid').value),
-                    extra: document.getElementById('g-ext').value,
-                    status: true
-                };
-                this.screenMestre();
-            },
-
-            configPercurso() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Objetivos Fixos</h2>
-                        <input type="number" class="input-quest" id="p-fix" value="${this.db.config.percurso.fixos || ''}" placeholder="Qtd de Pontos" oninput="TrailApp.logicP()">
-                        
-                        <div id="step-mov" class="${this.db.config.percurso.fixos > 0 ? '' : 'hidden'}">
-                            <h2>Objetivos Móveis</h2>
-                            <input type="number" class="input-quest" id="p-mov" value="${this.db.config.percurso.moveis || ''}" placeholder="Qtd de Alvos">
-                            <button id="btn-p-save" class="btn-base btn-verde" onclick="TrailApp.saveP()">Salvar Percurso</button>
-                        </div>
-                        <button class="btn-base btn-marrom" onclick="TrailApp.screenMestre()">Voltar</button>
-                    </div>
-                </div>`);
-            },
-
-            logicP() { if(document.getElementById('p-fix').value > 0) document.getElementById('step-mov').classList.remove('hidden'); },
-
-            saveP() {
-                this.db.config.percurso = {
-                    fixos: document.getElementById('p-fix').value,
-                    moveis: document.getElementById('p-mov').value,
-                    status: true
-                };
-                this.screenMestre();
-            },
-
-            // --- MODO EDIÇÃO DE MAPA ---
-            startEditMode() {
-                this.editMode = true;
-                this.render(`
-                    <div id="map"></div>
-                    <div id="ui-header">${this.uiEdicaoTopo()}</div>
-                    <div id="modal-container" class="hidden"></div>
-                    <button class="btn-base btn-verde" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); width:240px; border-radius:30px; z-index:2000; box-shadow:var(--sombra)" onclick="TrailApp.flowContinuar()">Continuar</button>
-                `);
-                this.initLeaflet();
-            },
-
-            uiEdicaoTopo() {
-                const p = this.selectedPoint !== null ? this.tempPoints[this.selectedPoint] : null;
-                const cor = this.db.colors[this.activeSlot];
-                return `
-                <div class="painel-edicao" style="border-top: 6px solid ${cor}">
-                    ${p ? `
-                        <h3>Editando Ponto ${this.selectedPoint + 1}</h3>
-                        <input type="text" class="input-quest" id="point-name" value="${p.name || ''}" placeholder="Nome do Local">
-                        <div style="display:flex; gap:10px">
-                            <button class="btn-base btn-verde" style="margin:0" onclick="TrailApp.savePointData()">OK</button>
-                            <button class="btn-base btn-marrom" style="margin:0; background:var(--vermelho-erro)" onclick="TrailApp.deletePoint()">Remover</button>
-                        </div>
-                    ` : `
-                        <h3>Slot ${this.activeSlot + 1} Ativo</h3>
-                        <p style="font-size:0.6rem">Toque no mapa para marcar os pontos fixos.</p>
-                        <button class="btn-base btn-verde" style="padding:5px; width:auto; font-size:0.7rem" onclick="TrailApp.modalSlots()">Mudar/Salvar Slot</button>
-                    `}
-                </div>`;
-            },
-
-            modalSlots() {
-                const modal = document.getElementById('modal-container');
-                modal.classList.remove('hidden');
-                modal.innerHTML = `
-                <div class="modal-background">
-                    <div class="modal-content">
-                        <h2>Gerenciar Slots</h2>
-                        ${this.db.mapSlots.map((s, i) => `
-                            <div class="card-item" onclick="TrailApp.selectSlot(${i})">
-                                <div style="width:14px; height:14px; background:${this.db.colors[i]}; border-radius:50%"></div>
-                                <span>Mapa Slot ${i+1} ${s ? '(Carregar)' : '(Vazio)'}</span>
-                            </div>
-                        `).join('')}
-                        <button class="btn-base btn-marrom" onclick="document.getElementById('modal-container').classList.add('hidden')">Fechar</button>
+                        <p style="font-size:0.7rem; margin-bottom:15px">Defina seu codinome para transmissão em tempo real.</p>
+                        <input type="text" id="nick-in" placeholder="Ex: Alfa_Líder" class="input-group">
+                        <button class="btn btn-primary" onclick="TQ.setNick()">Confirmar e Iniciar</button>
                     </div>
                 </div>`;
             },
 
-            selectSlot(i) {
-                if(this.db.mapSlots[i]) {
-                    this.tempPoints = JSON.parse(JSON.stringify(this.db.mapSlots[i].points));
-                } else {
-                    this.db.mapSlots[i] = { points: JSON.parse(JSON.stringify(this.tempPoints)) };
-                }
-                this.activeSlot = i;
-                document.getElementById('modal-container').classList.add('hidden');
-                this.drawMarkers();
-                document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
+            setNick() {
+                this.state.user.nick = document.getElementById('nick-in').value || 'User_' + Math.floor(Math.random()*999);
+                this.save();
+                this.go('main');
             },
 
-            // --- FLUXO FINAL E CÓDIGOS ---
-            flowContinuar() {
-                if(this.db.config.percurso.moveis > 0) {
-                    this.render(`
-                    <div class="cenario-full bg-forest">
-                        <div class="menu-wrapper">
-                            <h2>Segurança de Alvos</h2>
-                            <p style="font-size:0.7rem; margin-bottom:15px">Defina o código chave para objetivos móveis.</p>
-                            <input type="text" class="input-quest" id="key-mov" placeholder="Mínimo 6 caracteres" oninput="TrailApp.validaKey()">
-                            <button id="btn-key-go" class="btn-base btn-locked" disabled onclick="TrailApp.finalCodeGen()">Gerar Código de Acesso</button>
-                        </div>
-                    </div>`);
-                } else {
-                    this.finalCodeGen();
-                }
-            },
-
-            validaKey() {
-                const k = document.getElementById('key-mov').value;
-                const b = document.getElementById('btn-key-go');
-                if(k.length >= 6) { b.disabled=false; b.classList.remove('btn-locked'); b.classList.add('btn-glow'); }
-            },
-
-            finalCodeGen() {
-                this.generatedCode = Math.floor(100000 + Math.random() * 900000);
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Código de Acesso Gerado</h2>
-                        <div style="background:white; border:2px dashed var(--verde-comando); padding:25px; margin:20px 0">
-                            <h1 style="font-size:3.5rem; letter-spacing:8px">${this.generatedCode}</h1>
-                        </div>
-                        <p style="font-size:0.8rem">Compartilhe este código com os participantes para que eles entrem na trilha.</p>
-                        <button class="btn-base btn-verde" onclick="TrailApp.screenMonitor()">Painel de Participantes</button>
+            viewMain() {
+                const ui = document.getElementById('ui-engine');
+                ui.innerHTML = `
+                    <div id="ui-controls" class="app-layer">
+                        <div id="top-panel"></div>
                     </div>
-                </div>`);
+                    <nav class="navbar">
+                        <div class="nav-item active" onclick="TQ.go('main')"><span>🏠</span>Dashboard</div>
+                        <div class="nav-item" onclick="TQ.go('config')"><span>⚙️</span>Ajustes</div>
+                        <div class="nav-item" onclick="TQ.go('monitor')"><span>📡</span>Radar</div>
+                        <div class="nav-item" onclick="TQ.viewProfile()"><span>👤</span>Perfil</div>
+                    </nav>
+                `;
+                this.initMap();
+                this.refreshUI();
             },
 
-            screenMonitor() {
-                const listaFake = ["Guto_Trail", "Ana_Explorer", "Beta_Tester"];
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Participantes Ativos</h2>
-                        <div style="max-height:300px; overflow-y:auto; margin:15px 0">
-                            ${listaFake.map(u => `
-                                <div class="card-item" onclick="TrailApp.configCheckin('${u}')">
-                                    <span>👤 ${u}</span>
-                                    <span style="color:var(--verde-comando)">Check-in ➔</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn-base btn-verde" onclick="TrailApp.startOrganizador()">Abrir Mapa de Comando</button>
-                    </div>
-                </div>`);
-            },
-
-            configCheckin(user) {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Configurar: ${user}</h2>
-                        <p style="font-size:0.7rem">Atribua grupo e mapa para o participante.</p>
+            viewConfig() {
+                document.getElementById('ui-engine').innerHTML = `
+                <div class="screen">
+                    <div class="container-bege">
+                        <h1>Configurações</h1>
                         
-                        <input type="number" class="input-quest" id="u-grupo" placeholder="Número do Grupo (1 a ${this.db.config.grupos.total})">
-                        
-                        <h2>Mapa Designado</h2>
-                        ${this.db.mapSlots.map((s, i) => `
-                            <div class="card-item" onclick="TrailApp.setDifficulty('${user}', ${i})">
-                                Slot ${i+1} ${s ? '✅' : '(Vazio)'}
-                            </div>
-                        `).join('')}
-                        
-                        <button class="btn-base btn-marrom" onclick="TrailApp.screenMonitor()">Voltar</button>
-                    </div>
-                </div>`);
-            },
-
-            setDifficulty(user, mapIdx) {
-                const g = document.getElementById('u-grupo').value;
-                if(!g || g > this.db.config.grupos.total) {
-                    alert("Defina um grupo válido primeiro!"); return;
-                }
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Nível de Visibilidade</h2>
-                        <p style="margin-bottom:20px">Como ${user} verá os pontos no mapa?</p>
-                        <button class="btn-base btn-verde" onclick="alert('Configurado: Ver tudo'); TrailApp.screenMonitor()">Ver Todos os Pontos</button>
-                        <button class="btn-base btn-marrom" onclick="alert('Configurado: Modo Progressivo'); TrailApp.screenMonitor()">Ver Apenas Ponto Atual</button>
-                    </div>
-                </div>`);
-            },
-
-            // --- PERFIL E HISTÓRICO ---
-            screenHistory() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper">
-                        <h2>Histórico de Missões</h2>
-                        <div style="max-height:350px; overflow-y:auto">
-                            ${this.db.history.map((h, i) => `
-                                <div class="card-item" onclick="alert('Participantes: ' + '${h.p.join(', ')}')">
-                                    <span>📅 ${h.data}</span>
-                                    <span style="font-size:0.6rem">${h.hora}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn-base btn-marrom" onclick="TrailApp.startOrganizador()">Voltar</button>
-                    </div>
-                </div>`);
-            },
-
-            screenPerfil() {
-                this.render(`
-                <div class="cenario-full bg-forest">
-                    <div class="menu-wrapper" style="text-align:left">
-                        <div class="perfil-card-header">
-                            <span class="nick-display">${this.db.user.nickname}</span>
-                            <span class="email-display">${this.db.user.email}</span>
+                        <h2>1. Estrutura de Grupos</h2>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                            <input type="number" id="c-g-qtd" placeholder="Qtd Grupos" value="${this.state.config.groups?.qtd || ''}">
+                            <input type="number" id="c-g-ppx" placeholder="Pessoas/Gr" value="${this.state.config.groups?.ppx || ''}">
                         </div>
 
-                        <h2>Desempenho Mensal (Tempo)</h2>
-                        <div class="metricas-container">
-                            <div class="grafico-flex">
-                                <div class="barra-metrica" style="height:45%"></div>
-                                <div class="barra-metrica" style="height:70%"></div>
-                                <div class="barra-metrica" style="height:35%"></div>
-                                <div class="barra-metrica" style="height:90%"></div>
-                                <div class="barra-metrica" style="height:55%"></div>
-                                <div class="barra-metrica" style="height:40%"></div>
-                            </div>
-                        </div>
+                        <h2>2. Percurso</h2>
+                        <input type="number" id="c-p-fix" placeholder="Objetivos Fixos" class="input-group" value="${this.state.config.percurso?.fix || ''}">
+                        <input type="number" id="c-p-mov" placeholder="Objetivos Móveis (Opcional)" class="input-group" value="${this.state.config.percurso?.mov || ''}">
 
-                        <h2>Calendário de Atividades</h2>
-                        <div class="metricas-container">
-                            <div class="calendario-grid">
-                                ${Array.from({length:31}, (_, i) => `
-                                    <div class="dia-box ${[2, 5, 12, 18, 26].includes(i+1) ? 'dia-fogo' : ''}">${i+1}</div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <button class="btn-base btn-marrom" style="margin-top:20px" onclick="TrailApp.startOrganizador()">Voltar ao Comando</button>
+                        <button class="btn btn-primary" onclick="TQ.saveConfig()">Salvar e Ir para Mapa</button>
+                        <button class="btn btn-outline" onclick="TQ.go('main')">Voltar</button>
                     </div>
-                </div>`);
+                </div>`;
             },
 
-            // --- MOTOR DO MAPA (LEAFLET) ---
-            initLeaflet() {
-                if(this.map) this.map.remove();
-                this.map = L.map('map', { zoomControl: false }).setView([-23.55, -46.63], 13);
+            saveConfig() {
+                this.state.config.groups = {
+                    qtd: document.getElementById('c-g-qtd').value,
+                    ppx: document.getElementById('c-g-ppx').value
+                };
+                this.state.config.percurso = {
+                    fix: document.getElementById('c-p-fix').value,
+                    mov: document.getElementById('c-p-mov').value
+                };
+                this.save();
+                this.go('main');
+                this.enterEditMode();
+            },
+
+            // --- ENGINE DO MAPA ---
+            initMap() {
+                if(this.map) return;
                 
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'TrailQuest Satellite'
+                this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-23.55, -46.63], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© TrailQuest High Performance'
                 }).addTo(this.map);
 
-                this.map.locate({setView: true, maxZoom: 16});
+                this.map.locate({setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true});
                 
                 this.map.on('locationfound', (e) => {
-                    this.userPos = e.latlng;
-                    if(this.userMarker) this.map.removeLayer(this.userMarker);
-                    this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', radius: 10, fillOpacity: 0.9}).addTo(this.map);
-                });
-
-                this.map.on('click', (e) => {
-                    if(this.editMode && this.selectedPoint === null) {
-                        this.tempPoints.push({ latlng: e.latlng, name: "" });
-                        this.drawMarkers();
+                    if(!this.userMarker) {
+                        this.userMarker = L.circleMarker(e.latlng, {radius: 10, color: '#2196F3', fillOpacity: 0.8}).addTo(this.map);
+                    } else {
+                        this.userMarker.setLatLng(e.latlng);
                     }
                 });
 
-                this.drawMarkers();
-            },
-
-            drawMarkers() {
-                this.map.eachLayer(l => { if(l instanceof L.Marker) this.map.removeLayer(l); });
-                const cor = this.db.colors[this.activeSlot];
-
-                this.tempPoints.forEach((p, i) => {
-                    const icon = L.divIcon({
-                        className: '',
-                        html: `<div class="custom-marker" style="background:${cor}">${i+1}</div>`,
-                        iconSize: [32, 32]
-                    });
-
-                    L.marker(p.latlng, { icon: icon }).addTo(this.map).on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        this.selectedPoint = i;
-                        document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
-                    });
+                this.map.on('click', (e) => {
+                    if(this.state.editMode) {
+                        this.addPoint(e.latlng);
+                    }
                 });
             },
 
-            savePointData() {
-                const novoNome = document.getElementById('point-name').value;
-                this.tempPoints[this.selectedPoint].name = novoNome;
-                this.selectedPoint = null;
-                this.drawMarkers();
-                document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
+            enterEditMode() {
+                this.state.editMode = true;
+                const top = document.getElementById('top-panel');
+                top.innerHTML = `
+                    <div style="background:var(--bg-paper); padding:15px; border-bottom:4px solid var(--primary); pointer-events:auto; box-shadow:var(--shadow)">
+                        <h2 style="margin:0">Modo Edição Ativo</h2>
+                        <p style="font-size:0.6rem">Toque no mapa para inserir os pontos fixos (${this.state.points.length}/${this.state.config.percurso?.fix})</p>
+                        <div style="display:flex; gap:10px; margin-top:10px">
+                            <button class="btn btn-primary" style="padding:10px; font-size:0.7rem" onclick="TQ.exitEdit()">Finalizar Mapa</button>
+                            <button class="btn btn-outline" style="padding:10px; font-size:0.7rem" onclick="TQ.clearPoints()">Limpar</button>
+                        </div>
+                    </div>`;
             },
 
-            deletePoint() {
-                this.tempPoints.splice(this.selectedPoint, 1);
-                this.selectedPoint = null;
-                this.drawMarkers();
-                document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
+            exitEdit() {
+                this.state.editMode = false;
+                document.getElementById('top-panel').innerHTML = '';
+                this.state.slots[this.state.activeSlot] = { points: this.state.points };
+                this.save();
+                alert("Mapa salvo com sucesso no Slot " + (this.state.activeSlot + 1));
+            },
+
+            addPoint(latlng) {
+                if(this.state.points.length >= this.state.config.percurso?.fix) return;
+                
+                const marker = L.marker(latlng, {
+                    icon: L.divIcon({
+                        className: '',
+                        html: `<div class="custom-pin"><span>${this.state.points.length + 1}</span></div>`,
+                        iconSize: [30,30]
+                    })
+                }).addTo(this.map);
+                
+                this.state.points.push({ latlng, marker });
+                this.enterEditMode(); // Refresh counter
+            },
+
+            clearPoints() {
+                this.state.points.forEach(p => this.map.removeLayer(p.marker));
+                this.state.points = [];
+                this.enterEditMode();
+            },
+
+            // --- RADAR DE USUÁRIOS (REAL-TIME) ---
+            viewMonitor() {
+                document.getElementById('ui-engine').innerHTML = `
+                <div class="screen">
+                    <div class="container-bege">
+                        <h1>Radar de Equipes</h1>
+                        <p style="font-size:0.6rem; text-align:center; margin-bottom:20px">Transmitindo localização de 100 usuários</p>
+                        
+                        <div id="user-list" style="max-height:300px; overflow-y:auto">
+                            </div>
+
+                        <button class="btn btn-primary" onclick="TQ.go('main')">Fechar Radar</button>
+                    </div>
+                </div>`;
+                
+                const list = document.getElementById('user-list');
+                for(let i=1; i<=10; i++) {
+                    list.innerHTML += `
+                        <div class="card-user">
+                            <div>
+                                <b style="font-size:0.8rem">Equipe_Alpha_${i}</b><br>
+                                <small style="font-size:0.6rem">Lat: -23.5 | Lng: -46.6</small>
+                            </div>
+                            <span class="status-badge" style="background:#c8e6c9; color:#2e7d32">ATIVO</span>
+                        </div>`;
+                }
+            },
+
+            viewProfile() {
+                document.getElementById('ui-engine').innerHTML = `
+                <div class="screen">
+                    <div class="container-bege">
+                        <div style="text-align:center; margin-bottom:20px">
+                            <div style="width:80px; height:80px; background:var(--primary); border-radius:50%; margin: 0 auto 10px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem">
+                                ${this.state.user.nick.charAt(0)}
+                            </div>
+                            <h1 style="font-size:1.5rem">${this.state.user.nick}</h1>
+                            <span class="status-badge">Nível: Organizador</span>
+                        </div>
+
+                        <h2>Estatísticas de Missão</h2>
+                        <div style="display:flex; gap:10px; margin-bottom:20px">
+                            <div style="flex:1; background:white; padding:10px; border-radius:4px; text-align:center">
+                                <small>Kms</small><br><b>12.4</b>
+                            </div>
+                            <div style="flex:1; background:white; padding:10px; border-radius:4px; text-align:center">
+                                <small>Tempo</small><br><b>02:45</b>
+                            </div>
+                            <div style="flex:1; background:white; padding:10px; border-radius:4px; text-align:center">
+                                <small>Objetivos</small><br><b>08/10</b>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="TQ.go('main')">Voltar</button>
+                        <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger); margin-top:20px" onclick="localStorage.clear(); location.reload()">Resetar Sistema</button>
+                    </div>
+                </div>`;
             }
         };
 
-        // Inicialização
-        window.onload = () => TrailApp.init();
+        window.onload = () => TQ.init();
     </script>
 </body>
 </html>
