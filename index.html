@@ -280,18 +280,16 @@
             },
 
             acaoSlot(i) {
-                // Se o slot tem mapa, carrega ele limpando o que estava na tela
                 if(this.db.mapasSalvos[i]) {
                     this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].pontos));
                 } else {
-                    // Se o slot está vazio, salva o que está na tela nele
                     this.db.mapasSalvos[i] = { pontos: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
                 }
                 this.activeSlotIdx = i; 
                 document.getElementById('modal-slots').classList.add('hidden');
                 this.atualizarMapaVisual();
                 this.atualizarInterfaceSuperior();
-                this.comando(); // Refresh para ativar o botão começar se necessário
+                this.comando(); 
             },
 
             novoMapaLimpo() {
@@ -332,7 +330,7 @@
                             </div>
                             
                             <div id="sg-l" class="hidden">
-                                <input type="text" id="ig-op" placeholder="Opcional (Ex: Nome)" value="${this.db.grupos.opcional}">
+                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
