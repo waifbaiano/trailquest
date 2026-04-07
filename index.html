@@ -31,12 +31,27 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; border: none; font-size: 1.4rem; color: #444;
         }
 
-        /* Menu Superior de Edição */
+        /* Menu Superior de Edição de Pontos */
         .header-edicao {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--bege-menu); padding: 10px 20px; border: 2px solid var(--marrom-voltar);
-            z-index: 1005; border-radius: 8px; text-align: center; width: 80%; max-width: 400px;
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            background: var(--bege-menu); padding: 12px; border: 2px solid var(--marrom-voltar);
+            z-index: 1005; border-radius: 8px; text-align: center; width: 90%; max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
+
+        /* Modal de Seleção de Slot de Mapa */
+        .modal-slots {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--bege-menu); border: 3px solid var(--marrom-voltar);
+            padding: 20px; width: 85%; max-width: 320px; z-index: 1100; text-align: center;
+        }
+
+        .slot-card {
+            background: white; border: 1px solid #ccc; margin: 8px 0; padding: 10px;
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+            font-family: 'Montserrat', sans-serif; font-size: 0.8rem;
+        }
+        .slot-card.cheio { border-left: 5px solid var(--verde-comando); }
 
         .cenario { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
         .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 25px; width: 88%; max-width: 380px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); position: relative; z-index: 1000; }
@@ -73,12 +88,14 @@
             layers: {},
             userMarker: null,
             modoEdicao: false,
-            pontosMarcados: [],
-            linhaPercurso: null,
+            pontosTemporarios: [],
+            linhaTemporaria: null,
+            marcasNoMapa: [],
             db: {
                 user: { nick: "", tipo: "" },
                 grupos: { qtd: 0, pessoas: 0, lideres: 0, ok: false },
-                percurso: { fixos: 0, moveis: 0, ok: false }
+                percurso: { fixos: 0, moveis: 0, ok: false },
+                mapasSalvos: [null, null, null, null, null] // Slots 1 a 5
             },
 
             render(html) { this.el.innerHTML = html; },
@@ -104,11 +121,19 @@
                     <div id="map"></div>
                     ${this.modoEdicao ? `
                         <div class="header-edicao">
-                            <h2 style="margin:0">Marque os ${this.db.percurso.fixos} Pontos no Mapa</h2>
-                            <p style="font-size:0.7rem; font-family:'Roboto'">Clique no local desejado</p>
-                            <button class="btn btn-verde" style="padding:5px; font-size:0.7rem" onclick="App.salvarMapa()">Salvar Mapa</button>
+                            <h2 style="margin:0; font-size:0.8rem">Editando Pontos (${this.pontosTemporarios.length}/${this.db.percurso.fixos})</h2>
+                            <div style="display:flex; gap:5px; margin-top:8px">
+                                <button class="btn btn-marrom" style="padding:5px; margin:0; font-size:0.6rem" onclick="App.limparEdicao()">Limpar</button>
+                                <button class="btn btn-verde" style="padding:5px; margin:0; font-size:0.6rem" onclick="App.abrirSlots()">Salvar Mapa</button>
+                                <button class="btn btn-neutro" style="padding:5px; margin:0; font-size:0.6rem" onclick="App.cancelarEdicao()">Sair</button>
+                            </div>
                         </div>
                     ` : ''}
+                    <div id="modal-slots" class="modal-slots hidden">
+                        <h2>Escolha um Slot (1-5)</h2>
+                        <div id="lista-slots"></div>
+                        <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Cancelar</button>
+                    </div>
                     <div class="controles-mapa">
                         <button class="btn-map-ctrl" onclick="App.toggleSat()">🛰️</button>
                         <button class="btn-map-ctrl" onclick="App.focarGPS()">🎯</button>
@@ -126,65 +151,77 @@
             initMap() {
                 this.layers.ruas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
                 this.layers.satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-                
                 this.map = L.map('map', { layers: [this.layers.ruas], zoomControl: false }).setView([-23.55, -46.63], 13);
-
-                this.map.locate({setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true});
                 
+                this.map.locate({setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true});
                 this.map.on('locationfound', (e) => {
-                    const pos = e.latlng;
-                    this.currentPos = pos;
-                    if (this.userMarker) this.userMarker.setLatLng(pos);
-                    else {
-                        this.userMarker = L.circleMarker(pos, {color: '#2196F3', fillOpacity: 0.8, radius: 10, weight: 3}).addTo(this.map);
-                        L.circle(pos, {radius: e.accuracy / 2, weight: 1, color: '#2196F3', fillOpacity: 0.1}).addTo(this.map);
-                    }
+                    this.currentPos = e.latlng;
+                    if (this.userMarker) this.userMarker.setLatLng(e.latlng);
+                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.8, radius: 9, weight: 3}).addTo(this.map);
                 });
 
                 this.map.on('click', (e) => {
-                    if(this.modoEdicao && this.pontosMarcados.length < this.db.percurso.fixos) {
-                        this.adicionarPonto(e.latlng);
+                    if(this.modoEdicao && this.pontosTemporarios.length < this.db.percurso.fixos) {
+                        this.adicionarPontoGrafico(e.latlng);
                     }
                 });
             },
 
-            adicionarPonto(latlng) {
-                const num = this.pontosMarcados.length + 1;
+            adicionarPontoGrafico(latlng) {
+                const num = this.pontosTemporarios.length + 1;
                 const marker = L.marker(latlng, {
                     icon: L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div style="background:var(--verde-comando); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold">${num}</div>`,
-                        iconSize: [24, 24]
+                        className: 'ponto-track',
+                        html: `<div style="background:var(--verde-comando); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold; font-size:12px">${num}</div>`
                     })
                 }).addTo(this.map);
                 
-                this.pontosMarcados.push(latlng);
+                this.marcasNoMapa.push(marker);
+                this.pontosTemporarios.push(latlng);
                 
-                if (this.linhaPercurso) this.map.removeLayer(this.linhaPercurso);
-                this.linhaPercurso = L.polyline(this.pontosMarcados, {color: 'var(--marrom-voltar)', dashArray: '5, 10'}).addTo(this.map);
+                if (this.linhaTemporaria) this.map.removeLayer(this.linhaTemporaria);
+                this.linhaTemporaria = L.polyline(this.pontosTemporarios, {color: 'var(--marrom-voltar)', weight: 3, dashArray: '5, 10'}).addTo(this.map);
+                
+                // Atualiza título da edição
+                this.comando(); 
             },
 
-            toggleSat() {
-                if (this.map.hasLayer(this.layers.ruas)) {
-                    this.map.removeLayer(this.layers.ruas);
-                    this.map.addLayer(this.layers.satelite);
-                } else {
-                    this.map.removeLayer(this.layers.satelite);
-                    this.map.addLayer(this.layers.ruas);
+            abrirSlots() {
+                const container = document.getElementById('lista-slots');
+                container.innerHTML = "";
+                this.db.mapasSalvos.forEach((mapa, index) => {
+                    const div = document.createElement('div');
+                    div.className = `slot-card ${mapa ? 'cheio' : ''}`;
+                    div.innerHTML = `<span>Mapa Slot ${index + 1}</span> <span>${mapa ? 'Sustituir' : 'Vazio'}</span>`;
+                    div.onclick = () => this.confirmarSalvamento(index);
+                    container.appendChild(div);
+                });
+                document.getElementById('modal-slots').classList.remove('hidden');
+            },
+
+            confirmarSalvamento(index) {
+                if(this.pontosTemporarios.length < this.db.percurso.fixos) {
+                    alert("Marque todos os pontos antes de salvar!");
+                    return;
                 }
+                this.db.mapasSalvos[index] = [...this.pontosTemporarios];
+                alert(`Mapa salvo no Slot ${index + 1}!`);
+                document.getElementById('modal-slots').classList.add('hidden');
+                this.modoEdicao = false;
+                this.mestre();
             },
 
+            limparEdicao() {
+                this.marcasNoMapa.forEach(m => this.map.removeLayer(m));
+                if(this.linhaTemporaria) this.map.removeLayer(this.linhaTemporaria);
+                this.pontosTemporarios = [];
+                this.marcasNoMapa = [];
+                this.comando();
+            },
+
+            cancelarEdicao() { this.modoEdicao = false; this.mestre(); },
+            toggleSat() { if (this.map.hasLayer(this.layers.ruas)) { this.map.removeLayer(this.layers.ruas); this.map.addLayer(this.layers.satelite); } else { this.map.removeLayer(this.layers.satelite); this.map.addLayer(this.layers.ruas); } },
             focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 17); },
-
-            salvarMapa() {
-                if(this.pontosMarcados.length < this.db.percurso.fixos) {
-                    alert(`Faltam marcar ${this.db.percurso.fixos - this.pontosMarcados.length} pontos!`);
-                } else {
-                    alert("Mapa e Percurso salvos com sucesso!");
-                    this.modoEdicao = false;
-                    this.mestre();
-                }
-            },
 
             mestre() {
                 const liberado = this.db.grupos.ok && this.db.percurso.ok;
@@ -194,14 +231,14 @@
                             <h2>Página Mestre</h2>
                             <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
                             <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
-                            <button class="btn ${liberado ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${liberado ? 'App.iniciarEdicao()' : ''}">Continuar</button>
+                            <button class="btn ${liberado ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${liberado ? 'App.iniciarEdicao()' : ''}">Editar Pontos no Mapa</button>
                             <button class="btn btn-marrom" onclick="App.comando()">Voltar ao Mapa</button>
                         </div>
                     </div>
                 `);
             },
 
-            iniciarEdicao() { this.modoEdicao = true; this.comando(); },
+            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
 
             telaGrupos() {
                 this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')"><div class="menu-bege"><h2>Número de Grupos</h2><input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()"><div id="sg2" class="${this.db.grupos.qtd ? '' : 'hidden'}"><h2>Pessoas por Grupo</h2><input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()"></div><div id="sg4" class="${this.db.grupos.pessoas ? '' : 'hidden'}"><h2>Líderes por Grupo</h2><input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()"><div id="erro-lider" class="aviso-erro">O n° de líderes não pode ser maior que o de pessoas!</div><button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button></div><button class="btn btn-marrom" style="margin-top:10px" onclick="App.mestre()">Voltar</button></div></div>`);
