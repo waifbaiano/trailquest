@@ -49,8 +49,8 @@
             font-family: 'Montserrat', sans-serif; font-size: 0.8rem;
         }
 
-        .cenario { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative; }
-        .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 20px; width: 88%; max-width: 380px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); z-index: 1000; }
+        .cenario { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative; overflow-y: auto; }
+        .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 20px; width: 88%; max-width: 380px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); z-index: 1000; margin: 20px auto; }
         
         .titulo-app { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--verde-comando); margin-bottom: 10px; }
         h2 { font-family: 'Montserrat', sans-serif; font-size: 0.8rem; margin: 12px 0 4px 0; text-transform: uppercase; color: var(--marrom-voltar); }
@@ -58,6 +58,7 @@
 
         .btn { width: 100%; padding: 15px; margin-top: 10px; font-family: 'Montserrat', sans-serif; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; border-radius: 4px; }
         .btn-verde { background: var(--verde-comando); color: white; }
+        .btn-continuar { background: var(--verde-comando); color: white; border-radius: 25px; width: 80%; margin: 10px auto; }
         .btn-marrom { background: var(--marrom-voltar); color: white; }
         .btn-neutro { background: var(--branco); color: #333; border: 1px solid #ccc; }
         .btn-ativo { background: var(--amarelo-ativo) !important; color: #000 !important; }
@@ -65,10 +66,17 @@
         .rodape-strava { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--marrom-voltar); z-index: 1001; }
         .icon-nav { text-align: center; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; font-weight: bold; color: #555; text-transform: uppercase; cursor: pointer; }
         .icon-nav span { font-size: 1.4rem; display: block; margin-bottom: 2px; }
-        .nav-comecar.ativo { color: var(--verde-comando) !important; opacity: 1 !important; }
+
+        /* Gráfico e Calendário */
+        .caixa-bege { background: var(--bege-menu); padding: 15px; border: 1px solid #d4d4d4; margin-top: 10px; border-radius: 4px; }
+        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+        .dia-circulo { width: 30px; height: 30px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #333; position: relative; }
+        .dia-ativo::after { content: '🔥'; font-size: 0.8rem; position: absolute; color: white; -webkit-text-stroke: 1px #ccc; }
 
         .hidden { display: none !important; }
         .aviso-erro { color: var(--vermelho-erro); font-family: 'Roboto'; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; }
+
+        .img-floresta-4 { background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
     </style>
 </head>
 <body>
@@ -88,23 +96,27 @@
             currentPos: null,
             firstFix: false,
             activeSlotIdx: 0,
+            accessCode: null,
             db: {
-                user: { nick: "" },
+                user: { nick: "", email: "usuario@trailquest.com.br" },
                 grupos: { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false },
                 percurso: { fixos: 0, moveis: 0, ok: false },
                 mapasSalvos: [null, null, null, null, null],
+                historico: [
+                    { data: "05/04/2026", hora: "14:30", participantes: ["Guto", "Ana", "Léo"] }
+                ],
                 coresSlots: ['#2e7d32', '#d32f2f', '#fbc02d', '#1976d2', '#212121']
             },
 
             render(html) { this.el.innerHTML = html; },
 
             abertura() {
-                this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')"><div class="menu-bege"><h1 class="titulo-app">TrailQuest</h1><button class="btn btn-verde" onclick="App.login()">Fazer Login</button><button class="btn btn-verde" onclick="App.participante()">Continuar como Participante</button></div></div>`);
+                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h1 class="titulo-app">TrailQuest</h1><button class="btn btn-verde" onclick="App.login()">Fazer Login</button><button class="btn btn-verde" onclick="App.participante()">Continuar como Participante</button></div></div>`);
             },
 
             login() {
                 this.render(`
-                    <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')">
+                    <div class="cenario img-floresta-4">
                         <div class="menu-bege">
                             <h2>Login</h2>
                             <input type="email" id="email" placeholder="EMAIL">
@@ -119,26 +131,24 @@
             validaLogin() {
                 const s = document.getElementById('senha').value;
                 const b = document.getElementById('btn-l');
-                const e = document.getElementById('erro-senha');
-                if(s.length > 0 && s.length < 8) { e.classList.remove('hidden'); b.classList.remove('btn-ativo'); b.disabled = true; }
-                else if(s.length >= 8) { e.classList.add('hidden'); b.classList.add('btn-ativo'); b.disabled = false; }
-                else { e.classList.add('hidden'); b.classList.remove('btn-ativo'); }
+                if(s.length >= 8) { b.classList.add('btn-ativo'); b.disabled = false; }
+                else { b.classList.remove('btn-ativo'); }
             },
 
             participante() {
-                this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')"><div class="menu-bege"><h2>Código de Acesso</h2><input type="text" id="cod" placeholder="Digite o Código" oninput="App.validaPart()"><button id="btn-p" class="btn btn-neutro" onclick="App.askNick()">Continuar</button><button class="btn btn-marrom" onclick="App.abertura()">Voltar</button></div></div>`);
+                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h2>Código de Acesso</h2><input type="text" id="cod" placeholder="Digite o Código" oninput="App.validaPart()"><button id="btn-p" class="btn btn-neutro" onclick="App.askNick()">Continuar</button><button class="btn btn-marrom" onclick="App.abertura()">Voltar</button></div></div>`);
             },
 
             validaPart() { if(document.getElementById('cod').value) document.getElementById('btn-p').classList.add('btn-ativo'); },
 
             askNick() {
-                this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')"><div class="menu-bege"><h2>Nome de Usuário</h2><input type="text" id="nick-in" placeholder="Nickname"><button class="btn btn-verde" onclick="App.saveUser()">Salvar</button></div></div>`);
+                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h2>Nome de Usuário</h2><input type="text" id="nick-in" placeholder="Nickname"><button class="btn btn-verde" onclick="App.saveUser()">Salvar</button></div></div>`);
             },
 
             saveUser() { this.db.user.nick = document.getElementById('nick-in').value || "Explorador"; this.home(); },
 
             home() {
-                this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')"><div class="menu-bege"><h1 class="titulo-app" style="font-size:2.5rem">Olá, ${this.db.user.nick}</h1><button class="btn btn-verde" onclick="App.comando()">Organizador</button><button class="btn btn-verde" onclick="alert('Área do Participante em breve')">Participante</button></div></div>`);
+                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h1 class="titulo-app" style="font-size:2.5rem">Olá, ${this.db.user.nick}</h1><button class="btn btn-verde" onclick="App.comando()">Organizador</button><button class="btn btn-verde" onclick="App.participante()">Participante</button></div></div>`);
             },
 
             comando() {
@@ -146,6 +156,7 @@
                 this.render(`
                     <div id="map"></div>
                     <div id="ui-header-container">
+                        ${this.accessCode ? `<div class="header-edicao" style="top:50px">CÓDIGO: ${this.accessCode}</div>` : ''}
                         ${this.modoEdicao ? this.renderMenuEdicao() : ''}
                     </div>
                     <div id="modal-slots" class="modal-slots hidden">
@@ -157,15 +168,152 @@
                     <div class="controles-mapa">
                         <button class="btn-map-ctrl" onclick="App.focarGPS()">🎯</button>
                     </div>
+                    ${!this.modoEdicao ? `
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
                         <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
-                        <div class="icon-nav nav-comecar ${temMapa ? 'ativo' : ''}" style="opacity:0.3" onclick="${temMapa ? 'alert(\'Etapa 4 em breve\')' : ''}"><span>⚪</span>Começar</div>
-                        <div class="icon-nav" onclick="App.telaGrupos()"><span>🔺</span>Grupos</div>
-                        <div class="icon-nav" onclick="alert('Perfil de ${this.db.user.nick}')"><span>👤</span>Perfil</div>
+                        <div class="icon-nav ${temMapa ? 'ativo' : ''}" style="opacity:0.3"><span>⚪</span>Começar</div>
+                        <div class="icon-nav" onclick="App.telaAtividades()"><span>🔺</span>Atividades</div>
+                        <div class="icon-nav" onclick="App.telaPerfil()"><span>👤</span>Perfil</div>
+                    </div>` : `
+                    <div style="position:fixed; bottom:20px; width:100%; z-index:2000; text-align:center">
+                        <button class="btn btn-continuar" onclick="App.fluxoContinuar()">Continuar</button>
                     </div>
+                    `}
                 `);
                 this.initMap();
+            },
+
+            telaAtividades() {
+                this.render(`
+                    <div class="cenario img-floresta-4">
+                        <div class="menu-bege">
+                            <h2>Histórico de Atividades</h2>
+                            ${this.db.historico.map((h, i) => `
+                                <div class="slot-card" onclick="App.detalheAtividade(${i})">
+                                    <span>${h.data} - ${h.hora}</span>
+                                </div>
+                            `).join('')}
+                            <button class="btn btn-marrom" onclick="App.comando()">Voltar</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            detalheAtividade(idx) {
+                const h = this.db.historico[idx];
+                this.render(`
+                    <div class="cenario img-floresta-4">
+                        <div class="menu-bege">
+                            <h2>Participantes</h2>
+                            ${h.participantes.map(p => `<div class="slot-card"><span>${p}</span></div>`).join('')}
+                            <button class="btn btn-marrom" onclick="App.telaAtividades()">Voltar</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            telaPerfil() {
+                this.render(`
+                    <div class="cenario img-floresta-4">
+                        <div class="menu-bege" style="text-align:left">
+                            <div class="caixa-bege" style="text-align:center">
+                                <h1 style="font-size:1.4rem">${this.db.user.nick}</h1>
+                                <p style="font-size:0.7rem; color:#666">${this.db.user.email}</p>
+                            </div>
+                            
+                            <h2>Tempo de Atividade Mensal</h2>
+                            <div class="caixa-bege" style="height:100px; display:flex; align-items:flex-end; gap:5px; justify-content:center">
+                                <div style="background:var(--verde-comando); width:15px; height:40%"></div>
+                                <div style="background:var(--verde-comando); width:15px; height:70%"></div>
+                                <div style="background:var(--verde-comando); width:15px; height:30%"></div>
+                                <div style="background:var(--verde-comando); width:15px; height:90%"></div>
+                            </div>
+
+                            <h2>Calendário</h2>
+                            <div class="caixa-bege">
+                                <div class="calendario-grid">
+                                    ${Array.from({length: 30}, (_, i) => `
+                                        <div class="dia-circulo ${[5, 12, 19].includes(i+1) ? 'dia-ativo' : ''}">${i+1}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <button class="btn btn-marrom" style="margin-top:20px" onclick="App.comando()">Voltar</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            fluxoContinuar() {
+                if(this.db.percurso.moveis > 0) {
+                    this.render(`
+                        <div class="cenario img-floresta-4">
+                            <div class="menu-bege">
+                                <h2>Código do Objetivo Móvel</h2>
+                                <input type="text" id="cod-movel" placeholder="Mínimo 6 caracteres" oninput="App.validaMovel()">
+                                <button id="btn-movel" class="btn btn-neutro" disabled onclick="App.gerarCodigoAcesso()">Continuar</button>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    this.gerarCodigoAcesso();
+                }
+            },
+
+            validaMovel() {
+                const val = document.getElementById('cod-movel').value;
+                const btn = document.getElementById('btn-movel');
+                if(val.length >= 6) { btn.disabled = false; btn.classList.add('btn-ativo'); }
+                else { btn.disabled = true; btn.classList.remove('btn-ativo'); }
+            },
+
+            gerarCodigoAcesso() {
+                this.accessCode = Math.floor(100000 + Math.random() * 900000);
+                this.render(`
+                    <div class="cenario img-floresta-4">
+                        <div class="menu-bege">
+                            <h2>Código de Acesso</h2>
+                            <h1 style="font-size:3rem; margin:20px 0">${this.accessCode}</h1>
+                            <button class="btn btn-verde" onclick="App.telaGestaoUsuarios()">Continuar</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            telaGestaoUsuarios() {
+                // Simulação de usuários conectados
+                const users = ["Ana_Runner", "Beto_Quest", "Carlos_Trilha"];
+                this.render(`
+                    <div class="cenario img-floresta-4">
+                        <div class="menu-bege">
+                            <h2>Usuários Conectados</h2>
+                            ${users.map(u => `<div class="slot-card" onclick="App.configurarUsuario('${u}')"><span>${u}</span></div>`).join('')}
+                            <button class="btn btn-marrom" onclick="App.comando()">Iniciar Atividade</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            configurarUsuario(user) {
+                this.render(`
+                    <div class="cenario img-floresta-4">
+                        <div class="menu-bege">
+                            <h2>Configurar: ${user}</h2>
+                            <h2>Número do Grupo</h2>
+                            <input type="number" id="num-grupo" placeholder="Máx: ${this.db.grupos.qtd}">
+                            <button class="btn btn-verde" onclick="App.abrirMapaSelecao()">Mapa</button>
+                            <button class="btn btn-marrom" style="margin-top:10px" onclick="App.telaGestaoUsuarios()">Voltar</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            abrirMapaSelecao() {
+                const n = document.getElementById('num-grupo').value;
+                if(n > this.db.grupos.qtd) return alert("Número excede o limite de grupos!");
+                
+                this.abrirSlots(); // Usa o sistema de slots já existente
             },
 
             renderMenuEdicao() {
@@ -177,43 +325,35 @@
                         <h2 style="margin:0">Editar Ponto ${this.pontoSelecionadoIdx + 1}</h2>
                         <div style="display:flex; gap:5px; margin-top:10px">
                             <input type="text" id="ed-nome" placeholder="Nome" value="${p.nome || ''}" style="margin:0; flex:2">
-                            <input type="number" id="ed-num" value="${this.pontoSelecionadoIdx + 1}" style="margin:0; flex:1">
                         </div>
                         <div style="display:flex; gap:5px; margin-top:10px">
-                            <button class="btn btn-verde" style="padding:8px; margin:0; font-size:0.7rem" onclick="App.salvarDetalhePonto()">Voltar</button>
+                            <button class="btn btn-verde" style="padding:8px; margin:0; font-size:0.7rem" onclick="App.salvarDetalhePonto()">OK</button>
                             <button class="btn btn-marrom" style="padding:8px; margin:0; font-size:0.7rem; background:#d32f2f" onclick="App.excluirPonto()">Excluir</button>
                         </div>
                     ` : `
-                        <h2 style="margin:0">Mapa Slot ${this.activeSlotIdx + 1} (${this.pontosTemporarios.length}/${this.db.percurso.fixos})</h2>
-                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Salvar / Carregar</button>
+                        <h2 style="margin:0">Mapa Slot ${this.activeSlotIdx + 1}</h2>
+                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Trocar Slot</button>
                     `}
                 </div>`;
             },
 
             initMap() {
                 this.map = L.map('map', { zoomControl: false }).setView([0,0], 2);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Esri'
-                }).addTo(this.map);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
                 
                 this.map.locate({setView: false, enableHighAccuracy: true});
                 this.map.on('locationfound', (e) => {
                     this.currentPos = e.latlng;
-                    if (!this.firstFix) { 
-                        this.map.setView(e.latlng, 17);
-                        this.firstFix = true; 
-                    }
+                    if (!this.firstFix) { this.map.setView(e.latlng, 17); this.firstFix = true; }
                     if (this.userMarker) this.userMarker.setLatLng(e.latlng);
-                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.9, radius: 8, weight: 3}).addTo(this.map);
+                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', radius: 8}).addTo(this.map);
                 });
 
                 this.map.on('click', (e) => {
                     if(this.modoEdicao && this.pontoSelecionadoIdx === null) {
-                        if(this.pontosTemporarios.length < this.db.percurso.fixos) {
-                            this.pontosTemporarios.push({ latlng: e.latlng, nome: "" });
-                            this.atualizarMapaVisual();
-                            this.atualizarInterfaceSuperior();
-                        }
+                        this.pontosTemporarios.push({ latlng: e.latlng, nome: "" });
+                        this.atualizarMapaVisual();
+                        this.atualizarInterfaceSuperior();
                     }
                 });
                 this.atualizarMapaVisual();
@@ -221,40 +361,25 @@
 
             atualizarInterfaceSuperior() {
                 const container = document.getElementById('ui-header-container');
-                if(container) container.innerHTML = this.renderMenuEdicao();
+                if(container) container.innerHTML = (this.accessCode ? `<div class="header-edicao" style="top:50px; background:white">CÓDIGO: ${this.accessCode}</div>` : '') + this.renderMenuEdicao();
             },
 
             atualizarMapaVisual() {
                 if(!this.map) return;
                 this.map.eachLayer(l => { if(l instanceof L.Marker || l instanceof L.Polyline) if(l !== this.userMarker) this.map.removeLayer(l); });
-                
                 const corPercurso = this.db.coresSlots[this.activeSlotIdx];
-                const coords = this.pontosTemporarios.map(p => p.latlng);
-
                 this.pontosTemporarios.forEach((p, i) => {
                     L.marker(p.latlng, {
                         icon: L.divIcon({
-                            className: 'p-icon',
                             html: `<div style="background:${corPercurso}; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold">${i+1}</div>`
                         })
-                    }).addTo(this.map).on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        this.pontoSelecionadoIdx = i;
-                        this.atualizarInterfaceSuperior();
-                    });
+                    }).addTo(this.map).on('click', (e) => { L.DomEvent.stopPropagation(e); this.pontoSelecionadoIdx = i; this.atualizarInterfaceSuperior(); });
                 });
-                if(coords.length > 1) L.polyline(coords, {color: corPercurso, weight: 3}).addTo(this.map);
             },
 
             salvarDetalhePonto() {
                 const nNome = document.getElementById('ed-nome').value;
-                const nNum = parseInt(document.getElementById('ed-num').value) - 1;
                 this.pontosTemporarios[this.pontoSelecionadoIdx].nome = nNome;
-                if(nNum !== this.pontoSelecionadoIdx && nNum >= 0 && nNum < this.db.percurso.fixos) {
-                    const temp = this.pontosTemporarios[this.pontoSelecionadoIdx];
-                    this.pontosTemporarios[this.pontoSelecionadoIdx] = this.pontosTemporarios[nNum];
-                    this.pontosTemporarios[nNum] = temp;
-                }
                 this.pontoSelecionadoIdx = null;
                 this.atualizarMapaVisual();
                 this.atualizarInterfaceSuperior();
@@ -273,30 +398,24 @@
                 this.db.mapasSalvos.forEach((m, i) => {
                     container.innerHTML += `<div class="slot-card" onclick="App.acaoSlot(${i})">
                         <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
-                        <span style="flex:1; margin-left:10px; text-align:left">Slot ${i+1} ${m ? '(Carregar/Editar)' : '(Vazio/Salvar)'}</span>
+                        <span style="flex:1; margin-left:10px; text-align:left">Slot ${i+1} ${m ? '(Carregar)' : '(Vazio)'}</span>
                     </div>`;
                 });
                 document.getElementById('modal-slots').classList.remove('hidden');
             },
 
             acaoSlot(i) {
-                if(this.db.mapasSalvos[i]) {
-                    this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].pontos));
-                } else {
-                    this.db.mapasSalvos[i] = { pontos: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
-                }
+                if(this.db.mapasSalvos[i]) this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].pontos));
+                else this.db.mapasSalvos[i] = { pontos: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
                 this.activeSlotIdx = i; 
                 document.getElementById('modal-slots').classList.add('hidden');
                 this.atualizarMapaVisual();
                 this.atualizarInterfaceSuperior();
-                this.comando(); 
             },
 
             novoMapaLimpo() {
-                let next = this.db.mapasSalvos.findIndex(s => s === null);
-                this.activeSlotIdx = next !== -1 ? next : 0;
+                this.activeSlotIdx = this.db.mapasSalvos.findIndex(s => s === null) || 0;
                 this.pontosTemporarios = [];
-                this.pontoSelecionadoIdx = null;
                 document.getElementById('modal-slots').classList.add('hidden');
                 this.atualizarMapaVisual();
                 this.atualizarInterfaceSuperior();
@@ -305,7 +424,7 @@
             mestre() {
                 const pronto = this.db.grupos.ok && this.db.percurso.ok;
                 this.render(`
-                    <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                    <div class="cenario img-floresta-4">
                         <div class="menu-bege">
                             <h2>Página Mestre</h2>
                             <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
@@ -319,18 +438,16 @@
 
             telaGrupos() {
                 this.render(`
-                    <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                    <div class="cenario img-floresta-4">
                         <div class="menu-bege">
                             <h2>Número de Grupos</h2>
                             <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" oninput="App.checkG()">
-                            
                             <div id="sg-p" class="hidden">
                                 <h2>Pessoas por Grupo</h2>
                                 <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" oninput="App.checkG()">
                             </div>
-                            
                             <div id="sg-l" class="hidden">
-                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}">
+                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}" placeholder="">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
@@ -346,36 +463,22 @@
                 let g1 = document.getElementById('ig1').value;
                 let g2 = document.getElementById('ig2').value;
                 let g4 = document.getElementById('ig4').value;
-                
                 if(g1 >= 1) document.getElementById('sg-p').classList.remove('hidden');
-                else document.getElementById('sg-p').classList.add('hidden');
-
                 if(g2 >= 1) document.getElementById('sg-l').classList.remove('hidden');
-                else document.getElementById('sg-l').classList.add('hidden');
-
-                let btn = document.getElementById('btn-g-ok');
-                if(g1 && g2 && g4) btn.classList.add('btn-ativo');
-                else btn.classList.remove('btn-ativo');
+                if(g1 && g2 && g4) document.getElementById('btn-g-ok').classList.add('btn-ativo');
             },
 
             saveG() { 
-                this.db.grupos = { 
-                    qtd: document.getElementById('ig1').value, 
-                    pessoas: document.getElementById('ig2').value, 
-                    lideres: document.getElementById('ig4').value, 
-                    opcional: document.getElementById('ig-op').value, 
-                    ok: true 
-                }; 
+                this.db.grupos = { qtd: document.getElementById('ig1').value, pessoas: document.getElementById('ig2').value, lideres: document.getElementById('ig4').value, opcional: document.getElementById('ig-op').value, ok: true }; 
                 this.mestre(); 
             },
 
             telaPercursos() {
                 this.render(`
-                    <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                    <div class="cenario img-floresta-4">
                         <div class="menu-bege">
                             <h2>Objetivos Fixos</h2>
                             <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
-                            
                             <div id="sp-mov" class="hidden">
                                 <h2>Objetivos Móveis</h2>
                                 <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
@@ -390,19 +493,12 @@
 
             checkP() { 
                 let p1 = document.getElementById('ip1').value;
-                let p2 = document.getElementById('ip2').value;
-                
-                if(p1 >= 1) document.getElementById('sp-mov').classList.remove('hidden');
-                else document.getElementById('sp-mov').classList.add('hidden');
-
-                let btn = document.getElementById('btn-p-ok');
-                if(p1 && p2 !== "") btn.classList.add('btn-ativo');
-                else btn.classList.remove('btn-ativo');
+                if(p1 >= 1) { document.getElementById('sp-mov').classList.remove('hidden'); document.getElementById('btn-p-ok').classList.add('btn-ativo'); }
             },
 
             saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; this.mestre(); },
 
-            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.activeSlotIdx = 0; this.comando(); },
+            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
             focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 18); }
         };
 
