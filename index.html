@@ -99,18 +99,19 @@
 
     <div id="app">
         </div>
-
-    <script>
         const App = {
             elemento: document.getElementById('app'),
-            dados: { email: "", senha: "", nick: "", codigo: "" },
-
-            // Sistema de Navegação entre páginas
-            irPara(pagina) {
-                this[pagina]();
+            [span_7](start_span)[span_8](start_span)// BANCO DE DATOS LOCAL (Persistência)[span_7](end_span)[span_8](end_span)
+            db: {
+                usuario: { nick: "", tipo: "" },
+                configGrupos: { qtd: 0, pessoas: 0, lideres: 0 },
+                configPercurso: { fixos: 0, moveis: 0 },
+                progresso: { gruposPronto: false, percursoPronto: false }
             },
 
-            // [PÁGINA DE ABERTURA]
+            irPara(pagina) { this[pagina](); },
+
+            // --- ETAPA 1 (REPETIDA PARA MANTER O FLUXO) ---
             abertura() {
                 this.elemento.innerHTML = `
                     <div class="fundo-floresta">
@@ -119,86 +120,152 @@
                             <button class="btn btn-verde" onclick="App.irPara('login')">Fazer Login</button>
                             <button class="btn btn-verde" onclick="App.irPara('participante')">Continuar como Participante</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             },
 
-            // [PÁGINA DE LOGIN]
             login() {
                 this.elemento.innerHTML = `
                     <div class="fundo-floresta">
-                        <div class="menu-bege" id="menu-login">
+                        <div class="menu-bege">
                             <h2>Login</h2>
-                            <p style="font-size: 10px;">EMAIL</p>
-                            <input type="email" id="email" oninput="App.validarLogin()">
-                            <p style="font-size: 10px;">SENHA</p>
-                            <input type="password" id="senha" oninput="App.validarLogin()">
-                            
-                            <button id="btn-login" class="btn btn-continuar" onclick="App.salvarNickname()">Continuar</button>
+                            <input type="email" id="email" placeholder="EMAIL" oninput="App.validaL()">
+                            <input type="password" id="senha" placeholder="SENHA" oninput="App.validaL()">
+                            <button id="btn-L" class="btn btn-continuar" onclick="App.abrirNick('org')">Continuar</button>
                             <button class="btn btn-marrom" onclick="App.irPara('abertura')">Voltar</button>
-
-                            <div id="overlay-nick" class="overlay hidden">
+                            <div id="ov-nick" class="overlay hidden">
                                 <h2>Nome de Usuário</h2>
-                                <input type="text" id="nick" placeholder="Seu Nickname">
-                                <button class="btn btn-verde" onclick="App.finalizarLogin()">Salvar</button>
+                                <input type="text" id="nick-in" placeholder="Nickname">
+                                <button class="btn btn-verde" onclick="App.salvarEProsseguir()">Salvar</button>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             },
 
-            // [PÁGINA DE PARTICIPANTE]
             participante() {
                 this.elemento.innerHTML = `
                     <div class="fundo-floresta">
                         <div class="menu-bege">
-                            <h2 style="background: rgba(255,255,255,0.5); padding: 5px;">Código de Acesso</h2>
-                            <input type="text" id="cod" placeholder="Digite o código" oninput="App.validarParticipante()">
-                            
-                            <button id="btn-part" class="btn btn-continuar" onclick="App.salvarNicknameParticipante()">Continuar</button>
+                            <h2>Código de Acesso</h2>
+                            <input type="text" id="cod-in" placeholder="CÓDIGO" oninput="App.validaP()">
+                            <button id="btn-P" class="btn btn-continuar" onclick="App.abrirNick('part')">Continuar</button>
                             <button class="btn btn-marrom" onclick="App.irPara('abertura')">Voltar</button>
-
-                            <div id="overlay-nick" class="overlay hidden">
+                            <div id="ov-nick" class="overlay hidden">
                                 <h2>Nome de Usuário</h2>
-                                <input type="text" id="nick-p" placeholder="Seu Nickname">
-                                <button class="btn btn-verde" onclick="App.finalizarLogin()">Salvar</button>
+                                <input type="text" id="nick-in" placeholder="Nickname">
+                                <button class="btn btn-verde" onclick="App.salvarEProsseguir()">Salvar</button>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             },
 
-            // Lógica de validação (Amarelo ao digitar)
-            validarLogin() {
-                const e = document.getElementById('email').value;
-                const s = document.getElementById('senha').value;
-                const btn = document.getElementById('btn-login');
-                if(e.length > 0 && s.length > 0) btn.classList.add('btn-ativo');
+            // --- ETAPA 2 (NOVIDADES) ---
+
+            [span_9](start_span)// Página Inicial - Floresta 2[span_9](end_span)
+            paginaInicial() {
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                        <div class="menu-bege">
+                            <h2 class="titulo-app" style="font-size: 2rem">Olá, ${this.db.usuario.nick}</h2>
+                            <button class="btn btn-verde" onclick="App.irPara('paginaComando')">Organizador</button>
+                            <button class="btn btn-verde" onclick="App.irPara('participantePainel')">Participante</button>
+                        </div>
+                    </div>`;
+            },
+
+            [span_10](start_span)[span_11](start_span)// Cérebro do Sistema - Página de Comando[span_10](end_span)[span_11](end_span)
+            paginaComando() {
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta" style="background: #eee;">
+                        <div style="position: absolute; top: 10px; right: 10px; font-weight: bold;">...</div>
+                        <div id="mapa-placeholder" style="width:100%; height:80%; background:#ccc; display:flex; align-items:center; justify-content:center;">
+                            [MAPA EM TEMPO REAL]
+                        </div>
+                        <div style="position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px; border-top: 2px solid #333;">
+                            <div onclick="App.irPara('paginaComando')">🏠<br><small>Início</small></div>
+                            <div onclick="App.irPara('paginaMestre')">🗺️<br><small>Mapas</small></div>
+                            <div style="color: gray;">⚪<br><small>Começar</small></div>
+                            <div>🔺<br><small>Grupos</small></div>
+                            <div>👤<br><small>Você</small></div>
+                        </div>
+                    </div>`;
+            },
+
+            [span_12](start_span)// Página Mestre[span_12](end_span)
+            paginaMestre() {
+                const pronto = this.db.progresso.gruposPronto && this.db.progresso.percursoPronto;
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                        <div class="menu-bege">
+                            <h2>Página Mestre</h2>
+                            <button class="btn btn-verde" onclick="App.irPara('paginaGrupos')">Organizar Grupos</button>
+                            <button class="btn btn-verde" onclick="App.irPara('paginaPercursos')">Organizar Percursos</button>
+                            ${pronto ? `<button class="btn" style="background: var(--amarelo-ativo)" onclick="App.finalizarMestre()">Continuar</button>` : ''}
+                            <button class="btn btn-marrom" onclick="App.irPara('paginaComando')">Voltar</button>
+                        </div>
+                    </div>`;
+            },
+
+            [span_13](start_span)[span_14](start_span)[span_15](start_span)[span_16](start_span)// Página de Grupos com Regras[span_13](end_span)[span_14](end_span)[span_15](end_span)[span_16](end_span)
+            paginaGrupos() {
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                        <div class="menu-bege">
+                            <h2>Config. Grupos</h2>
+                            <input type="number" id="g1" placeholder="N° de Grupos (1-30)" oninput="App.regraGrupos()">
+                            <div id="sessao2" class="hidden">
+                                <input type="number" id="g2" placeholder="Pessoas por Grupo" oninput="App.regraGrupos()">
+                            </div>
+                            <div id="sessao4" class="hidden">
+                                <input type="number" id="g3" placeholder="Campo Opcional">
+                                <p style="font-size: 10px;">LÍDERES POR GRUPO</p>
+                                <input type="number" id="g4" placeholder="Líderes" oninput="App.regraGrupos()">
+                                <button id="btn-conf-g" class="btn hidden" style="background: var(--amarelo-ativo)" onclick="App.salvarGrupos()">Confirmar</button>
+                            </div>
+                            <button class="btn btn-marrom" onclick="App.irPara('paginaMestre')">Voltar</button>
+                        </div>
+                    </div>`;
+            },
+
+            // --- LÓGICAS DE APOIO ---
+            validaL() {
+                const btn = document.getElementById('btn-L');
+                if(document.getElementById('email').value && document.getElementById('senha').value) btn.classList.add('btn-ativo');
                 else btn.classList.remove('btn-ativo');
             },
-
-            validarParticipante() {
-                const c = document.getElementById('cod').value;
-                const btn = document.getElementById('btn-part');
-                if(c.length > 0) btn.classList.add('btn-ativo');
+            validaP() {
+                const btn = document.getElementById('btn-P');
+                if(document.getElementById('cod-in').value) btn.classList.add('btn-ativo');
                 else btn.classList.remove('btn-ativo');
             },
-
-            salvarNickname() {
-                document.getElementById('overlay-nick').classList.remove('hidden');
+            abrirNick(tipo) { 
+                this.db.usuario.tipo = tipo;
+                document.getElementById('ov-nick').classList.remove('hidden'); 
             },
-
-            salvarNicknameParticipante() {
-                document.getElementById('overlay-nick').classList.remove('hidden');
+            salvarEProsseguir() {
+                this.db.usuario.nick = document.getElementById('nick-in').value;
+                this.paginaInicial();
             },
+            regraGrupos() {
+                const g1 = parseInt(document.getElementById('g1').value);
+                const g2 = parseInt(document.getElementById('g2').value);
+                const g4 = parseInt(document.getElementById('g4').value);
+                
+                [span_17](start_span)// Regra Campo 1 (1-30)[span_17](end_span)
+                if(g1 >= 1 && g1 <= 30) document.getElementById('sessao2').classList.remove('hidden');
+                
+                [span_18](start_span)// Regra Campo 2[span_18](end_span)
+                if(g2 >= 1) document.getElementById('sessao4').classList.remove('hidden');
 
-            finalizarLogin() {
-                alert("Etapa 1 Concluída! Nickname salvo. Aguardando Etapa 2...");
-                // Aqui depois entraremos na Página Inicial (Floresta 2)
+                [span_19](start_span)// Regra Botão Confirmar[span_19](end_span)
+                if(g1 > 0 && g2 > 0 && !isNaN(g4)) {
+                    document.getElementById('btn-conf-g').classList.remove('hidden');
+                }
+            },
+            salvarGrupos() {
+                this.db.progresso.gruposPronto = true;
+                this.irPara('paginaMestre');
             }
         };
-
         window.onload = () => App.abertura();
-    </script>
 </body>
 </html>
