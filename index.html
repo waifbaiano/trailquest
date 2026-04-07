@@ -23,7 +23,6 @@
 
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-        /* Controles do Mapa */
         .controles-mapa { position: absolute; bottom: 100px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 1002; }
         .btn-map-ctrl {
             width: 52px; height: 52px; background: white; border-radius: 50%;
@@ -31,7 +30,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; border: none; font-size: 1.4rem; color: #444;
         }
 
-        /* Menu Superior de Edição de Pontos */
         .header-edicao {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
             background: var(--bege-menu); padding: 12px; border: 2px solid var(--marrom-voltar);
@@ -39,7 +37,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
-        /* Modal de Seleção de Slot de Mapa */
         .modal-slots {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: var(--bege-menu); border: 3px solid var(--marrom-voltar);
@@ -57,7 +54,7 @@
         .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 25px; width: 88%; max-width: 380px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); position: relative; z-index: 1000; }
         
         .titulo-app { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--verde-comando); margin-bottom: 10px; }
-        h2 { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin: 15px 0 5px 0; text-transform: uppercase; color: var(--marrom-voltar); }
+        h2 { font-family: 'Montserrat', sans-serif; font-size: 0.8rem; margin: 15px 0 5px 0; text-transform: uppercase; color: var(--marrom-voltar); }
         input { font-family: 'Roboto', sans-serif !important; width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; background: var(--branco) !important; color: #333; text-align: center; border-radius: 4px; }
 
         .btn { width: 100%; padding: 15px; margin-top: 10px; font-family: 'Montserrat', sans-serif; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; border-radius: 4px; }
@@ -93,9 +90,9 @@
             marcasNoMapa: [],
             db: {
                 user: { nick: "", tipo: "" },
-                grupos: { qtd: 0, pessoas: 0, lideres: 0, ok: false },
+                grupos: { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false },
                 percurso: { fixos: 0, moveis: 0, ok: false },
-                mapasSalvos: [null, null, null, null, null] // Slots 1 a 5
+                mapasSalvos: [null, null, null, null, null]
             },
 
             render(html) { this.el.innerHTML = html; },
@@ -151,7 +148,15 @@
             initMap() {
                 this.layers.ruas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
                 this.layers.satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-                this.map = L.map('map', { layers: [this.layers.ruas], zoomControl: false }).setView([-23.55, -46.63], 13);
+                
+                // Reativado Zoom Control para permitir zoom livre
+                this.map = L.map('map', { 
+                    layers: [this.layers.ruas], 
+                    zoomControl: true,
+                    dragging: true,
+                    touchZoom: true,
+                    scrollWheelZoom: true
+                }).setView([-23.55, -46.63], 13);
                 
                 this.map.locate({setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true});
                 this.map.on('locationfound', (e) => {
@@ -160,9 +165,14 @@
                     else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.8, radius: 9, weight: 3}).addTo(this.map);
                 });
 
+                // Lógica de adicionar pontos no clique corrigida
                 this.map.on('click', (e) => {
-                    if(this.modoEdicao && this.pontosTemporarios.length < this.db.percurso.fixos) {
-                        this.adicionarPontoGrafico(e.latlng);
+                    if(this.modoEdicao) {
+                        if(this.pontosTemporarios.length < this.db.percurso.fixos) {
+                            this.adicionarPontoGrafico(e.latlng);
+                        } else {
+                            alert("Limite de pontos atingido!");
+                        }
                     }
                 });
             },
@@ -182,8 +192,8 @@
                 if (this.linhaTemporaria) this.map.removeLayer(this.linhaTemporaria);
                 this.linhaTemporaria = L.polyline(this.pontosTemporarios, {color: 'var(--marrom-voltar)', weight: 3, dashArray: '5, 10'}).addTo(this.map);
                 
-                // Atualiza título da edição
-                this.comando(); 
+                // Atualiza o contador no cabeçalho
+                document.querySelector('.header-edicao h2').innerText = `Editando Pontos (${this.pontosTemporarios.length}/${this.db.percurso.fixos})`;
             },
 
             abrirSlots() {
@@ -216,12 +226,12 @@
                 if(this.linhaTemporaria) this.map.removeLayer(this.linhaTemporaria);
                 this.pontosTemporarios = [];
                 this.marcasNoMapa = [];
-                this.comando();
+                document.querySelector('.header-edicao h2').innerText = `Editando Pontos (0/${this.db.percurso.fixos})`;
             },
 
             cancelarEdicao() { this.modoEdicao = false; this.mestre(); },
             toggleSat() { if (this.map.hasLayer(this.layers.ruas)) { this.map.removeLayer(this.layers.ruas); this.map.addLayer(this.layers.satelite); } else { this.map.removeLayer(this.layers.satelite); this.map.addLayer(this.layers.ruas); } },
-            focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 17); },
+            focargps() { if(this.currentPos) this.map.setView(this.currentPos, 17); },
 
             mestre() {
                 const liberado = this.db.grupos.ok && this.db.percurso.ok;
@@ -238,10 +248,35 @@
                 `);
             },
 
-            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
+            iniciarEdicao() { 
+                if(this.db.percurso.fixos < 1) { alert("Configure o número de objetivos fixos primeiro!"); return; }
+                this.modoEdicao = true; 
+                this.pontosTemporarios = []; 
+                this.comando(); 
+            },
 
             telaGrupos() {
-                this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')"><div class="menu-bege"><h2>Número de Grupos</h2><input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()"><div id="sg2" class="${this.db.grupos.qtd ? '' : 'hidden'}"><h2>Pessoas por Grupo</h2><input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()"></div><div id="sg4" class="${this.db.grupos.pessoas ? '' : 'hidden'}"><h2>Líderes por Grupo</h2><input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()"><div id="erro-lider" class="aviso-erro">O n° de líderes não pode ser maior que o de pessoas!</div><button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button></div><button class="btn btn-marrom" style="margin-top:10px" onclick="App.mestre()">Voltar</button></div></div>`);
+                this.render(`
+                    <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
+                        <div class="menu-bege">
+                            <h2>Número de Grupos</h2>
+                            <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()">
+                            <div id="sg2" class="${this.db.grupos.qtd ? '' : 'hidden'}">
+                                <h2>Pessoas por Grupo</h2>
+                                <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()">
+                            </div>
+                            <div id="sg4" class="${this.db.grupos.pessoas ? '' : 'hidden'}">
+                                <h2>Campo Opcional</h2>
+                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}" placeholder="Digite aqui...">
+                                <h2>Líderes por Grupo</h2>
+                                <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" placeholder="Máx 30" oninput="App.checkRegrasG()">
+                                <div id="erro-lider" class="aviso-erro">O n° de líderes não pode ser maior que o de pessoas!</div>
+                                <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
+                            </div>
+                            <button class="btn btn-marrom" style="margin-top:10px" onclick="App.mestre()">Voltar</button>
+                        </div>
+                    </div>
+                `);
             },
 
             telaPercursos() {
@@ -257,19 +292,35 @@
                 let g1 = document.getElementById('ig1').value;
                 let g2 = document.getElementById('ig2').value;
                 let g4 = document.getElementById('ig4').value;
-                if (!g1) { this.db.grupos = { qtd: 0, pessoas: 0, lideres: 0, ok: false }; document.getElementById('ig2').value = ""; document.getElementById('ig4').value = ""; document.getElementById('sg2').classList.add('hidden'); document.getElementById('sg4').classList.add('hidden'); return; }
+                if (!g1) { 
+                    this.db.grupos = { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false }; 
+                    document.getElementById('sg2').classList.add('hidden'); 
+                    document.getElementById('sg4').classList.add('hidden'); 
+                    return; 
+                }
                 if (parseInt(g1) > 30) { g1 = 30; document.getElementById('ig1').value = 30; }
                 if (parseInt(g2) > 30) { g2 = 30; document.getElementById('ig2').value = 30; }
                 if (parseInt(g4) > 30) { g4 = 30; document.getElementById('ig4').value = 30; }
-                const erro = document.getElementById('erro-lider'); const btn = document.getElementById('btn-g-ok');
+
                 if(parseInt(g1) >= 1) document.getElementById('sg2').classList.remove('hidden');
                 if(parseInt(g2) >= 1) document.getElementById('sg4').classList.remove('hidden');
+
+                const erro = document.getElementById('erro-lider'); 
+                const btn = document.getElementById('btn-g-ok');
                 if(parseInt(g4) > parseInt(g2)) { erro.style.display = "block"; btn.classList.add('hidden'); }
                 else { erro.style.display = "none"; if(g1 > 0 && g2 > 0) { btn.classList.remove('hidden'); btn.classList.add('btn-ativo'); } }
             },
-            saveG() { this.db.grupos.qtd = document.getElementById('ig1').value; this.db.grupos.pessoas = document.getElementById('ig2').value; this.db.grupos.lideres = document.getElementById('ig4').value; this.db.grupos.ok = true; this.mestre(); },
+            saveG() { 
+                this.db.grupos.qtd = document.getElementById('ig1').value; 
+                this.db.grupos.pessoas = document.getElementById('ig2').value; 
+                this.db.grupos.opcional = document.getElementById('ig-op').value;
+                this.db.grupos.lideres = document.getElementById('ig4').value; 
+                this.db.grupos.ok = true; 
+                this.mestre(); 
+            },
             checkRegrasP() { const p1 = parseInt(document.getElementById('ip1').value); if(p1 >= 1) { document.getElementById('sp2').classList.remove('hidden'); document.getElementById('btn-p-ok').classList.add('btn-ativo'); } },
-            saveP() { this.db.percurso.fixos = document.getElementById('ip1').value; this.db.percurso.moveis = document.getElementById('ip2').value; this.db.percurso.ok = true; this.mestre(); }
+            saveP() { this.db.percurso.fixos = document.getElementById('ip1').value; this.db.percurso.moveis = document.getElementById('ip2').value; this.db.percurso.ok = true; this.mestre(); },
+            focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 17); }
         };
 
         window.onload = () => App.abertura();
