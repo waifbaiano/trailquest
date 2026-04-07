@@ -37,8 +37,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
-        .menu-ponto-detalhe { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        
         .modal-slots {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: var(--bege-menu); border: 3px solid var(--marrom-voltar);
@@ -82,16 +80,16 @@
         const App = {
             el: document.getElementById('app'),
             map: null,
-            layers: {},
             userMarker: null,
             modoEdicao: false,
             pontoSelecionadoIdx: null,
             pontosTemporarios: [],
             currentPos: null,
+            firstFix: false,
             db: {
                 user: { nick: "" },
                 grupos: { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false },
-                percurso: { fixos: 0, ok: false },
+                percurso: { fixos: 0, moveis: 0, ok: false },
                 mapasSalvos: [null, null, null, null, null],
                 coresSlots: ['#2e7d32', '#d32f2f', '#fbc02d', '#1976d2', '#212121']
             },
@@ -137,7 +135,7 @@
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
                         <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
                         <div class="icon-nav" style="opacity:0.3"><span>⚪</span>Começar</div>
-                        <div class="icon-nav" style="opacity:0.3"><span>🔺</span>Grupos</div>
+                        <div class="icon-nav" onclick="alert('Perfil')"><span>👤</span>Você</div>
                     </div>
                 `);
                 this.initMap();
@@ -149,12 +147,12 @@
                 <div class="header-edicao">
                     ${p ? `
                         <h2 style="margin:0">Editar Ponto ${this.pontoSelecionadoIdx + 1}</h2>
-                        <div class="menu-ponto-detalhe">
-                            <input type="text" id="ed-nome" placeholder="Nome (Ex: Cantina)" value="${p.nome || ''}">
-                            <input type="number" id="ed-num" placeholder="n°" value="${this.pontoSelecionadoIdx + 1}">
+                        <div style="display:flex; gap:5px; margin-top:10px">
+                            <input type="text" id="ed-nome" placeholder="Nome" value="${p.nome || ''}" style="margin:0; flex:2">
+                            <input type="number" id="ed-num" value="${this.pontoSelecionadoIdx + 1}" style="margin:0; flex:1">
                         </div>
                         <div style="display:flex; gap:5px; margin-top:10px">
-                            <button class="btn btn-verde" style="padding:8px; margin:0; font-size:0.7rem" onclick="App.salvarDetalhePonto()">Voltar (Salvar)</button>
+                            <button class="btn btn-verde" style="padding:8px; margin:0; font-size:0.7rem" onclick="App.salvarDetalhePonto()">Voltar</button>
                             <button class="btn btn-marrom" style="padding:8px; margin:0; font-size:0.7rem; background:#d32f2f" onclick="App.excluirPonto()">Excluir</button>
                         </div>
                     ` : `
@@ -165,44 +163,32 @@
             },
 
             initMap() {
-                this.layers.ruas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-                this.layers.satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+                this.map = L.map('map', { zoomControl: false }).setView([0,0], 2);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
                 
-                this.map = L.map('map', { 
-                    layers: [this.layers.ruas], 
-                    zoomControl: true,
-                    dragging: true,
-                    scrollWheelZoom: true,
-                    touchZoom: true
-                }).setView([-23.55, -46.63], 15);
-                
-                // Localização Silenciosa (Sem Watch para evitar oscilação)
                 this.map.locate({setView: false, enableHighAccuracy: true});
                 this.map.on('locationfound', (e) => {
                     this.currentPos = e.latlng;
+                    if (!this.firstFix) { this.map.setView(e.latlng, 16); this.firstFix = true; }
                     if (this.userMarker) this.userMarker.setLatLng(e.latlng);
-                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.9, radius: 8, weight: 3}).addTo(this.map);
+                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.9, radius: 8}).addTo(this.map);
                 });
 
                 this.map.on('click', (e) => {
                     if(this.modoEdicao && this.pontoSelecionadoIdx === null) {
-                        if(this.pontosTemporarios.length < this.db.percurso.fixos) this.addPonto(e.latlng);
+                        if(this.pontosTemporarios.length < this.db.percurso.fixos) {
+                            this.pontosTemporarios.push({ latlng: e.latlng, nome: "" });
+                            this.atualizarMapaVisual();
+                            this.comando();
+                        }
                     }
                 });
-
                 this.atualizarMapaVisual();
-            },
-
-            addPonto(latlng) {
-                this.pontosTemporarios.push({ latlng, nome: "" });
-                this.atualizarMapaVisual();
-                this.comando();
             },
 
             atualizarMapaVisual() {
                 if(!this.map) return;
                 this.map.eachLayer(l => { if(l instanceof L.Marker || l instanceof L.Polyline) if(l !== this.userMarker) this.map.removeLayer(l); });
-                
                 const coords = this.pontosTemporarios.map(p => p.latlng);
                 this.pontosTemporarios.forEach((p, i) => {
                     L.marker(p.latlng, {
@@ -216,18 +202,17 @@
                         this.comando();
                     });
                 });
-
-                if(coords.length > 1) L.polyline(coords, {color: this.db.coresSlots[0], weight: 3, dashArray: '5, 10'}).addTo(this.map);
+                if(coords.length > 1) L.polyline(coords, {color: this.db.coresSlots[0], weight: 3}).addTo(this.map);
             },
 
             salvarDetalhePonto() {
-                const novoNome = document.getElementById('ed-nome').value;
-                const novoNum = parseInt(document.getElementById('ed-num').value) - 1;
-                this.pontosTemporarios[this.pontoSelecionadoIdx].nome = novoNome;
-                if(novoNum !== this.pontoSelecionadoIdx && novoNum >= 0 && novoNum < this.db.percurso.fixos) {
+                const nNome = document.getElementById('ed-nome').value;
+                const nNum = parseInt(document.getElementById('ed-num').value) - 1;
+                this.pontosTemporarios[this.pontoSelecionadoIdx].nome = nNome;
+                if(nNum !== this.pontoSelecionadoIdx && nNum >= 0 && nNum < this.db.percurso.fixos) {
                     const temp = this.pontosTemporarios[this.pontoSelecionadoIdx];
-                    this.pontosTemporarios[this.pontoSelecionadoIdx] = this.pontosTemporarios[novoNum];
-                    this.pontosTemporarios[novoNum] = temp;
+                    this.pontosTemporarios[this.pontoSelecionadoIdx] = this.pontosTemporarios[nNum];
+                    this.pontosTemporarios[nNum] = temp;
                 }
                 this.pontoSelecionadoIdx = null;
                 this.atualizarMapaVisual();
@@ -245,10 +230,9 @@
                 const container = document.getElementById('lista-slots');
                 container.innerHTML = "";
                 this.db.mapasSalvos.forEach((m, i) => {
-                    const cor = this.db.coresSlots[i];
                     container.innerHTML += `<div class="slot-card" onclick="App.finalizarSave(${i})">
-                        <div style="width:15px; height:15px; background:${cor}; border-radius:50%"></div>
-                        <span>Mapa Slot ${i+1} ${m ? '(Ocupado)' : '(Vazio)'}</span>
+                        <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
+                        <span>Mapa Slot ${i+1}</span>
                     </div>`;
                 });
                 document.getElementById('modal-slots').classList.remove('hidden');
@@ -256,7 +240,7 @@
 
             finalizarSave(i) {
                 this.db.mapasSalvos[i] = { pontos: [...this.pontosTemporarios] };
-                alert("Configuração de Mapa Salva!");
+                alert("Mapa Salvo!");
                 this.modoEdicao = false;
                 this.mestre();
             },
@@ -270,13 +254,11 @@
                             <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
                             <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
                             <button class="btn ${pronto ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${pronto ? 'App.iniciarEdicao()' : ''}">Continuar</button>
-                            <button class="btn btn-marrom" onclick="App.comando()">Voltar ao Mapa</button>
+                            <button class="btn btn-marrom" onclick="App.comando()">Ver Mapa</button>
                         </div>
                     </div>
                 `);
             },
-
-            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
 
             telaGrupos() {
                 this.render(`
@@ -284,20 +266,17 @@
                         <div class="menu-bege">
                             <h2>Número de Grupos</h2>
                             <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" oninput="App.checkG()">
-                            
                             <div id="sg-p" class="${this.db.grupos.qtd ? '' : 'hidden'}">
                                 <h2>Pessoas por Grupo</h2>
                                 <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" oninput="App.checkG()">
                             </div>
-
                             <div id="sg-l" class="${this.db.grupos.pessoas ? '' : 'hidden'}">
                                 <input type="text" id="ig-op" placeholder="" value="${this.db.grupos.opcional}">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
-                                <div id="erro-g" class="aviso-erro hidden">Líderes não podem superar o n° de pessoas!</div>
+                                <div id="erro-g" class="aviso-erro hidden">Líderes inválidos!</div>
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
                             </div>
-                            
                             <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
                         </div>
                     </div>
@@ -308,32 +287,13 @@
                 let g1 = document.getElementById('ig1').value;
                 let g2 = document.getElementById('ig2').value;
                 let g4 = document.getElementById('ig4').value;
-                
-                if(g1 > 30) document.getElementById('ig1').value = 30;
-                if(g2 > 30) document.getElementById('ig2').value = 30;
-                if(g4 > 30) document.getElementById('ig4').value = 30;
-
                 if(g1 >= 1) document.getElementById('sg-p').classList.remove('hidden');
-                else document.getElementById('sg-p').classList.add('hidden');
-
                 if(g2 >= 1) document.getElementById('sg-l').classList.remove('hidden');
-                else document.getElementById('sg-l').classList.add('hidden');
-
-                const btn = document.getElementById('btn-g-ok');
-                const erro = document.getElementById('erro-g');
-
-                if(parseInt(g4) > parseInt(g2)) { erro.classList.remove('hidden'); btn.classList.add('hidden'); }
-                else { erro.classList.add('hidden'); if(g1 && g2) btn.classList.add('btn-ativo'); }
+                if(g1 && g2 && g4) document.getElementById('btn-g-ok').classList.add('btn-ativo');
             },
 
             saveG() { 
-                this.db.grupos = { 
-                    qtd: document.getElementById('ig1').value, 
-                    pessoas: document.getElementById('ig2').value, 
-                    lideres: document.getElementById('ig4').value,
-                    opcional: document.getElementById('ig-op').value,
-                    ok: true 
-                }; 
+                this.db.grupos = { qtd: document.getElementById('ig1').value, pessoas: document.getElementById('ig2').value, lideres: document.getElementById('ig4').value, opcional: document.getElementById('ig-op').value, ok: true }; 
                 this.mestre(); 
             },
 
@@ -343,20 +303,31 @@
                         <div class="menu-bege">
                             <h2>Objetivos Fixos</h2>
                             <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
-                            <button id="btn-p-ok" class="btn btn-neutro" onclick="App.saveP()">Confirmar</button>
+                            <div id="sp-mov" class="${this.db.percurso.fixos ? '' : 'hidden'}">
+                                <h2>Objetivos Móveis</h2>
+                                <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
+                                <button id="btn-p-ok" class="btn btn-neutro" onclick="App.saveP()">Confirmar</button>
+                            </div>
                             <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
                         </div>
                     </div>
                 `);
             },
 
-            checkP() { if(document.getElementById('ip1').value > 0) document.getElementById('btn-p-ok').classList.add('btn-ativo'); },
-            saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, ok: true }; this.mestre(); },
+            checkP() { 
+                if(document.getElementById('ip1').value >= 1) {
+                    document.getElementById('sp-mov').classList.remove('hidden');
+                    document.getElementById('btn-p-ok').classList.add('btn-ativo');
+                }
+            },
 
+            saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; this.mestre(); },
+
+            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
             validaLogin() { if(document.getElementById('email').value && document.getElementById('senha').value) document.getElementById('btn-l').classList.add('btn-ativo'); },
             validaPart() { if(document.getElementById('cod').value) document.getElementById('btn-p').classList.add('btn-ativo'); },
-            toggleSat() { if (this.map.hasLayer(this.layers.ruas)) { this.map.removeLayer(this.layers.ruas); this.map.addLayer(this.layers.satelite); } else { this.map.removeLayer(this.layers.satelite); this.map.addLayer(this.layers.ruas); } },
-            focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 17); }
+            toggleSat() { /* Implementação de Camada */ },
+            focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 18); }
         };
 
         window.onload = () => App.abertura();
