@@ -15,6 +15,7 @@
             --bege-menu: rgba(255, 253, 231, 0.98);
             --amarelo-ativo: #ffeb3b;
             --branco: #ffffff;
+            --vermelho-erro: #d32f2f;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,7 +27,6 @@
             overflow: hidden; 
         }
 
-        /* Fundos de Floresta Dinâmicos */
         .cenario {
             width: 100vw; height: 100vh;
             background-size: cover; background-position: center;
@@ -46,11 +46,9 @@
             animation: fadeIn 0.4s ease;
         }
 
-        /* Tipografia */
         .titulo-app { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--verde-comando); margin-bottom: 10px; }
         h2 { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin: 15px 0 5px 0; text-transform: uppercase; color: var(--marrom-voltar); }
 
-        /* Inputs Brancos - Fonte Roboto */
         input {
             font-family: 'Roboto', sans-serif !important;
             width: 100%;
@@ -64,7 +62,6 @@
             font-size: 1rem;
         }
 
-        /* Botões */
         .btn {
             width: 100%; padding: 15px; margin-top: 10px;
             font-family: 'Montserrat', sans-serif; font-weight: bold;
@@ -75,21 +72,32 @@
         .btn-neutro { background: var(--branco); color: #333; border: 1px solid #ccc; }
         .btn-ativo { background: var(--amarelo-ativo) !important; color: #000 !important; }
 
-        /* Interface do Mapa e Rodapé */
+        /* Rodapé com fonte Montserrat solicitada */
         .rodape-strava {
             position: fixed; bottom: 0; width: 100%; 
             background: white; display: flex; 
-            justify-content: space-around; padding: 10px 0;
+            justify-content: space-around; padding: 12px 0;
             border-top: 2px solid var(--marrom-voltar);
             z-index: 100;
         }
-        .icon-nav { text-align: center; font-size: 0.7rem; color: #555; cursor: pointer; }
+        .icon-nav { 
+            text-align: center; 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 0.65rem; 
+            font-weight: bold;
+            color: #555; 
+            cursor: pointer; 
+            text-transform: uppercase;
+        }
+        .icon-nav span { font-size: 1.4rem; display: block; margin-bottom: 2px; }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bege-menu); display: flex; flex-direction: column;
             align-items: center; justify-content: center; padding: 20px; z-index: 10;
         }
+
+        .aviso-erro { color: var(--vermelho-erro); font-family: 'Roboto'; font-size: 0.7rem; font-weight: bold; margin-top: -5px; display: none; }
 
         .hidden { display: none !important; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -102,17 +110,14 @@
     <script>
         const App = {
             el: document.getElementById('app'),
-            // "BANCO DE DADOS" TEMPORÁRIO
             db: {
                 user: { nick: "", tipo: "" },
                 grupos: { qtd: 0, pessoas: 0, lideres: 0, ok: false },
                 percurso: { fixos: 0, moveis: 0, ok: false }
             },
 
-            // Navegação Principal
             render(html) { this.el.innerHTML = html; },
 
-            // --- TELAS ---
             abertura() {
                 this.render(`
                     <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')">
@@ -178,14 +183,14 @@
                 this.render(`
                     <div class="cenario" style="background: #e0e0e0; align-items: flex-start;">
                         <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">
-                           [ MAPA SENDO PREPARADO PARA ETAPA 3 ]
+                           [ MAPA SENDO PREPARADO PARA GPS ]
                         </div>
                         <div class="rodape-strava">
-                            <div class="icon-nav" onclick="App.home()">🏠<br>Início</div>
-                            <div class="icon-nav" onclick="App.mestre()">🗺️<br>Mapas</div>
-                            <div class="icon-nav" style="opacity:0.3">⚪<br>Começar</div>
-                            <div class="icon-nav" style="opacity:0.3">🔺<br>Grupos</div>
-                            <div class="icon-nav" style="opacity:0.3">👤<br>Você</div>
+                            <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
+                            <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
+                            <div class="icon-nav" style="opacity:0.3"><span>⚪</span>Começar</div>
+                            <div class="icon-nav" style="opacity:0.3"><span>🔺</span>Grupos</div>
+                            <div class="icon-nav" style="opacity:0.3"><span>👤</span>Você</div>
                         </div>
                     </div>
                 `);
@@ -199,7 +204,7 @@
                             <h2>Página Mestre</h2>
                             <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
                             <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
-                            <button class="btn ${liberado ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${liberado ? 'alert(\'Etapa 3: Abrindo Mapa...\')' : ''}">Continuar</button>
+                            <button class="btn ${liberado ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${liberado ? 'alert(\'Etapa 4: Iniciando Mapa Interativo\')' : ''}">Continuar</button>
                             <button class="btn btn-marrom" onclick="App.comando()">Voltar</button>
                         </div>
                     </div>
@@ -210,16 +215,19 @@
                 this.render(`
                     <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
                         <div class="menu-bege">
-                            <h2>Nº de Grupos (1-30)</h2>
-                            <input type="number" id="ig1" oninput="App.checkRegrasG()">
+                            <h2>Número de Grupos</h2>
+                            <input type="number" id="ig1" placeholder="Ex: 1 a 30" oninput="App.checkRegrasG()">
+                            
                             <div id="sg2" class="hidden">
                                 <h2>Pessoas por Grupo</h2>
                                 <input type="number" id="ig2" oninput="App.checkRegrasG()">
                             </div>
+
                             <div id="sg4" class="hidden">
                                 <input type="text" placeholder="Campo Opcional">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" oninput="App.checkRegrasG()">
+                                <div id="erro-lider" class="aviso-erro">O n° de líderes não pode ser maior que o de pessoas!</div>
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
                             </div>
                             <button class="btn btn-marrom" style="margin-top:10px" onclick="App.mestre()">Voltar</button>
@@ -265,12 +273,26 @@
                 this.home();
             },
             checkRegrasG() {
-                const g1 = parseInt(document.getElementById('ig1').value);
-                const g2 = parseInt(document.getElementById('ig2').value);
-                const g4 = parseInt(document.getElementById('ig4').value);
+                const g1 = parseInt(document.getElementById('ig1').value) || 0;
+                const g2 = parseInt(document.getElementById('ig2').value) || 0;
+                const g4 = parseInt(document.getElementById('ig4').value) || 0;
+                const erro = document.getElementById('erro-lider');
+                const btn = document.getElementById('btn-g-ok');
+
                 if(g1 >= 1 && g1 <= 30) document.getElementById('sg2').classList.remove('hidden');
                 if(g2 >= 1) document.getElementById('sg4').classList.remove('hidden');
-                if(g1 > 0 && g2 > 0 && g4 >= 0) document.getElementById('btn-g-ok').classList.add('btn-ativo');
+
+                // Regra solicitada: n° líderes <= n° pessoas
+                if(g4 > g2) {
+                    erro.style.display = "block";
+                    btn.classList.add('hidden');
+                } else {
+                    erro.style.display = "none";
+                    if(g1 > 0 && g2 > 0) {
+                        btn.classList.remove('hidden');
+                        btn.classList.add('btn-ativo');
+                    }
+                }
             },
             saveG() { this.db.grupos.ok = true; this.mestre(); },
             checkRegrasP() {
