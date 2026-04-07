@@ -286,7 +286,6 @@
             },
 
             novoMapaLimpo() {
-                // Procura o próximo slot vazio para sugerir a cor
                 let next = this.db.mapasSalvos.findIndex(s => s === null);
                 this.activeSlotIdx = next !== -1 ? next : 0;
                 this.pontosTemporarios = [];
@@ -317,11 +316,11 @@
                         <div class="menu-bege">
                             <h2>Número de Grupos</h2>
                             <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" oninput="App.checkG()">
-                            <div id="sg-p" class="${this.db.grupos.qtd ? '' : 'hidden'}">
+                            <div id="sg-p">
                                 <h2>Pessoas por Grupo</h2>
                                 <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" oninput="App.checkG()">
                             </div>
-                            <div id="sg-l" class="${this.db.grupos.pessoas ? '' : 'hidden'}">
+                            <div id="sg-l">
                                 <input type="text" id="ig-op" placeholder="" value="${this.db.grupos.opcional}">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
@@ -331,18 +330,28 @@
                         </div>
                     </div>
                 `);
+                this.checkG(); // Mantém visibilidade inicial baseada no banco de dados
             },
 
             checkG() {
                 let g1 = document.getElementById('ig1').value;
                 let g2 = document.getElementById('ig2').value;
-                if(g1 >= 1) document.getElementById('sg-p').classList.remove('hidden');
-                if(g2 >= 1) document.getElementById('sg-l').classList.remove('hidden');
-                if(g1 && g2) document.getElementById('btn-g-ok').classList.add('btn-ativo');
+                let g4 = document.getElementById('ig4').value;
+                let btn = document.getElementById('btn-g-ok');
+                
+                // Agora as seções não desaparecem mais ao apagar o número
+                if(g1 && g2 && g4) btn.classList.add('btn-ativo');
+                else btn.classList.remove('btn-ativo');
             },
 
             saveG() { 
-                this.db.grupos = { qtd: document.getElementById('ig1').value, pessoas: document.getElementById('ig2').value, lideres: document.getElementById('ig4').value, opcional: document.getElementById('ig-op').value, ok: true }; 
+                this.db.grupos = { 
+                    qtd: document.getElementById('ig1').value, 
+                    pessoas: document.getElementById('ig2').value, 
+                    lideres: document.getElementById('ig4').value, 
+                    opcional: document.getElementById('ig-op').value, 
+                    ok: true 
+                }; 
                 this.mestre(); 
             },
 
@@ -352,7 +361,7 @@
                         <div class="menu-bege">
                             <h2>Objetivos Fixos</h2>
                             <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
-                            <div id="sp-mov" class="${this.db.percurso.fixos ? '' : 'hidden'}">
+                            <div id="sp-mov">
                                 <h2>Objetivos Móveis</h2>
                                 <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
                                 <button id="btn-p-ok" class="btn btn-neutro" onclick="App.saveP()">Confirmar</button>
@@ -361,9 +370,16 @@
                         </div>
                     </div>
                 `);
+                this.checkP();
             },
 
-            checkP() { if(document.getElementById('ip1').value >= 1) { document.getElementById('sp-mov').classList.remove('hidden'); document.getElementById('btn-p-ok').classList.add('btn-ativo'); } },
+            checkP() { 
+                let p1 = document.getElementById('ip1').value;
+                let btn = document.getElementById('btn-p-ok');
+                if(p1 >= 1) btn.classList.add('btn-ativo');
+                else btn.classList.remove('btn-ativo');
+            },
+
             saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; this.mestre(); },
 
             iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.activeSlotIdx = 0; this.comando(); },
