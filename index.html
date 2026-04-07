@@ -21,7 +21,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; background: #1a1a1a; overflow: hidden; }
 
-        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; background: #000; }
 
         .controles-mapa { position: absolute; bottom: 100px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 1002; }
         .btn-map-ctrl {
@@ -67,7 +67,7 @@
         .icon-nav span { font-size: 1.4rem; display: block; margin-bottom: 2px; }
 
         .hidden { display: none !important; }
-        .aviso-erro { color: var(--vermelho-erro); font-family: 'Roboto'; font-size: 0.7rem; font-weight: bold; }
+        .aviso-erro { color: var(--vermelho-erro); font-family: 'Roboto'; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -101,12 +101,33 @@
             },
 
             login() {
-                this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')"><div class="menu-bege"><h2>Login</h2><input type="email" id="email" placeholder="EMAIL" oninput="App.validaLogin()"><input type="password" id="senha" placeholder="SENHA" oninput="App.validaLogin()"><button id="btn-l" class="btn btn-neutro" onclick="App.askNick()">Continuar</button><button class="btn btn-marrom" onclick="App.abertura()">Voltar</button></div></div>`);
+                this.render(`
+                    <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')">
+                        <div class="menu-bege">
+                            <h2>Login</h2>
+                            <input type="email" id="email" placeholder="EMAIL">
+                            <input type="password" id="senha" placeholder="SENHA" oninput="App.validaLogin()">
+                            <div id="erro-senha" class="aviso-erro hidden">Senha deve ter no mínimo 8 caracteres</div>
+                            <button id="btn-l" class="btn btn-neutro" onclick="App.askNick()">Continuar</button>
+                            <button class="btn btn-marrom" onclick="App.abertura()">Voltar</button>
+                        </div>
+                    </div>`);
+            },
+
+            validaLogin() {
+                const s = document.getElementById('senha').value;
+                const b = document.getElementById('btn-l');
+                const e = document.getElementById('erro-senha');
+                if(s.length > 0 && s.length < 8) { e.classList.remove('hidden'); b.classList.remove('btn-ativo'); b.disabled = true; }
+                else if(s.length >= 8) { e.classList.add('hidden'); b.classList.add('btn-ativo'); b.disabled = false; }
+                else { e.classList.add('hidden'); b.classList.remove('btn-ativo'); }
             },
 
             participante() {
                 this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')"><div class="menu-bege"><h2>Código de Acesso</h2><input type="text" id="cod" placeholder="Digite o Código" oninput="App.validaPart()"><button id="btn-p" class="btn btn-neutro" onclick="App.askNick()">Continuar</button><button class="btn btn-marrom" onclick="App.abertura()">Voltar</button></div></div>`);
             },
+
+            validaPart() { if(document.getElementById('cod').value) document.getElementById('btn-p').classList.add('btn-ativo'); },
 
             askNick() {
                 this.render(`<div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000')"><div class="menu-bege"><h2>Nome de Usuário</h2><input type="text" id="nick-in" placeholder="Nickname"><button class="btn btn-verde" onclick="App.saveUser()">Salvar</button></div></div>`);
@@ -128,14 +149,14 @@
                         <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Cancelar</button>
                     </div>
                     <div class="controles-mapa">
-                        <button class="btn-map-ctrl" onclick="App.toggleSat()">🛰️</button>
                         <button class="btn-map-ctrl" onclick="App.focarGPS()">🎯</button>
                     </div>
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
                         <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
                         <div class="icon-nav" style="opacity:0.3"><span>⚪</span>Começar</div>
-                        <div class="icon-nav" onclick="alert('Perfil')"><span>👤</span>Você</div>
+                        <div class="icon-nav" onclick="App.telaGrupos()"><span>🔺</span>Grupos</div>
+                        <div class="icon-nav" onclick="alert('Perfil de ${this.db.user.nick}')"><span>👤</span>Perfil</div>
                     </div>
                 `);
                 this.initMap();
@@ -163,15 +184,21 @@
             },
 
             initMap() {
+                // Mapa fixo em Satélite
                 this.map = L.map('map', { zoomControl: false }).setView([0,0], 2);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Esri'
+                }).addTo(this.map);
                 
                 this.map.locate({setView: false, enableHighAccuracy: true});
                 this.map.on('locationfound', (e) => {
                     this.currentPos = e.latlng;
-                    if (!this.firstFix) { this.map.setView(e.latlng, 16); this.firstFix = true; }
+                    if (!this.firstFix) { 
+                        this.map.setView(e.latlng, 17); // Zoom aproximado inicial
+                        this.firstFix = true; 
+                    }
                     if (this.userMarker) this.userMarker.setLatLng(e.latlng);
-                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.9, radius: 8}).addTo(this.map);
+                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', fillOpacity: 0.9, radius: 8, weight: 3}).addTo(this.map);
                 });
 
                 this.map.on('click', (e) => {
@@ -179,11 +206,17 @@
                         if(this.pontosTemporarios.length < this.db.percurso.fixos) {
                             this.pontosTemporarios.push({ latlng: e.latlng, nome: "" });
                             this.atualizarMapaVisual();
-                            this.comando();
+                            // Removido o comando comando() para não dar refresh na UI e perder o foco do zoom
+                            this.renderHeaderApenas(); 
                         }
                     }
                 });
                 this.atualizarMapaVisual();
+            },
+
+            renderHeaderApenas() {
+                const header = document.querySelector('.header-edicao');
+                if(header) header.innerHTML = this.renderMenuEdicao().replace('<div class="header-edicao">','').replace('</div>','');
             },
 
             atualizarMapaVisual() {
@@ -240,7 +273,7 @@
 
             finalizarSave(i) {
                 this.db.mapasSalvos[i] = { pontos: [...this.pontosTemporarios] };
-                alert("Mapa Salvo!");
+                alert("Mapa Salvo no Slot " + (i+1));
                 this.modoEdicao = false;
                 this.mestre();
             },
@@ -274,7 +307,6 @@
                                 <input type="text" id="ig-op" placeholder="" value="${this.db.grupos.opcional}">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
-                                <div id="erro-g" class="aviso-erro hidden">Líderes inválidos!</div>
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
                             </div>
                             <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
@@ -286,10 +318,9 @@
             checkG() {
                 let g1 = document.getElementById('ig1').value;
                 let g2 = document.getElementById('ig2').value;
-                let g4 = document.getElementById('ig4').value;
                 if(g1 >= 1) document.getElementById('sg-p').classList.remove('hidden');
                 if(g2 >= 1) document.getElementById('sg-l').classList.remove('hidden');
-                if(g1 && g2 && g4) document.getElementById('btn-g-ok').classList.add('btn-ativo');
+                if(g1 && g2) document.getElementById('btn-g-ok').classList.add('btn-ativo');
             },
 
             saveG() { 
@@ -314,19 +345,10 @@
                 `);
             },
 
-            checkP() { 
-                if(document.getElementById('ip1').value >= 1) {
-                    document.getElementById('sp-mov').classList.remove('hidden');
-                    document.getElementById('btn-p-ok').classList.add('btn-ativo');
-                }
-            },
-
+            checkP() { if(document.getElementById('ip1').value >= 1) { document.getElementById('sp-mov').classList.remove('hidden'); document.getElementById('btn-p-ok').classList.add('btn-ativo'); } },
             saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; this.mestre(); },
 
             iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
-            validaLogin() { if(document.getElementById('email').value && document.getElementById('senha').value) document.getElementById('btn-l').classList.add('btn-ativo'); },
-            validaPart() { if(document.getElementById('cod').value) document.getElementById('btn-p').classList.add('btn-ativo'); },
-            toggleSat() { /* Implementação de Camada */ },
             focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 18); }
         };
 
