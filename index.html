@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest - Reset Clean</title>
+    <title>TrailQuest Pro</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS DE LIMPEZA E BASE VISUAL */
+        /* [SISTEMA DE CORES VINTAGE] */
         :root {
-            --verde: #2e7d32;
-            --marrom: #3e2723;
-            --creme: rgba(255, 253, 231, 0.98);
-            --branco: #ffffff;
+            --verde-comando: #2e7d32;
+            --marrom-voltar: #3e2723;
+            --bege-menu: rgba(255, 253, 231, 0.98);
+            --amarelo-ativo: #ffeb3b;
+            --branco-transparente: rgba(255, 255, 255, 0.8);
         }
 
-        * { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body, html { 
             height: 100%; width: 100%; 
             font-family: 'Special Elite', serif; 
@@ -28,74 +26,179 @@
             overflow: hidden; 
         }
 
-        /* Aplicação da Fonte Roboto e Fundo Branco nos Inputs */
-        input, select, textarea {
-            font-family: 'Roboto', sans-serif !important;
-            background-color: var(--branco) !important;
-            color: #333 !important;
-            border: 2px solid var(--marrom);
-            padding: 12px;
-            width: 100%;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 1rem;
-            margin: 10px 0;
-        }
-
-        .cenario-base {
+        /* Imagem de Floresta 1 ao fundo */
+        .fundo-floresta {
             width: 100vw; height: 100vh;
-            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000');
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000');
             background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center;
         }
 
-        .painel-limpo {
-            background: var(--creme);
-            border: 3px solid var(--marrom);
-            padding: 30px;
+        /* Menu Quadrado Central Bege */
+        .menu-bege {
+            background: var(--bege-menu);
+            border: 2px solid var(--marrom-voltar);
+            padding: 25px;
             width: 85%;
-            max-width: 400px;
-            box-shadow: 10px 10px 0px var(--marrom);
+            max-width: 380px;
             text-align: center;
+            box-shadow: 8px 8px 0px var(--marrom-voltar);
+            position: relative;
         }
 
-        .btn-base {
+        /* Títulos e Textos */
+        h2 { font-family: 'Montserrat', sans-serif; font-size: 1rem; margin-bottom: 15px; text-transform: uppercase; }
+        .titulo-app { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--verde-comando); margin-bottom: 10px; }
+
+        /* Campos em Branco (Fonte Roboto) */
+        input {
+            font-family: 'Roboto', sans-serif !important;
             width: 100%;
-            padding: 16px;
-            background: var(--verde);
-            color: white;
-            border: 2px solid var(--marrom);
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            background: #fff !important;
+            color: #333;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        /* Botões Estilizados */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
             font-family: 'Montserrat', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
             cursor: pointer;
-            margin-top: 15px;
+            border: none;
+            border-radius: 4px;
         }
 
-        .titulo-v { font-family: 'Dancing Script', cursive; color: var(--verde); font-size: 3rem; }
+        .btn-verde { background: var(--verde-comando); color: white; }
+        .btn-marrom { background: var(--marrom-voltar); color: white; }
+        .btn-continuar { background: #fff; color: #333; border: 1px solid #ccc; }
+        
+        /* Regra: Fica amarelo ao preencher */
+        .btn-ativo { background: var(--amarelo-ativo) !important; color: #000 !important; }
+
+        /* Menu Sobreposto (Nickname) */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bege-menu);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px; z-index: 10;
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="app-root">
-        <div class="cenario-base">
-            <div class="painel-limpo">
-                <h1 class="titulo-v">TrailQuest</h1>
-                <p style="font-family: 'Montserrat'; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA REINICIADO E LIMPO</p>
-                <input type="text" placeholder="Teste de Fonte Roboto">
-                <button class="btn-base" onclick="console.log('Sistema pronto')">Aguardando Idealização...</button>
-            </div>
+    <div id="app">
         </div>
-    </div>
 
     <script>
-        /* SCRIPT DE LIMPEZA - RESET DE MEMÓRIA */
-        console.clear();
         const App = {
-            versao: "1.0.0-reset",
-            status: "Pronto para novos comandos"
+            elemento: document.getElementById('app'),
+            dados: { email: "", senha: "", nick: "", codigo: "" },
+
+            // Sistema de Navegação entre páginas
+            irPara(pagina) {
+                this[pagina]();
+            },
+
+            // [PÁGINA DE ABERTURA]
+            abertura() {
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta">
+                        <div class="menu-bege">
+                            <h1 class="titulo-app">TrailQuest</h1>
+                            <button class="btn btn-verde" onclick="App.irPara('login')">Fazer Login</button>
+                            <button class="btn btn-verde" onclick="App.irPara('participante')">Continuar como Participante</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // [PÁGINA DE LOGIN]
+            login() {
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta">
+                        <div class="menu-bege" id="menu-login">
+                            <h2>Login</h2>
+                            <p style="font-size: 10px;">EMAIL</p>
+                            <input type="email" id="email" oninput="App.validarLogin()">
+                            <p style="font-size: 10px;">SENHA</p>
+                            <input type="password" id="senha" oninput="App.validarLogin()">
+                            
+                            <button id="btn-login" class="btn btn-continuar" onclick="App.salvarNickname()">Continuar</button>
+                            <button class="btn btn-marrom" onclick="App.irPara('abertura')">Voltar</button>
+
+                            <div id="overlay-nick" class="overlay hidden">
+                                <h2>Nome de Usuário</h2>
+                                <input type="text" id="nick" placeholder="Seu Nickname">
+                                <button class="btn btn-verde" onclick="App.finalizarLogin()">Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // [PÁGINA DE PARTICIPANTE]
+            participante() {
+                this.elemento.innerHTML = `
+                    <div class="fundo-floresta">
+                        <div class="menu-bege">
+                            <h2 style="background: rgba(255,255,255,0.5); padding: 5px;">Código de Acesso</h2>
+                            <input type="text" id="cod" placeholder="Digite o código" oninput="App.validarParticipante()">
+                            
+                            <button id="btn-part" class="btn btn-continuar" onclick="App.salvarNicknameParticipante()">Continuar</button>
+                            <button class="btn btn-marrom" onclick="App.irPara('abertura')">Voltar</button>
+
+                            <div id="overlay-nick" class="overlay hidden">
+                                <h2>Nome de Usuário</h2>
+                                <input type="text" id="nick-p" placeholder="Seu Nickname">
+                                <button class="btn btn-verde" onclick="App.finalizarLogin()">Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // Lógica de validação (Amarelo ao digitar)
+            validarLogin() {
+                const e = document.getElementById('email').value;
+                const s = document.getElementById('senha').value;
+                const btn = document.getElementById('btn-login');
+                if(e.length > 0 && s.length > 0) btn.classList.add('btn-ativo');
+                else btn.classList.remove('btn-ativo');
+            },
+
+            validarParticipante() {
+                const c = document.getElementById('cod').value;
+                const btn = document.getElementById('btn-part');
+                if(c.length > 0) btn.classList.add('btn-ativo');
+                else btn.classList.remove('btn-ativo');
+            },
+
+            salvarNickname() {
+                document.getElementById('overlay-nick').classList.remove('hidden');
+            },
+
+            salvarNicknameParticipante() {
+                document.getElementById('overlay-nick').classList.remove('hidden');
+            },
+
+            finalizarLogin() {
+                alert("Etapa 1 Concluída! Nickname salvo. Aguardando Etapa 2...");
+                // Aqui depois entraremos na Página Inicial (Floresta 2)
+            }
         };
-        // O código está propositalmente simples para garantir que nada trave.
+
+        window.onload = () => App.abertura();
     </script>
 </body>
 </html>
