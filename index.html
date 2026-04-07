@@ -65,6 +65,7 @@
         .rodape-strava { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--marrom-voltar); z-index: 1001; }
         .icon-nav { text-align: center; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; font-weight: bold; color: #555; text-transform: uppercase; cursor: pointer; }
         .icon-nav span { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+        .nav-comecar.ativo { color: var(--verde-comando) !important; opacity: 1 !important; }
 
         .hidden { display: none !important; }
         .aviso-erro { color: var(--vermelho-erro); font-family: 'Roboto'; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; }
@@ -141,13 +142,14 @@
             },
 
             comando() {
+                const temMapa = this.db.mapasSalvos.some(m => m !== null);
                 this.render(`
                     <div id="map"></div>
                     <div id="ui-header-container">
                         ${this.modoEdicao ? this.renderMenuEdicao() : ''}
                     </div>
                     <div id="modal-slots" class="modal-slots hidden">
-                        <h2>Salvar no Slot</h2>
+                        <h2>Slots de Mapas</h2>
                         <div id="lista-slots"></div>
                         <button class="btn btn-verde" onclick="App.novoMapaLimpo()">+ Novo Mapa</button>
                         <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Cancelar</button>
@@ -158,7 +160,7 @@
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
                         <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
-                        <div class="icon-nav" style="opacity:0.3"><span>⚪</span>Começar</div>
+                        <div class="icon-nav nav-comecar ${temMapa ? 'ativo' : ''}" style="opacity:0.3" onclick="${temMapa ? 'alert(\'Etapa 4 em breve\')' : ''}"><span>⚪</span>Começar</div>
                         <div class="icon-nav" onclick="App.telaGrupos()"><span>🔺</span>Grupos</div>
                         <div class="icon-nav" onclick="alert('Perfil de ${this.db.user.nick}')"><span>👤</span>Perfil</div>
                     </div>
@@ -182,8 +184,8 @@
                             <button class="btn btn-marrom" style="padding:8px; margin:0; font-size:0.7rem; background:#d32f2f" onclick="App.excluirPonto()">Excluir</button>
                         </div>
                     ` : `
-                        <h2 style="margin:0">Mapa ${this.activeSlotIdx + 1} (${this.pontosTemporarios.length}/${this.db.percurso.fixos})</h2>
-                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Salvar Percurso</button>
+                        <h2 style="margin:0">Mapa Slot ${this.activeSlotIdx + 1} (${this.pontosTemporarios.length}/${this.db.percurso.fixos})</h2>
+                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Salvar / Carregar</button>
                     `}
                 </div>`;
             },
@@ -241,7 +243,7 @@
                         this.atualizarInterfaceSuperior();
                     });
                 });
-                if(coords.length > 1) L.polyline(coords, {color: corPercurso, weight: 3, dashArray: '5, 10'}).addTo(this.map);
+                if(coords.length > 1) L.polyline(coords, {color: corPercurso, weight: 3}).addTo(this.map);
             },
 
             salvarDetalhePonto() {
@@ -269,20 +271,27 @@
                 const container = document.getElementById('lista-slots');
                 container.innerHTML = "";
                 this.db.mapasSalvos.forEach((m, i) => {
-                    container.innerHTML += `<div class="slot-card" onclick="App.finalizarSave(${i})">
+                    container.innerHTML += `<div class="slot-card" onclick="App.acaoSlot(${i})">
                         <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
-                        <span>Slot ${i+1} ${m ? '(Ocupado)' : '(Vazio)'}</span>
+                        <span style="flex:1; margin-left:10px; text-align:left">Slot ${i+1} ${m ? '(Carregar/Editar)' : '(Vazio/Salvar)'}</span>
                     </div>`;
                 });
                 document.getElementById('modal-slots').classList.remove('hidden');
             },
 
-            finalizarSave(i) {
-                this.db.mapasSalvos[i] = { pontos: [...this.pontosTemporarios] };
+            acaoSlot(i) {
+                // Se o slot tem mapa, carrega ele limpando o que estava na tela
+                if(this.db.mapasSalvos[i]) {
+                    this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].pontos));
+                } else {
+                    // Se o slot está vazio, salva o que está na tela nele
+                    this.db.mapasSalvos[i] = { pontos: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
+                }
                 this.activeSlotIdx = i; 
-                alert("Mapa " + (i+1) + " Salvo com Sucesso!");
                 document.getElementById('modal-slots').classList.add('hidden');
+                this.atualizarMapaVisual();
                 this.atualizarInterfaceSuperior();
+                this.comando(); // Refresh para ativar o botão começar se necessário
             },
 
             novoMapaLimpo() {
@@ -316,12 +325,14 @@
                         <div class="menu-bege">
                             <h2>Número de Grupos</h2>
                             <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" oninput="App.checkG()">
-                            <div id="sg-p">
+                            
+                            <div id="sg-p" class="hidden">
                                 <h2>Pessoas por Grupo</h2>
                                 <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" oninput="App.checkG()">
                             </div>
-                            <div id="sg-l">
-                                <input type="text" id="ig-op" placeholder="" value="${this.db.grupos.opcional}">
+                            
+                            <div id="sg-l" class="hidden">
+                                <input type="text" id="ig-op" placeholder="Opcional (Ex: Nome)" value="${this.db.grupos.opcional}">
                                 <h2>Líderes por Grupo</h2>
                                 <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
@@ -330,16 +341,21 @@
                         </div>
                     </div>
                 `);
-                this.checkG(); // Mantém visibilidade inicial baseada no banco de dados
+                this.checkG();
             },
 
             checkG() {
                 let g1 = document.getElementById('ig1').value;
                 let g2 = document.getElementById('ig2').value;
                 let g4 = document.getElementById('ig4').value;
-                let btn = document.getElementById('btn-g-ok');
                 
-                // Agora as seções não desaparecem mais ao apagar o número
+                if(g1 >= 1) document.getElementById('sg-p').classList.remove('hidden');
+                else document.getElementById('sg-p').classList.add('hidden');
+
+                if(g2 >= 1) document.getElementById('sg-l').classList.remove('hidden');
+                else document.getElementById('sg-l').classList.add('hidden');
+
+                let btn = document.getElementById('btn-g-ok');
                 if(g1 && g2 && g4) btn.classList.add('btn-ativo');
                 else btn.classList.remove('btn-ativo');
             },
@@ -361,7 +377,8 @@
                         <div class="menu-bege">
                             <h2>Objetivos Fixos</h2>
                             <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
-                            <div id="sp-mov">
+                            
+                            <div id="sp-mov" class="hidden">
                                 <h2>Objetivos Móveis</h2>
                                 <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
                                 <button id="btn-p-ok" class="btn btn-neutro" onclick="App.saveP()">Confirmar</button>
@@ -375,8 +392,13 @@
 
             checkP() { 
                 let p1 = document.getElementById('ip1').value;
+                let p2 = document.getElementById('ip2').value;
+                
+                if(p1 >= 1) document.getElementById('sp-mov').classList.remove('hidden');
+                else document.getElementById('sp-mov').classList.add('hidden');
+
                 let btn = document.getElementById('btn-p-ok');
-                if(p1 >= 1) btn.classList.add('btn-ativo');
+                if(p1 && p2 !== "") btn.classList.add('btn-ativo');
                 else btn.classList.remove('btn-ativo');
             },
 
