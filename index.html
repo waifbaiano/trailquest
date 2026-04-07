@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest Pro</title>
+    <title>TrailQuest Pro - Versão Final</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
@@ -23,60 +23,48 @@
 
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; background: #000; }
 
-        .controles-mapa { position: absolute; bottom: 100px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 1002; }
-        .btn-map-ctrl {
-            width: 52px; height: 52px; background: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; border: none; font-size: 1.4rem; color: #444;
-        }
-
-        .header-edicao {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            background: var(--bege-menu); padding: 15px; border: 2px solid var(--marrom-voltar);
-            z-index: 1005; border-radius: 8px; text-align: center; width: 95%; max-width: 450px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-
-        .modal-slots {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: var(--bege-menu); border: 3px solid var(--marrom-voltar);
-            padding: 20px; width: 85%; max-width: 320px; z-index: 1100; text-align: center;
-        }
-
-        .slot-card {
-            background: white; border: 1px solid #ccc; margin: 8px 0; padding: 10px;
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-            font-family: 'Montserrat', sans-serif; font-size: 0.8rem;
-        }
-
-        .cenario { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative; overflow-y: auto; }
-        .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 20px; width: 88%; max-width: 380px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); z-index: 1000; margin: 20px auto; }
+        /* INTERFACE DE PERFIL */
+        .perfil-container { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .perfil-card-nick { background: var(--bege-menu); padding: 20px; border: 2px solid var(--marrom-voltar); border-radius: 4px; text-align: center; }
+        .perfil-nick-texto { font-family: 'Montserrat'; font-size: 1.8rem; color: var(--marrom-voltar); display: block; }
+        .perfil-email-texto { font-family: 'Roboto'; font-size: 0.9rem; color: #666; display: block; margin-top: 5px; }
         
-        .titulo-app { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--verde-comando); margin-bottom: 10px; }
-        h2 { font-family: 'Montserrat', sans-serif; font-size: 0.8rem; margin: 12px 0 4px 0; text-transform: uppercase; color: var(--marrom-voltar); }
-        input { font-family: 'Roboto', sans-serif !important; width: 100%; padding: 12px; margin: 4px 0 8px 0; border: 1px solid #ccc; background: var(--branco) !important; color: #333; text-align: center; border-radius: 4px; }
+        .quadrado-bege { background: var(--bege-menu); border: 1px solid #d4d4d4; padding: 15px; border-radius: 4px; }
+        .grafico-barras { height: 120px; display: flex; align-items: flex-end; justify-content: space-around; gap: 5px; padding-top: 10px; }
+        .barra { background: var(--verde-comando); width: 18px; border-radius: 2px 2px 0 0; transition: height 0.5s; }
+        
+        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
+        .dia-circulo { width: 32px; height: 32px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #333; position: relative; }
+        .dia-fogo::after { content: '🔥'; position: absolute; color: white; -webkit-text-stroke: 1px #999; font-size: 0.9rem; }
 
-        .btn { width: 100%; padding: 15px; margin-top: 10px; font-family: 'Montserrat', sans-serif; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; border-radius: 4px; }
+        /* EDIÇÃO E FLUXO */
+        .header-edicao { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--bege-menu); padding: 15px; border: 2px solid var(--marrom-voltar); z-index: 1005; border-radius: 8px; text-align: center; width: 95%; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .btn-continuar-box { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 220px; padding: 18px; background: var(--verde-comando); color: white; border-radius: 30px; font-weight: bold; border: none; z-index: 2000; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+
+        .cenario { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; overflow-y: auto; position: relative; }
+        .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 25px; width: 90%; max-width: 400px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); z-index: 1000; margin: auto; }
+        
+        h2 { font-family: 'Montserrat', sans-serif; font-size: 0.8rem; margin: 15px 0 5px 0; text-transform: uppercase; color: var(--marrom-voltar); }
+        input { font-family: 'Roboto', sans-serif !important; width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ccc; background: white; text-align: center; border-radius: 4px; font-size: 1rem; }
+        
+        .btn { width: 100%; padding: 16px; margin-top: 12px; font-family: 'Montserrat', sans-serif; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
         .btn-verde { background: var(--verde-comando); color: white; }
-        .btn-continuar { background: var(--verde-comando); color: white; border-radius: 25px; width: 80%; margin: 10px auto; }
         .btn-marrom { background: var(--marrom-voltar); color: white; }
-        .btn-neutro { background: var(--branco); color: #333; border: 1px solid #ccc; }
+        .btn-disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; }
         .btn-ativo { background: var(--amarelo-ativo) !important; color: #000 !important; }
 
         .rodape-strava { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--marrom-voltar); z-index: 1001; }
-        .icon-nav { text-align: center; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; font-weight: bold; color: #555; text-transform: uppercase; cursor: pointer; }
-        .icon-nav span { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+        .icon-nav { text-align: center; font-size: 0.65rem; font-weight: bold; color: #555; cursor: pointer; text-transform: uppercase; }
+        .icon-nav span { font-size: 1.5rem; display: block; margin-bottom: 2px; }
 
-        /* Gráfico e Calendário */
-        .caixa-bege { background: var(--bege-menu); padding: 15px; border: 1px solid #d4d4d4; margin-top: 10px; border-radius: 4px; }
-        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
-        .dia-circulo { width: 30px; height: 30px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #333; position: relative; }
-        .dia-ativo::after { content: '🔥'; font-size: 0.8rem; position: absolute; color: white; -webkit-text-stroke: 1px #ccc; }
-
+        .modal-slots { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bege-menu); border: 3px solid var(--marrom-voltar); padding: 25px; width: 85%; max-width: 320px; z-index: 1100; text-align: center; }
+        .slot-card { background: white; border: 1px solid #ccc; margin: 10px 0; padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 0.85rem; font-family: 'Montserrat'; }
+        
         .hidden { display: none !important; }
-        .aviso-erro { color: var(--vermelho-erro); font-family: 'Roboto'; font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; }
+        .floresta-4 { background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
 
-        .img-floresta-4 { background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
+        /* Pin Customizado */
+        .pin-number { background: var(--verde-comando); color: white; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body>
@@ -94,16 +82,17 @@
             pontoSelecionadoIdx: null,
             pontosTemporarios: [],
             currentPos: null,
-            firstFix: false,
             activeSlotIdx: 0,
             accessCode: null,
+            
             db: {
                 user: { nick: "", email: "usuario@trailquest.com.br" },
                 grupos: { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false },
                 percurso: { fixos: 0, moveis: 0, ok: false },
                 mapasSalvos: [null, null, null, null, null],
                 historico: [
-                    { data: "05/04/2026", hora: "14:30", participantes: ["Guto", "Ana", "Léo"] }
+                    { data: "10/04/2026", hora: "14:30", participantes: ["Guto_Trail", "Ana_Explorer", "Carlos_Runner"] },
+                    { data: "12/04/2026", hora: "09:15", participantes: ["Beta_User", "Zeca_Quest"] }
                 ],
                 coresSlots: ['#2e7d32', '#d32f2f', '#fbc02d', '#1976d2', '#212121']
             },
@@ -111,395 +100,493 @@
             render(html) { this.el.innerHTML = html; },
 
             abertura() {
-                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h1 class="titulo-app">TrailQuest</h1><button class="btn btn-verde" onclick="App.login()">Fazer Login</button><button class="btn btn-verde" onclick="App.participante()">Continuar como Participante</button></div></div>`);
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h1 style="font-family:'Dancing Script'; font-size:3.5rem; color:var(--verde-comando); margin-bottom:20px">TrailQuest</h1>
+                            <button class="btn btn-verde" onclick="App.login()">Fazer Login</button>
+                            <button class="btn btn-verde" onclick="App.participante()">Continuar como Participante</button>
+                        </div>
+                    </div>`);
             },
 
             login() {
                 this.render(`
-                    <div class="cenario img-floresta-4">
+                    <div class="cenario floresta-4">
                         <div class="menu-bege">
                             <h2>Login</h2>
                             <input type="email" id="email" placeholder="EMAIL">
-                            <input type="password" id="senha" placeholder="SENHA" oninput="App.validaLogin()">
-                            <div id="erro-senha" class="aviso-erro hidden">Senha deve ter no mínimo 8 caracteres</div>
-                            <button id="btn-l" class="btn btn-neutro" onclick="App.askNick()">Continuar</button>
+                            <input type="password" id="senha" placeholder="SENHA" oninput="App.validaL()">
+                            <button id="btn-l" class="btn btn-disabled" disabled onclick="App.askNick()">Continuar</button>
+                            <button class="btn" style="background:none; color:black; font-size:0.7rem" onclick="App.abertura()">Voltar</button>
+                        </div>
+                    </div>`);
+            },
+            validaL() { 
+                const b = document.getElementById('btn-l'); 
+                if(document.getElementById('senha').value.length >= 8) { 
+                    b.disabled=false; b.classList.remove('btn-disabled'); b.classList.add('btn-ativo'); 
+                } else {
+                    b.disabled=true; b.classList.add('btn-disabled'); b.classList.remove('btn-ativo');
+                }
+            },
+
+            participante() {
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2>Código de Acesso</h2>
+                            <input type="text" id="cod" placeholder="Digite o Código">
+                            <button class="btn btn-verde" onclick="App.askNick()">Entrar</button>
                             <button class="btn btn-marrom" onclick="App.abertura()">Voltar</button>
                         </div>
                     </div>`);
             },
 
-            validaLogin() {
-                const s = document.getElementById('senha').value;
-                const b = document.getElementById('btn-l');
-                if(s.length >= 8) { b.classList.add('btn-ativo'); b.disabled = false; }
-                else { b.classList.remove('btn-ativo'); }
-            },
-
-            participante() {
-                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h2>Código de Acesso</h2><input type="text" id="cod" placeholder="Digite o Código" oninput="App.validaPart()"><button id="btn-p" class="btn btn-neutro" onclick="App.askNick()">Continuar</button><button class="btn btn-marrom" onclick="App.abertura()">Voltar</button></div></div>`);
-            },
-
-            validaPart() { if(document.getElementById('cod').value) document.getElementById('btn-p').classList.add('btn-ativo'); },
-
             askNick() {
-                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h2>Nome de Usuário</h2><input type="text" id="nick-in" placeholder="Nickname"><button class="btn btn-verde" onclick="App.saveUser()">Salvar</button></div></div>`);
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2>Nickname</h2>
+                            <input type="text" id="nick-in" placeholder="Como quer ser chamado?">
+                            <button class="btn btn-verde" onclick="App.saveUser()">Salvar e Entrar</button>
+                        </div>
+                    </div>`);
             },
-
-            saveUser() { this.db.user.nick = document.getElementById('nick-in').value || "Explorador"; this.home(); },
+            saveUser() { 
+                this.db.user.nick = document.getElementById('nick-in').value || "Explorador"; 
+                this.home(); 
+            },
 
             home() {
-                this.render(`<div class="cenario img-floresta-4"><div class="menu-bege"><h1 class="titulo-app" style="font-size:2.5rem">Olá, ${this.db.user.nick}</h1><button class="btn btn-verde" onclick="App.comando()">Organizador</button><button class="btn btn-verde" onclick="App.participante()">Participante</button></div></div>`);
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h1 style="font-size:2rem; margin-bottom:20px">Olá, ${this.db.user.nick}!</h1>
+                            <button class="btn btn-verde" onclick="App.comando()">Modo Organizador</button>
+                            <button class="btn btn-verde" onclick="App.participante()">Modo Participante</button>
+                        </div>
+                    </div>`);
             },
 
             comando() {
+                this.modoEdicao = false;
                 const temMapa = this.db.mapasSalvos.some(m => m !== null);
                 this.render(`
                     <div id="map"></div>
                     <div id="ui-header-container">
-                        ${this.accessCode ? `<div class="header-edicao" style="top:50px">CÓDIGO: ${this.accessCode}</div>` : ''}
-                        ${this.modoEdicao ? this.renderMenuEdicao() : ''}
+                        ${this.accessCode ? `<div class="header-edicao" style="top:50px; background:white; font-weight:bold; font-size:1.2rem">CÓDIGO DA ATIVIDADE: ${this.accessCode}</div>` : ''}
                     </div>
                     <div id="modal-slots" class="modal-slots hidden">
                         <h2>Slots de Mapas</h2>
                         <div id="lista-slots"></div>
-                        <button class="btn btn-verde" onclick="App.novoMapaLimpo()">+ Novo Mapa</button>
-                        <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Cancelar</button>
+                        <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Fechar</button>
                     </div>
-                    <div class="controles-mapa">
-                        <button class="btn-map-ctrl" onclick="App.focarGPS()">🎯</button>
-                    </div>
-                    ${!this.modoEdicao ? `
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
                         <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
-                        <div class="icon-nav ${temMapa ? 'ativo' : ''}" style="opacity:0.3"><span>⚪</span>Começar</div>
+                        <div class="icon-nav ${temMapa?'':'hidden'}" style="color:var(--verde-comando)"><span>⚪</span>Começar</div>
                         <div class="icon-nav" onclick="App.telaAtividades()"><span>🔺</span>Atividades</div>
                         <div class="icon-nav" onclick="App.telaPerfil()"><span>👤</span>Perfil</div>
-                    </div>` : `
-                    <div style="position:fixed; bottom:20px; width:100%; z-index:2000; text-align:center">
-                        <button class="btn btn-continuar" onclick="App.fluxoContinuar()">Continuar</button>
                     </div>
-                    `}
                 `);
                 this.initMap();
             },
 
             telaAtividades() {
                 this.render(`
-                    <div class="cenario img-floresta-4">
+                    <div class="cenario floresta-4">
                         <div class="menu-bege">
                             <h2>Histórico de Atividades</h2>
-                            ${this.db.historico.map((h, i) => `
-                                <div class="slot-card" onclick="App.detalheAtividade(${i})">
-                                    <span>${h.data} - ${h.hora}</span>
-                                </div>
-                            `).join('')}
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                ${this.db.historico.map((h, i) => `
+                                    <div class="slot-card" onclick="App.detalheAtiv(${i})">
+                                        <span>📅 ${h.data}</span>
+                                        <span>🕒 ${h.hora}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
                             <button class="btn btn-marrom" onclick="App.comando()">Voltar</button>
                         </div>
-                    </div>
-                `);
+                    </div>`);
             },
 
-            detalheAtividade(idx) {
-                const h = this.db.historico[idx];
+            detalheAtiv(i) {
+                const h = this.db.historico[i];
                 this.render(`
-                    <div class="cenario img-floresta-4">
+                    <div class="cenario floresta-4">
                         <div class="menu-bege">
-                            <h2>Participantes</h2>
-                            ${h.participantes.map(p => `<div class="slot-card"><span>${p}</span></div>`).join('')}
+                            <h2>Participantes da Atividade</h2>
+                            <div style="text-align: left; margin: 15px 0;">
+                                ${h.participantes.map(p => `
+                                    <div class="slot-card" style="cursor:default">👤 ${p}</div>
+                                `).join('')}
+                            </div>
                             <button class="btn btn-marrom" onclick="App.telaAtividades()">Voltar</button>
                         </div>
-                    </div>
-                `);
+                    </div>`);
             },
 
             telaPerfil() {
                 this.render(`
-                    <div class="cenario img-floresta-4">
+                    <div class="cenario floresta-4">
                         <div class="menu-bege" style="text-align:left">
-                            <div class="caixa-bege" style="text-align:center">
-                                <h1 style="font-size:1.4rem">${this.db.user.nick}</h1>
-                                <p style="font-size:0.7rem; color:#666">${this.db.user.email}</p>
+                            <div class="perfil-card-nick">
+                                <span class="perfil-nick-texto">${this.db.user.nick}</span>
+                                <span class="perfil-email-texto">${this.db.user.email}</span>
                             </div>
                             
                             <h2>Tempo de Atividade Mensal</h2>
-                            <div class="caixa-bege" style="height:100px; display:flex; align-items:flex-end; gap:5px; justify-content:center">
-                                <div style="background:var(--verde-comando); width:15px; height:40%"></div>
-                                <div style="background:var(--verde-comando); width:15px; height:70%"></div>
-                                <div style="background:var(--verde-comando); width:15px; height:30%"></div>
-                                <div style="background:var(--verde-comando); width:15px; height:90%"></div>
+                            <div class="quadrado-bege">
+                                <div class="grafico-barras">
+                                    <div class="barra" style="height:40%"></div>
+                                    <div class="barra" style="height:65%"></div>
+                                    <div class="barra" style="height:30%"></div>
+                                    <div class="barra" style="height:85%"></div>
+                                    <div class="barra" style="height:50%"></div>
+                                    <div class="barra" style="height:95%"></div>
+                                </div>
                             </div>
 
-                            <h2>Calendário</h2>
-                            <div class="caixa-bege">
+                            <h2>Calendário Mensal</h2>
+                            <div class="quadrado-bege">
                                 <div class="calendario-grid">
-                                    ${Array.from({length: 30}, (_, i) => `
-                                        <div class="dia-circulo ${[5, 12, 19].includes(i+1) ? 'dia-ativo' : ''}">${i+1}</div>
+                                    ${Array.from({length:30}, (_, i) => `
+                                        <div class="dia-circulo ${[3,7,14,21,28].includes(i+1)?'dia-fogo':''}">${i+1}</div>
                                     `).join('')}
                                 </div>
                             </div>
 
-                            <button class="btn btn-marrom" style="margin-top:20px" onclick="App.comando()">Voltar</button>
+                            <button class="btn btn-marrom" style="margin-top:20px" onclick="App.comando()">Voltar ao Mapa</button>
                         </div>
-                    </div>
-                `);
+                    </div>`);
             },
 
-            fluxoContinuar() {
-                if(this.db.percurso.moveis > 0) {
-                    this.render(`
-                        <div class="cenario img-floresta-4">
-                            <div class="menu-bege">
-                                <h2>Código do Objetivo Móvel</h2>
-                                <input type="text" id="cod-movel" placeholder="Mínimo 6 caracteres" oninput="App.validaMovel()">
-                                <button id="btn-movel" class="btn btn-neutro" disabled onclick="App.gerarCodigoAcesso()">Continuar</button>
-                            </div>
+            mestre() {
+                const pronto = this.db.grupos.ok && this.db.percurso.ok;
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2 style="font-size:1.2rem">Configuração Mestre</h2>
+                            <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
+                            <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
+                            
+                            <hr style="margin:20px 0; opacity:0.2">
+                            
+                            <button class="btn ${pronto?'btn-ativo':'btn-disabled'}" 
+                                    ${pronto?'':'disabled'} 
+                                    onclick="App.iniciarEdicao()">
+                                Continuar para Edição
+                            </button>
+                            <button class="btn btn-marrom" onclick="App.comando()">Voltar</button>
                         </div>
-                    `);
+                    </div>`);
+            },
+
+            telaGrupos() {
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2>Número de Grupos</h2>
+                            <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="Ex: 8" oninput="App.checkG()">
+                            
+                            <div id="sg-p" class="${this.db.grupos.qtd >= 1 ? '' : 'hidden'}">
+                                <h2>Pessoas por Grupo</h2>
+                                <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" placeholder="Ex: 2" oninput="App.checkG()">
+                            </div>
+                            
+                            <div id="sg-l" class="${this.db.grupos.pessoas >= 1 ? '' : 'hidden'}">
+                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}" placeholder="Informação opcional">
+                                <h2>Líderes por Grupo</h2>
+                                <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" placeholder="Ex: 1" oninput="App.checkG()">
+                                <button id="btn-g-ok" class="btn btn-disabled" disabled onclick="App.saveG()">Confirmar Grupos</button>
+                            </div>
+                            
+                            <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
+                        </div>
+                    </div>`);
+                this.checkG();
+            },
+            checkG() {
+                const g1 = document.getElementById('ig1').value;
+                const g2 = document.getElementById('ig2').value;
+                const g4 = document.getElementById('ig4').value;
+                const sp = document.getElementById('sg-p');
+                const sl = document.getElementById('sg-l');
+                const bok = document.getElementById('btn-g-ok');
+
+                if(g1 >= 1) sp.classList.remove('hidden'); else sp.classList.add('hidden');
+                if(g2 >= 1) sl.classList.remove('hidden'); else sl.classList.add('hidden');
+                
+                if(g1 && g2 && g4) {
+                    bok.disabled = false; bok.classList.remove('btn-disabled'); bok.classList.add('btn-ativo');
                 } else {
-                    this.gerarCodigoAcesso();
+                    bok.disabled = true; bok.classList.add('btn-disabled'); bok.classList.remove('btn-ativo');
                 }
             },
-
-            validaMovel() {
-                const val = document.getElementById('cod-movel').value;
-                const btn = document.getElementById('btn-movel');
-                if(val.length >= 6) { btn.disabled = false; btn.classList.add('btn-ativo'); }
-                else { btn.disabled = true; btn.classList.remove('btn-ativo'); }
+            saveG() { 
+                this.db.grupos = { 
+                    qtd: parseInt(document.getElementById('ig1').value), 
+                    pessoas: parseInt(document.getElementById('ig2').value), 
+                    lideres: document.getElementById('ig4').value, 
+                    opcional: document.getElementById('ig-op').value, 
+                    ok: true 
+                }; 
+                this.mestre(); 
             },
 
-            gerarCodigoAcesso() {
-                this.accessCode = Math.floor(100000 + Math.random() * 900000);
+            telaPercursos() {
                 this.render(`
-                    <div class="cenario img-floresta-4">
+                    <div class="cenario floresta-4">
                         <div class="menu-bege">
-                            <h2>Código de Acesso</h2>
-                            <h1 style="font-size:3rem; margin:20px 0">${this.accessCode}</h1>
-                            <button class="btn btn-verde" onclick="App.telaGestaoUsuarios()">Continuar</button>
+                            <h2>Quantidade de Objetivos Fixos</h2>
+                            <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
+                            
+                            <div id="sp-mov" class="${this.db.percurso.fixos >= 1 ? '' : 'hidden'}">
+                                <h2>Quantidade de Objetivos Móveis</h2>
+                                <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
+                                <button id="btn-p-ok" class="btn btn-disabled" disabled onclick="App.saveP()">Confirmar Percurso</button>
+                            </div>
+                            <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
                         </div>
-                    </div>
-                `);
+                    </div>`);
+                this.checkP();
+            },
+            checkP() {
+                const p1 = document.getElementById('ip1').value;
+                const p2 = document.getElementById('ip2').value;
+                const sm = document.getElementById('sp-mov');
+                const bok = document.getElementById('btn-p-ok');
+
+                if(p1 >= 1) sm.classList.remove('hidden'); else sm.classList.add('hidden');
+                if(p1 && p2 !== "") {
+                    bok.disabled = false; bok.classList.remove('btn-disabled'); bok.classList.add('btn-ativo');
+                }
+            },
+            saveP() { 
+                this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; 
+                this.mestre(); 
             },
 
-            telaGestaoUsuarios() {
-                // Simulação de usuários conectados
-                const users = ["Ana_Runner", "Beto_Quest", "Carlos_Trilha"];
+            iniciarEdicao() {
+                this.modoEdicao = true;
                 this.render(`
-                    <div class="cenario img-floresta-4">
-                        <div class="menu-bege">
-                            <h2>Usuários Conectados</h2>
-                            ${users.map(u => `<div class="slot-card" onclick="App.configurarUsuario('${u}')"><span>${u}</span></div>`).join('')}
-                            <button class="btn btn-marrom" onclick="App.comando()">Iniciar Atividade</button>
-                        </div>
-                    </div>
+                    <div id="map"></div>
+                    <div id="ui-header-container">${this.renderMenuEdicao()}</div>
+                    <button class="btn-continuar-box" onclick="App.fluxoContinuar()">Continuar</button>
                 `);
-            },
-
-            configurarUsuario(user) {
-                this.render(`
-                    <div class="cenario img-floresta-4">
-                        <div class="menu-bege">
-                            <h2>Configurar: ${user}</h2>
-                            <h2>Número do Grupo</h2>
-                            <input type="number" id="num-grupo" placeholder="Máx: ${this.db.grupos.qtd}">
-                            <button class="btn btn-verde" onclick="App.abrirMapaSelecao()">Mapa</button>
-                            <button class="btn btn-marrom" style="margin-top:10px" onclick="App.telaGestaoUsuarios()">Voltar</button>
-                        </div>
-                    </div>
-                `);
-            },
-
-            abrirMapaSelecao() {
-                const n = document.getElementById('num-grupo').value;
-                if(n > this.db.grupos.qtd) return alert("Número excede o limite de grupos!");
-                
-                this.abrirSlots(); // Usa o sistema de slots já existente
+                this.initMap();
             },
 
             renderMenuEdicao() {
                 const p = this.pontoSelecionadoIdx !== null ? this.pontosTemporarios[this.pontoSelecionadoIdx] : null;
-                const corAtual = this.db.coresSlots[this.activeSlotIdx];
+                const cor = this.db.coresSlots[this.activeSlotIdx];
                 return `
-                <div class="header-edicao" style="border-top: 5px solid ${corAtual}">
+                <div class="header-edicao" style="border-bottom: 5px solid ${cor}">
                     ${p ? `
-                        <h2 style="margin:0">Editar Ponto ${this.pontoSelecionadoIdx + 1}</h2>
-                        <div style="display:flex; gap:5px; margin-top:10px">
-                            <input type="text" id="ed-nome" placeholder="Nome" value="${p.nome || ''}" style="margin:0; flex:2">
-                        </div>
-                        <div style="display:flex; gap:5px; margin-top:10px">
-                            <button class="btn btn-verde" style="padding:8px; margin:0; font-size:0.7rem" onclick="App.salvarDetalhePonto()">OK</button>
-                            <button class="btn btn-marrom" style="padding:8px; margin:0; font-size:0.7rem; background:#d32f2f" onclick="App.excluirPonto()">Excluir</button>
+                        <h2>Editando Ponto ${this.pontoSelecionadoIdx+1}</h2>
+                        <input type="text" id="ed-nome" value="${p.nome||''}" placeholder="Nome do Local">
+                        <div style="display:flex; gap:10px">
+                            <button class="btn btn-verde" style="margin:0" onclick="App.salvarPonto()">Salvar</button>
+                            <button class="btn btn-marrom" style="margin:0; background:red" onclick="App.excluirPonto()">Remover</button>
                         </div>
                     ` : `
-                        <h2 style="margin:0">Mapa Slot ${this.activeSlotIdx + 1}</h2>
-                        <button class="btn btn-verde" style="padding:5px; margin-top:8px; font-size:0.7rem" onclick="App.abrirSlots()">Trocar Slot</button>
+                        <h2 style="margin:0">Mapa: Slot ${this.activeSlotIdx+1}</h2>
+                        <p style="font-size:0.6rem; margin:5px 0">Toque no mapa para inserir pontos</p>
+                        <button class="btn btn-verde" style="padding:5px; font-size:0.7rem; width:auto" onclick="App.abrirSlots()">Trocar/Salvar Slot</button>
                     `}
                 </div>`;
+            },
+
+            fluxoContinuar() {
+                // Se preencheu objetivos móveis, pede código específico
+                if(parseInt(this.db.percurso.moveis) > 0) {
+                    this.render(`
+                        <div class="cenario floresta-4">
+                            <div class="menu-bege">
+                                <h2>Código do Objetivo Móvel</h2>
+                                <p style="font-size:0.7rem; margin-bottom:10px">Este código será usado para validar os alvos móveis</p>
+                                <input type="text" id="cm" placeholder="Mínimo 6 caracteres" oninput="App.validaCM()">
+                                <button id="btn-cm" class="btn btn-disabled" disabled onclick="App.gerarCodigoFinal()">Gerar Acesso</button>
+                            </div>
+                        </div>`);
+                } else {
+                    this.gerarCodigoFinal();
+                }
+            },
+            validaCM() {
+                const b = document.getElementById('btn-cm');
+                if(document.getElementById('cm').value.length >= 6) {
+                    b.disabled = false; b.classList.remove('btn-disabled'); b.classList.add('btn-ativo');
+                } else {
+                    b.disabled = true; b.classList.add('btn-disabled'); b.classList.remove('btn-ativo');
+                }
+            },
+
+            gerarCodigoFinal() {
+                this.accessCode = Math.floor(100000 + Math.random() * 900000);
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2 style="font-size:1.1rem">Código de Acesso dos Participantes</h2>
+                            <div style="background:white; padding:20px; border:2px dashed var(--verde-comando); margin:20px 0">
+                                <h1 style="font-size:3.5rem; letter-spacing:5px">${this.accessCode}</h1>
+                            </div>
+                            <button class="btn btn-verde" onclick="App.telaGestaoUsuarios()">Ver Participantes</button>
+                        </div>
+                    </div>`);
+            },
+
+            telaGestaoUsuarios() {
+                // Simulando usuários que entraram com o código
+                const users = ["Beta_User", "Trail_Master", "Zeca_Quest", "Ana_Explorer"];
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2>Participantes Conectados</h2>
+                            <p style="font-size:0.7rem">Toque no usuário para definir grupo e mapa</p>
+                            <div style="max-height:250px; overflow-y:auto; margin:15px 0">
+                                ${users.map(u => `<div class="slot-card" onclick="App.configUser('${u}')">👤 ${u} ➔</div>`).join('')}
+                            </div>
+                            <button class="btn btn-marrom" onclick="App.comando()">Iniciar Atividade</button>
+                        </div>
+                    </div>`);
+            },
+
+            configUser(u) {
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h1 style="font-size:1.4rem">Configurar: ${u}</h1>
+                            
+                            <h2>Número do Grupo</h2>
+                            <p style="font-size:0.6rem">Limite definido: ${this.db.grupos.qtd} grupos</p>
+                            <input type="number" id="ng-input" placeholder="1 a ${this.db.grupos.qtd}">
+                            
+                            <button class="btn btn-verde" onclick="App.abrirMapaSelecao()">Selecionar Mapa</button>
+                            <button class="btn btn-marrom" style="margin-top:10px" onclick="App.telaGestaoUsuarios()">Voltar</button>
+                        </div>
+                    </div>`);
+            },
+
+            abrirMapaSelecao() {
+                const numGrupo = parseInt(document.getElementById('ng-input').value);
+                if(!numGrupo || numGrupo > this.db.grupos.qtd) {
+                    alert(`Por favor, insira um grupo válido (1 a ${this.db.grupos.qtd})`);
+                    return;
+                }
+                
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2>Escolha o Mapa para este usuário</h2>
+                            ${this.db.mapasSalvos.map((m, i) => `
+                                <div class="slot-card" onclick="App.decisaoVisualizacao(${i})">
+                                    Slot ${i+1} ${m ? '✅' : '(Vazio)'}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`);
+            },
+
+            decisaoVisualizacao(mapIndex) {
+                this.render(`
+                    <div class="cenario floresta-4">
+                        <div class="menu-bege">
+                            <h2 style="font-size:1.1rem">Visualizar todos os pontos?</h2>
+                            <p style="font-size:0.7rem; margin-bottom:20px">Defina como o usuário verá o mapa.</p>
+                            
+                            <button class="btn btn-verde" onclick="App.finalizarEVoltar('sim')">SIM (Ver Tudo)</button>
+                            <button class="btn btn-marrom" onclick="App.finalizarEVoltar('nao')">NÃO (Apenas Ponto 1)</button>
+                        </div>
+                    </div>`);
+            },
+
+            finalizarEVoltar(opt) {
+                alert(opt === 'sim' ? "Usuário verá todos os pontos marcados." : "Usuário verá apenas o ponto 1.");
+                App.telaGestaoUsuarios();
             },
 
             initMap() {
                 this.map = L.map('map', { zoomControl: false }).setView([0,0], 2);
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
                 
-                this.map.locate({setView: false, enableHighAccuracy: true});
+                this.map.locate({setView: true, maxZoom: 16});
                 this.map.on('locationfound', (e) => {
                     this.currentPos = e.latlng;
-                    if (!this.firstFix) { this.map.setView(e.latlng, 17); this.firstFix = true; }
-                    if (this.userMarker) this.userMarker.setLatLng(e.latlng);
-                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', radius: 8}).addTo(this.map);
+                    if(this.userMarker) this.userMarker.setLatLng(e.latlng);
+                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', radius: 8, fillOpacity: 0.8}).addTo(this.map);
                 });
 
                 this.map.on('click', (e) => {
                     if(this.modoEdicao && this.pontoSelecionadoIdx === null) {
-                        this.pontosTemporarios.push({ latlng: e.latlng, nome: "" });
-                        this.atualizarMapaVisual();
-                        this.atualizarInterfaceSuperior();
+                        this.pontosTemporarios.push({latlng: e.latlng, nome: ""});
+                        this.drawP();
                     }
                 });
-                this.atualizarMapaVisual();
+                this.drawP();
             },
 
-            atualizarInterfaceSuperior() {
-                const container = document.getElementById('ui-header-container');
-                if(container) container.innerHTML = (this.accessCode ? `<div class="header-edicao" style="top:50px; background:white">CÓDIGO: ${this.accessCode}</div>` : '') + this.renderMenuEdicao();
-            },
-
-            atualizarMapaVisual() {
+            drawP() {
                 if(!this.map) return;
-                this.map.eachLayer(l => { if(l instanceof L.Marker || l instanceof L.Polyline) if(l !== this.userMarker) this.map.removeLayer(l); });
-                const corPercurso = this.db.coresSlots[this.activeSlotIdx];
+                this.map.eachLayer(l => { if(l instanceof L.Marker && l !== this.userMarker) this.map.removeLayer(l); });
+                const cor = this.db.coresSlots[this.activeSlotIdx];
+                
                 this.pontosTemporarios.forEach((p, i) => {
-                    L.marker(p.latlng, {
-                        icon: L.divIcon({
-                            html: `<div style="background:${corPercurso}; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold">${i+1}</div>`
-                        })
-                    }).addTo(this.map).on('click', (e) => { L.DomEvent.stopPropagation(e); this.pontoSelecionadoIdx = i; this.atualizarInterfaceSuperior(); });
+                    const icon = L.divIcon({
+                        className: '',
+                        html: `<div class="pin-number" style="background:${cor}">${i+1}</div>`,
+                        iconSize: [28, 28]
+                    });
+                    
+                    L.marker(p.latlng, {icon: icon}).addTo(this.map).on('click', (e) => {
+                        L.DomEvent.stopPropagation(e);
+                        this.pontoSelecionadoIdx = i;
+                        document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
+                    });
                 });
             },
 
-            salvarDetalhePonto() {
-                const nNome = document.getElementById('ed-nome').value;
-                this.pontosTemporarios[this.pontoSelecionadoIdx].nome = nNome;
+            salvarPonto() {
+                this.pontosTemporarios[this.pontoSelecionadoIdx].nome = document.getElementById('ed-nome').value;
                 this.pontoSelecionadoIdx = null;
-                this.atualizarMapaVisual();
-                this.atualizarInterfaceSuperior();
+                this.drawP();
+                document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
             },
 
             excluirPonto() {
                 this.pontosTemporarios.splice(this.pontoSelecionadoIdx, 1);
                 this.pontoSelecionadoIdx = null;
-                this.atualizarMapaVisual();
-                this.atualizarInterfaceSuperior();
+                this.drawP();
+                document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
             },
 
             abrirSlots() {
-                const container = document.getElementById('lista-slots');
-                container.innerHTML = "";
+                const c = document.getElementById('lista-slots'); 
+                c.innerHTML = "";
                 this.db.mapasSalvos.forEach((m, i) => {
-                    container.innerHTML += `<div class="slot-card" onclick="App.acaoSlot(${i})">
-                        <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
-                        <span style="flex:1; margin-left:10px; text-align:left">Slot ${i+1} ${m ? '(Carregar)' : '(Vazio)'}</span>
-                    </div>`;
+                    c.innerHTML += `
+                        <div class="slot-card" onclick="App.acaoSlot(${i})">
+                            <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
+                            <span>Slot ${i+1} ${m ? '(Carregar)' : '(Salvar)'}</span>
+                        </div>`;
                 });
                 document.getElementById('modal-slots').classList.remove('hidden');
             },
 
             acaoSlot(i) {
-                if(this.db.mapasSalvos[i]) this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].pontos));
-                else this.db.mapasSalvos[i] = { pontos: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
-                this.activeSlotIdx = i; 
+                if(this.db.mapasSalvos[i]) {
+                    // Carrega
+                    this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].p));
+                } else {
+                    // Salva
+                    this.db.mapasSalvos[i] = { p: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
+                }
+                this.activeSlotIdx = i;
                 document.getElementById('modal-slots').classList.add('hidden');
-                this.atualizarMapaVisual();
-                this.atualizarInterfaceSuperior();
-            },
-
-            novoMapaLimpo() {
-                this.activeSlotIdx = this.db.mapasSalvos.findIndex(s => s === null) || 0;
-                this.pontosTemporarios = [];
-                document.getElementById('modal-slots').classList.add('hidden');
-                this.atualizarMapaVisual();
-                this.atualizarInterfaceSuperior();
-            },
-
-            mestre() {
-                const pronto = this.db.grupos.ok && this.db.percurso.ok;
-                this.render(`
-                    <div class="cenario img-floresta-4">
-                        <div class="menu-bege">
-                            <h2>Página Mestre</h2>
-                            <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
-                            <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
-                            <button class="btn ${pronto ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${pronto ? 'App.iniciarEdicao()' : ''}">Continuar</button>
-                            <button class="btn btn-marrom" onclick="App.comando()">Ver Mapa</button>
-                        </div>
-                    </div>
-                `);
-            },
-
-            telaGrupos() {
-                this.render(`
-                    <div class="cenario img-floresta-4">
-                        <div class="menu-bege">
-                            <h2>Número de Grupos</h2>
-                            <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" oninput="App.checkG()">
-                            <div id="sg-p" class="hidden">
-                                <h2>Pessoas por Grupo</h2>
-                                <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" oninput="App.checkG()">
-                            </div>
-                            <div id="sg-l" class="hidden">
-                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}" placeholder="">
-                                <h2>Líderes por Grupo</h2>
-                                <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkG()">
-                                <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
-                            </div>
-                            <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
-                        </div>
-                    </div>
-                `);
-                this.checkG();
-            },
-
-            checkG() {
-                let g1 = document.getElementById('ig1').value;
-                let g2 = document.getElementById('ig2').value;
-                let g4 = document.getElementById('ig4').value;
-                if(g1 >= 1) document.getElementById('sg-p').classList.remove('hidden');
-                if(g2 >= 1) document.getElementById('sg-l').classList.remove('hidden');
-                if(g1 && g2 && g4) document.getElementById('btn-g-ok').classList.add('btn-ativo');
-            },
-
-            saveG() { 
-                this.db.grupos = { qtd: document.getElementById('ig1').value, pessoas: document.getElementById('ig2').value, lideres: document.getElementById('ig4').value, opcional: document.getElementById('ig-op').value, ok: true }; 
-                this.mestre(); 
-            },
-
-            telaPercursos() {
-                this.render(`
-                    <div class="cenario img-floresta-4">
-                        <div class="menu-bege">
-                            <h2>Objetivos Fixos</h2>
-                            <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
-                            <div id="sp-mov" class="hidden">
-                                <h2>Objetivos Móveis</h2>
-                                <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
-                                <button id="btn-p-ok" class="btn btn-neutro" onclick="App.saveP()">Confirmar</button>
-                            </div>
-                            <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
-                        </div>
-                    </div>
-                `);
-                this.checkP();
-            },
-
-            checkP() { 
-                let p1 = document.getElementById('ip1').value;
-                if(p1 >= 1) { document.getElementById('sp-mov').classList.remove('hidden'); document.getElementById('btn-p-ok').classList.add('btn-ativo'); }
-            },
-
-            saveP() { this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; this.mestre(); },
-
-            iniciarEdicao() { this.modoEdicao = true; this.pontosTemporarios = []; this.comando(); },
-            focarGPS() { if(this.currentPos) this.map.setView(this.currentPos, 18); }
+                this.drawP();
+                document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
+            }
         };
 
         window.onload = () => App.abertura();
