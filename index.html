@@ -142,7 +142,9 @@
             comando() {
                 this.render(`
                     <div id="map"></div>
-                    ${this.modoEdicao ? this.renderMenuEdicao() : ''}
+                    <div id="ui-header-container">
+                        ${this.modoEdicao ? this.renderMenuEdicao() : ''}
+                    </div>
                     <div id="modal-slots" class="modal-slots hidden">
                         <h2>Salvar no Slot</h2>
                         <div id="lista-slots"></div>
@@ -153,7 +155,7 @@
                     </div>
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
-                        <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
+                        <div class="icon-nav" onclick="App.mestre()"><span>🗺</span>Mapas</div>
                         <div class="icon-nav" style="opacity:0.3"><span>⚪</span>Começar</div>
                         <div class="icon-nav" onclick="App.telaGrupos()"><span>🔺</span>Grupos</div>
                         <div class="icon-nav" onclick="alert('Perfil de ${this.db.user.nick}')"><span>👤</span>Perfil</div>
@@ -184,7 +186,6 @@
             },
 
             initMap() {
-                // Mapa fixo em Satélite
                 this.map = L.map('map', { zoomControl: false }).setView([0,0], 2);
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     attribution: 'Esri'
@@ -194,7 +195,7 @@
                 this.map.on('locationfound', (e) => {
                     this.currentPos = e.latlng;
                     if (!this.firstFix) { 
-                        this.map.setView(e.latlng, 17); // Zoom aproximado inicial
+                        this.map.setView(e.latlng, 17);
                         this.firstFix = true; 
                     }
                     if (this.userMarker) this.userMarker.setLatLng(e.latlng);
@@ -206,17 +207,16 @@
                         if(this.pontosTemporarios.length < this.db.percurso.fixos) {
                             this.pontosTemporarios.push({ latlng: e.latlng, nome: "" });
                             this.atualizarMapaVisual();
-                            // Removido o comando comando() para não dar refresh na UI e perder o foco do zoom
-                            this.renderHeaderApenas(); 
+                            this.atualizarInterfaceSuperior();
                         }
                     }
                 });
                 this.atualizarMapaVisual();
             },
 
-            renderHeaderApenas() {
-                const header = document.querySelector('.header-edicao');
-                if(header) header.innerHTML = this.renderMenuEdicao().replace('<div class="header-edicao">','').replace('</div>','');
+            atualizarInterfaceSuperior() {
+                const container = document.getElementById('ui-header-container');
+                if(container) container.innerHTML = this.renderMenuEdicao();
             },
 
             atualizarMapaVisual() {
@@ -232,7 +232,7 @@
                     }).addTo(this.map).on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
                         this.pontoSelecionadoIdx = i;
-                        this.comando();
+                        this.atualizarInterfaceSuperior(); // Troca o menu sem dar zoom no mapa
                     });
                 });
                 if(coords.length > 1) L.polyline(coords, {color: this.db.coresSlots[0], weight: 3}).addTo(this.map);
@@ -249,14 +249,14 @@
                 }
                 this.pontoSelecionadoIdx = null;
                 this.atualizarMapaVisual();
-                this.comando();
+                this.atualizarInterfaceSuperior();
             },
 
             excluirPonto() {
                 this.pontosTemporarios.splice(this.pontoSelecionadoIdx, 1);
                 this.pontoSelecionadoIdx = null;
                 this.atualizarMapaVisual();
-                this.comando();
+                this.atualizarInterfaceSuperior();
             },
 
             abrirSlots() {
