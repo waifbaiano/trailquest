@@ -21,7 +21,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; background: #1a1a1a; overflow: hidden; }
 
-        /* Estutura de Telas */
         .cenario { 
             width: 100vw; height: 100vh; 
             background-size: cover; background-position: center; 
@@ -30,13 +29,21 @@
 
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
+        /* Botão Localização Estilo Google Maps */
+        .btn-gps-fix {
+            position: absolute; bottom: 100px; left: 20px;
+            width: 50px; height: 50px; background: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1002; cursor: pointer;
+            border: none; font-size: 1.5rem; color: #444;
+        }
+
         .menu-bege {
             background: var(--bege-menu); border: 2px solid var(--marrom-voltar); 
             padding: 25px; width: 88%; max-width: 380px; text-align: center; 
             box-shadow: 10px 10px 0px var(--marrom-voltar); position: relative; z-index: 1000;
         }
 
-        /* Tipografia */
         .titulo-app { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--verde-comando); margin-bottom: 10px; }
         h2 { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin: 15px 0 5px 0; text-transform: uppercase; color: var(--marrom-voltar); }
 
@@ -45,7 +52,6 @@
             border: 1px solid #ccc; background: var(--branco) !important; color: #333; text-align: center; border-radius: 4px;
         }
 
-        /* Botões */
         .btn {
             width: 100%; padding: 15px; margin-top: 10px; font-family: 'Montserrat', sans-serif;
             font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; border-radius: 4px;
@@ -55,7 +61,6 @@
         .btn-neutro { background: var(--branco); color: #333; border: 1px solid #ccc; }
         .btn-ativo { background: var(--amarelo-ativo) !important; color: #000 !important; }
 
-        /* Rodapé Montserrat */
         .rodape-strava {
             position: fixed; bottom: 0; width: 100%; background: white; display: flex; 
             justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--marrom-voltar); z-index: 1001;
@@ -154,6 +159,7 @@
             comando() {
                 this.render(`
                     <div id="map"></div>
+                    <button class="btn-gps-fix" onclick="App.focarGPS()">🎯</button>
                     <div class="rodape-strava">
                         <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
                         <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
@@ -172,7 +178,12 @@
                 this.map.on('locationfound', (e) => {
                     if (this.userMarker) this.userMarker.setLatLng(e.latlng);
                     else this.userMarker = L.circleMarker(e.latlng, {color: 'blue', radius: 8}).addTo(this.map);
+                    this.currentPos = e.latlng;
                 });
+            },
+
+            focarGPS() {
+                if(this.currentPos) this.map.setView(this.currentPos, 16);
             },
 
             mestre() {
@@ -183,7 +194,7 @@
                             <h2>Página Mestre</h2>
                             <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
                             <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
-                            <button class="btn ${liberado ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${liberado ? 'alert(\'Etapa 4: Gerando Códigos...\')' : ''}">Continuar</button>
+                            <button class="btn ${liberado ? 'btn-ativo' : ''}" style="margin-top:20px" onclick="${liberado ? 'alert(\'Etapa 4: Iniciando...\')' : ''}">Continuar</button>
                             <button class="btn btn-marrom" onclick="App.comando()">Voltar ao Mapa</button>
                         </div>
                     </div>
@@ -195,15 +206,14 @@
                     <div class="cenario" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1000')">
                         <div class="menu-bege">
                             <h2>Número de Grupos</h2>
-                            <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="1 a 30" oninput="App.checkRegrasG()">
+                            <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="Máximo 30" oninput="App.checkRegrasG()">
                             <div id="sg2" class="${this.db.grupos.qtd ? '' : 'hidden'}">
                                 <h2>Pessoas por Grupo</h2>
-                                <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" oninput="App.checkRegrasG()">
+                                <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" placeholder="Máximo 30" oninput="App.checkRegrasG()">
                             </div>
                             <div id="sg4" class="${this.db.grupos.pessoas ? '' : 'hidden'}">
-                                <input type="text" placeholder="Campo Opcional">
                                 <h2>Líderes por Grupo</h2>
-                                <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" oninput="App.checkRegrasG()">
+                                <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" placeholder="Máximo 30" oninput="App.checkRegrasG()">
                                 <div id="erro-lider" class="aviso-erro">O n° de líderes não pode ser maior que o de pessoas!</div>
                                 <button id="btn-g-ok" class="btn btn-neutro" onclick="App.saveG()">Confirmar</button>
                             </div>
@@ -230,7 +240,6 @@
                 `);
             },
 
-            // Lógicas de Validação
             validaLogin() {
                 const b = document.getElementById('btn-l');
                 if(document.getElementById('email').value && document.getElementById('senha').value) b.classList.add('btn-ativo');
@@ -245,16 +254,32 @@
             saveUser() { this.db.user.nick = document.getElementById('nick-in').value; this.home(); },
             
             checkRegrasG() {
-                const g1 = parseInt(document.getElementById('ig1').value) || 0;
-                const g2 = parseInt(document.getElementById('ig2').value) || 0;
-                const g4 = parseInt(document.getElementById('ig4').value) || 0;
+                let g1 = document.getElementById('ig1').value;
+                let g2 = document.getElementById('ig2').value;
+                let g4 = document.getElementById('ig4').value;
+
+                // Reset se apagar o N° de Grupos
+                if (!g1) {
+                    this.db.grupos = { qtd: 0, pessoas: 0, lideres: 0, ok: false };
+                    document.getElementById('ig2').value = "";
+                    document.getElementById('ig4').value = "";
+                    document.getElementById('sg2').classList.add('hidden');
+                    document.getElementById('sg4').classList.add('hidden');
+                    return;
+                }
+
+                // Travas de limite (Máximo 30)
+                if (parseInt(g1) > 30) { g1 = 30; document.getElementById('ig1').value = 30; }
+                if (parseInt(g2) > 30) { g2 = 30; document.getElementById('ig2').value = 30; }
+                if (parseInt(g4) > 30) { g4 = 30; document.getElementById('ig4').value = 30; }
+
                 const erro = document.getElementById('erro-lider');
                 const btn = document.getElementById('btn-g-ok');
 
-                if(g1 >= 1 && g1 <= 30) document.getElementById('sg2').classList.remove('hidden');
-                if(g2 >= 1) document.getElementById('sg4').classList.remove('hidden');
+                if(parseInt(g1) >= 1) document.getElementById('sg2').classList.remove('hidden');
+                if(parseInt(g2) >= 1) document.getElementById('sg4').classList.remove('hidden');
 
-                if(g4 > g2) { erro.style.display = "block"; btn.classList.add('hidden'); }
+                if(parseInt(g4) > parseInt(g2)) { erro.style.display = "block"; btn.classList.add('hidden'); }
                 else { 
                     erro.style.display = "none"; 
                     if(g1 > 0 && g2 > 0) { btn.classList.remove('hidden'); btn.classList.add('btn-ativo'); }
