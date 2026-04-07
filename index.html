@@ -3,593 +3,733 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest Pro - Versão Final</title>
+    <title>TrailQuest PRO - Ultimate Edition</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700&family=Roboto:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&family=Roboto:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --verde-comando: #2e7d32;
+            --verde-neon: #4caf50;
             --marrom-voltar: #3e2723;
             --bege-menu: rgba(255, 253, 231, 0.98);
             --amarelo-ativo: #ffeb3b;
             --branco: #ffffff;
-            --vermelho-erro: #d32f2f;
+            --vermelho-erro: #c62828;
+            --sombra: 0 4px 15px rgba(0,0,0,0.4);
         }
 
+        /* Reset e Base */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { height: 100%; width: 100%; font-family: 'Special Elite', serif; background: #1a1a1a; overflow: hidden; }
+        body, html { 
+            height: 100%; width: 100%; 
+            font-family: 'Special Elite', serif; 
+            background: #121212; 
+            overflow: hidden; 
+            color: #333;
+        }
 
-        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; background: #000; }
+        /* Mapa em Tela Cheia */
+        #map { 
+            width: 100%; height: 100%; 
+            position: absolute; top: 0; left: 0; 
+            z-index: 1; background: #000; 
+        }
 
-        /* INTERFACE DE PERFIL */
-        .perfil-container { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .perfil-card-nick { background: var(--bege-menu); padding: 20px; border: 2px solid var(--marrom-voltar); border-radius: 4px; text-align: center; }
-        .perfil-nick-texto { font-family: 'Montserrat'; font-size: 1.8rem; color: var(--marrom-voltar); display: block; }
-        .perfil-email-texto { font-family: 'Roboto'; font-size: 0.9rem; color: #666; display: block; margin-top: 5px; }
-        
-        .quadrado-bege { background: var(--bege-menu); border: 1px solid #d4d4d4; padding: 15px; border-radius: 4px; }
-        .grafico-barras { height: 120px; display: flex; align-items: flex-end; justify-content: space-around; gap: 5px; padding-top: 10px; }
-        .barra { background: var(--verde-comando); width: 18px; border-radius: 2px 2px 0 0; transition: height 0.5s; }
-        
-        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
-        .dia-circulo { width: 32px; height: 32px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #333; position: relative; }
-        .dia-fogo::after { content: '🔥'; position: absolute; color: white; -webkit-text-stroke: 1px #999; font-size: 0.9rem; }
+        /* UI de Camadas Superiores */
+        .overlay-ui { position: relative; z-index: 10; pointer-events: none; }
+        .overlay-ui * { pointer-events: auto; }
 
-        /* EDIÇÃO E FLUXO */
-        .header-edicao { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--bege-menu); padding: 15px; border: 2px solid var(--marrom-voltar); z-index: 1005; border-radius: 8px; text-align: center; width: 95%; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        .btn-continuar-box { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 220px; padding: 18px; background: var(--verde-comando); color: white; border-radius: 30px; font-weight: bold; border: none; z-index: 2000; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        /* Estilização do Perfil Estilo Strava */
+        .perfil-card-header {
+            background: var(--bege-menu);
+            padding: 20px;
+            border: 2px solid var(--marrom-voltar);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: var(--sombra);
+        }
+        .nick-display { font-family: 'Montserrat'; font-size: 1.8rem; font-weight: 700; color: var(--marrom-voltar); display: block; }
+        .email-display { font-family: 'Roboto'; font-size: 0.8rem; color: #777; font-weight: 300; }
 
-        .cenario { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; overflow-y: auto; position: relative; }
-        .menu-bege { background: var(--bege-menu); border: 2px solid var(--marrom-voltar); padding: 25px; width: 90%; max-width: 400px; text-align: center; box-shadow: 10px 10px 0px var(--marrom-voltar); z-index: 1000; margin: auto; }
+        .metricas-container {
+            background: var(--bege-menu);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .grafico-flex {
+            height: 100px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        .barra-metrica {
+            background: linear-gradient(to top, var(--verde-comando), var(--verde-neon));
+            width: 14px;
+            border-radius: 3px 3px 0 0;
+            transition: height 1s ease-out;
+        }
         
-        h2 { font-family: 'Montserrat', sans-serif; font-size: 0.8rem; margin: 15px 0 5px 0; text-transform: uppercase; color: var(--marrom-voltar); }
-        input { font-family: 'Roboto', sans-serif !important; width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ccc; background: white; text-align: center; border-radius: 4px; font-size: 1rem; }
-        
-        .btn { width: 100%; padding: 16px; margin-top: 12px; font-family: 'Montserrat', sans-serif; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
+        .calendario-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .dia-box {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: bold;
+            color: #444;
+            position: relative;
+            border: 1px solid #eee;
+        }
+        .dia-fogo::after {
+            content: '🔥';
+            position: absolute;
+            font-size: 1rem;
+            color: white;
+            -webkit-text-stroke: 1px #888;
+            top: -5px;
+        }
+
+        /* Menu de Edição de Mapa */
+        .painel-edicao {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bege-menu);
+            padding: 15px;
+            border: 2px solid var(--marrom-voltar);
+            border-radius: 12px;
+            width: 92%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: var(--sombra);
+            z-index: 1005;
+        }
+
+        /* Botões e Inputs Customizados */
+        .cenario-full {
+            width: 100vw; height: 100vh;
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+            overflow-y: auto; padding: 20px;
+        }
+        .menu-wrapper {
+            background: var(--bege-menu);
+            border: 3px solid var(--marrom-voltar);
+            padding: 30px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 12px 12px 0px var(--marrom-voltar);
+            z-index: 1000;
+        }
+
+        .input-quest {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Roboto';
+            font-size: 1rem;
+            text-align: center;
+            transition: border 0.3s;
+        }
+        .input-quest:focus { border-color: var(--verde-comando); outline: none; }
+
+        .btn-base {
+            width: 100%;
+            padding: 18px;
+            margin-top: 15px;
+            font-family: 'Montserrat';
+            font-weight: 700;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+        .btn-base:active { transform: scale(0.98); }
         .btn-verde { background: var(--verde-comando); color: white; }
         .btn-marrom { background: var(--marrom-voltar); color: white; }
-        .btn-disabled { background: #ccc !important; color: #888 !important; cursor: not-allowed; }
-        .btn-ativo { background: var(--amarelo-ativo) !important; color: #000 !important; }
+        .btn-locked { background: #999 !important; cursor: not-allowed; opacity: 0.6; }
+        .btn-glow { background: var(--amarelo-ativo) !important; color: #000 !important; box-shadow: 0 0 15px var(--amarelo-ativo); }
 
-        .rodape-strava { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--marrom-voltar); z-index: 1001; }
-        .icon-nav { text-align: center; font-size: 0.65rem; font-weight: bold; color: #555; cursor: pointer; text-transform: uppercase; }
-        .icon-nav span { font-size: 1.5rem; display: block; margin-bottom: 2px; }
+        /* Rodapé de Navegação */
+        .nav-footer {
+            position: fixed;
+            bottom: 0; width: 100%;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 25px 0;
+            border-top: 2px solid var(--marrom-voltar);
+            z-index: 1001;
+        }
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: #666;
+            font-family: 'Montserrat';
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .nav-item span { font-size: 1.6rem; display: block; margin-bottom: 3px; }
+        .nav-active { color: var(--verde-comando); }
 
-        .modal-slots { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bege-menu); border: 3px solid var(--marrom-voltar); padding: 25px; width: 85%; max-width: 320px; z-index: 1100; text-align: center; }
-        .slot-card { background: white; border: 1px solid #ccc; margin: 10px 0; padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 0.85rem; font-family: 'Montserrat'; }
-        
+        /* Pin do Mapa */
+        .custom-marker {
+            background: var(--verde-comando);
+            color: white;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 16px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+        }
+
+        /* Modais */
+        .modal-background {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.7); z-index: 1099;
+        }
+        .modal-content {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--bege-menu); border: 3px solid var(--marrom-voltar);
+            padding: 25px; width: 85%; max-width: 340px; z-index: 1100;
+        }
+        .card-item {
+            background: white; border: 1px solid #ccc;
+            margin: 10px 0; padding: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'Montserrat'; font-size: 0.8rem; cursor: pointer;
+        }
+
         .hidden { display: none !important; }
-        .floresta-4 { background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
-
-        /* Pin Customizado */
-        .pin-number { background: var(--verde-comando); color: white; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+        .bg-forest { background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000'); }
     </style>
 </head>
 <body>
 
-    <div id="app"></div>
+    <div id="main-app"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        const App = {
-            el: document.getElementById('app'),
+        const TrailApp = {
+            container: document.getElementById('main-app'),
             map: null,
+            userPos: null,
             userMarker: null,
-            modoEdicao: false,
-            pontoSelecionadoIdx: null,
-            pontosTemporarios: [],
-            currentPos: null,
-            activeSlotIdx: 0,
-            accessCode: null,
-            
+            editMode: false,
+            selectedPoint: null,
+            tempPoints: [],
+            activeSlot: 0,
+            generatedCode: null,
+
+            // Banco de Dados Local Estendido
             db: {
-                user: { nick: "", email: "usuario@trailquest.com.br" },
-                grupos: { qtd: 0, pessoas: 0, lideres: 0, opcional: "", ok: false },
-                percurso: { fixos: 0, moveis: 0, ok: false },
-                mapasSalvos: [null, null, null, null, null],
-                historico: [
-                    { data: "10/04/2026", hora: "14:30", participantes: ["Guto_Trail", "Ana_Explorer", "Carlos_Runner"] },
-                    { data: "12/04/2026", hora: "09:15", participantes: ["Beta_User", "Zeca_Quest"] }
+                user: { nickname: "", email: "explorer@trailquest.com.br" },
+                config: {
+                    grupos: { total: 0, integrantes: 0, lideres: 0, extra: "", status: false },
+                    percurso: { fixos: 0, moveis: 0, status: false }
+                },
+                mapSlots: [null, null, null, null, null],
+                history: [
+                    { data: "01/04/2026", hora: "10:30", p: ["Marcos", "Julia"] },
+                    { data: "05/04/2026", hora: "16:45", p: ["Equipe Alfa"] }
                 ],
-                coresSlots: ['#2e7d32', '#d32f2f', '#fbc02d', '#1976d2', '#212121']
+                colors: ['#2e7d32', '#c62828', '#f9a825', '#1565c0', '#424242']
             },
 
-            render(html) { this.el.innerHTML = html; },
+            init() { this.screenSplash(); },
 
-            abertura() {
+            render(html) { this.container.innerHTML = html; },
+
+            // --- TELAS INICIAIS ---
+            screenSplash() {
                 this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h1 style="font-family:'Dancing Script'; font-size:3.5rem; color:var(--verde-comando); margin-bottom:20px">TrailQuest</h1>
-                            <button class="btn btn-verde" onclick="App.login()">Fazer Login</button>
-                            <button class="btn btn-verde" onclick="App.participante()">Continuar como Participante</button>
-                        </div>
-                    </div>`);
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h1 style="font-family:'Dancing Script'; font-size:4rem; color:var(--verde-comando); margin-bottom:10px">TrailQuest</h1>
+                        <p style="font-size:0.8rem; margin-bottom:30px">SISTEMA DE ORIENTAÇÃO PROFISSIONAL</p>
+                        <button class="btn-base btn-verde" onclick="TrailApp.screenLogin()">Entrar como Organizador</button>
+                        <button class="btn-base btn-verde" onclick="TrailApp.screenGuest()">Código de Participante</button>
+                    </div>
+                </div>`);
             },
 
-            login() {
+            screenLogin() {
                 this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Login</h2>
-                            <input type="email" id="email" placeholder="EMAIL">
-                            <input type="password" id="senha" placeholder="SENHA" oninput="App.validaL()">
-                            <button id="btn-l" class="btn btn-disabled" disabled onclick="App.askNick()">Continuar</button>
-                            <button class="btn" style="background:none; color:black; font-size:0.7rem" onclick="App.abertura()">Voltar</button>
-                        </div>
-                    </div>`);
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Acesso Administrativo</h2>
+                        <input type="email" class="input-quest" id="l-email" placeholder="E-mail">
+                        <input type="password" class="input-quest" id="l-pass" placeholder="Senha" oninput="TrailApp.validaLogin()">
+                        <button id="btn-login-go" class="btn-base btn-locked" disabled onclick="TrailApp.screenNick()">Acessar Painel</button>
+                        <button class="btn-base" style="background:none; color:black" onclick="TrailApp.screenSplash()">Voltar</button>
+                    </div>
+                </div>`);
             },
-            validaL() { 
-                const b = document.getElementById('btn-l'); 
-                if(document.getElementById('senha').value.length >= 8) { 
-                    b.disabled=false; b.classList.remove('btn-disabled'); b.classList.add('btn-ativo'); 
+
+            validaLogin() {
+                const pass = document.getElementById('l-pass').value;
+                const btn = document.getElementById('btn-login-go');
+                if(pass.length >= 8) {
+                    btn.disabled = false; btn.classList.remove('btn-locked'); btn.classList.add('btn-glow');
                 } else {
-                    b.disabled=true; b.classList.add('btn-disabled'); b.classList.remove('btn-ativo');
+                    btn.disabled = true; btn.classList.add('btn-locked'); btn.classList.remove('btn-glow');
                 }
             },
 
-            participante() {
+            screenGuest() {
                 this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Código de Acesso</h2>
-                            <input type="text" id="cod" placeholder="Digite o Código">
-                            <button class="btn btn-verde" onclick="App.askNick()">Entrar</button>
-                            <button class="btn btn-marrom" onclick="App.abertura()">Voltar</button>
-                        </div>
-                    </div>`);
-            },
-
-            askNick() {
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Nickname</h2>
-                            <input type="text" id="nick-in" placeholder="Como quer ser chamado?">
-                            <button class="btn btn-verde" onclick="App.saveUser()">Salvar e Entrar</button>
-                        </div>
-                    </div>`);
-            },
-            saveUser() { 
-                this.db.user.nick = document.getElementById('nick-in').value || "Explorador"; 
-                this.home(); 
-            },
-
-            home() {
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h1 style="font-size:2rem; margin-bottom:20px">Olá, ${this.db.user.nick}!</h1>
-                            <button class="btn btn-verde" onclick="App.comando()">Modo Organizador</button>
-                            <button class="btn btn-verde" onclick="App.participante()">Modo Participante</button>
-                        </div>
-                    </div>`);
-            },
-
-            comando() {
-                this.modoEdicao = false;
-                const temMapa = this.db.mapasSalvos.some(m => m !== null);
-                this.render(`
-                    <div id="map"></div>
-                    <div id="ui-header-container">
-                        ${this.accessCode ? `<div class="header-edicao" style="top:50px; background:white; font-weight:bold; font-size:1.2rem">CÓDIGO DA ATIVIDADE: ${this.accessCode}</div>` : ''}
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Código da Trilha</h2>
+                        <input type="text" class="input-quest" id="guest-code" placeholder="Ex: 554321">
+                        <button class="btn-base btn-verde" onclick="TrailApp.screenNick()">Entrar na Missão</button>
+                        <button class="btn-base btn-marrom" onclick="TrailApp.screenSplash()">Voltar</button>
                     </div>
-                    <div id="modal-slots" class="modal-slots hidden">
-                        <h2>Slots de Mapas</h2>
-                        <div id="lista-slots"></div>
-                        <button class="btn btn-marrom" onclick="document.getElementById('modal-slots').classList.add('hidden')">Fechar</button>
+                </div>`);
+            },
+
+            screenNick() {
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Identificação</h2>
+                        <p style="font-size:0.7rem; margin-bottom:10px">Como você será visto pelos outros?</p>
+                        <input type="text" class="input-quest" id="u-nick" placeholder="Nickname">
+                        <button class="btn-base btn-verde" onclick="TrailApp.saveProfile()">Salvar Perfil</button>
                     </div>
-                    <div class="rodape-strava">
-                        <div class="icon-nav" onclick="App.home()"><span>🏠</span>Início</div>
-                        <div class="icon-nav" onclick="App.mestre()"><span>🗺️</span>Mapas</div>
-                        <div class="icon-nav ${temMapa?'':'hidden'}" style="color:var(--verde-comando)"><span>⚪</span>Começar</div>
-                        <div class="icon-nav" onclick="App.telaAtividades()"><span>🔺</span>Atividades</div>
-                        <div class="icon-nav" onclick="App.telaPerfil()"><span>👤</span>Perfil</div>
+                </div>`);
+            },
+
+            saveProfile() {
+                const nick = document.getElementById('u-nick').value;
+                this.db.user.nickname = nick || "Explorador";
+                this.screenHome();
+            },
+
+            screenHome() {
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h1>Bem-vindo, ${this.db.user.nickname}</h1>
+                        <button class="btn-base btn-verde" onclick="TrailApp.startOrganizador()">Painel Organizador</button>
+                        <button class="btn-base btn-verde" onclick="TrailApp.screenGuest()">Mudar de Trilha</button>
+                        <button class="btn-base btn-marrom" style="margin-top:40px" onclick="TrailApp.screenSplash()">Sair</button>
                     </div>
-                `);
-                this.initMap();
+                </div>`);
             },
 
-            telaAtividades() {
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Histórico de Atividades</h2>
-                            <div style="max-height: 300px; overflow-y: auto;">
-                                ${this.db.historico.map((h, i) => `
-                                    <div class="slot-card" onclick="App.detalheAtiv(${i})">
-                                        <span>📅 ${h.data}</span>
-                                        <span>🕒 ${h.hora}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <button class="btn btn-marrom" onclick="App.comando()">Voltar</button>
-                        </div>
-                    </div>`);
-            },
-
-            detalheAtiv(i) {
-                const h = this.db.historico[i];
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Participantes da Atividade</h2>
-                            <div style="text-align: left; margin: 15px 0;">
-                                ${h.participantes.map(p => `
-                                    <div class="slot-card" style="cursor:default">👤 ${p}</div>
-                                `).join('')}
-                            </div>
-                            <button class="btn btn-marrom" onclick="App.telaAtividades()">Voltar</button>
-                        </div>
-                    </div>`);
-            },
-
-            telaPerfil() {
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege" style="text-align:left">
-                            <div class="perfil-card-nick">
-                                <span class="perfil-nick-texto">${this.db.user.nick}</span>
-                                <span class="perfil-email-texto">${this.db.user.email}</span>
-                            </div>
-                            
-                            <h2>Tempo de Atividade Mensal</h2>
-                            <div class="quadrado-bege">
-                                <div class="grafico-barras">
-                                    <div class="barra" style="height:40%"></div>
-                                    <div class="barra" style="height:65%"></div>
-                                    <div class="barra" style="height:30%"></div>
-                                    <div class="barra" style="height:85%"></div>
-                                    <div class="barra" style="height:50%"></div>
-                                    <div class="barra" style="height:95%"></div>
-                                </div>
-                            </div>
-
-                            <h2>Calendário Mensal</h2>
-                            <div class="quadrado-bege">
-                                <div class="calendario-grid">
-                                    ${Array.from({length:30}, (_, i) => `
-                                        <div class="dia-circulo ${[3,7,14,21,28].includes(i+1)?'dia-fogo':''}">${i+1}</div>
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <button class="btn btn-marrom" style="margin-top:20px" onclick="App.comando()">Voltar ao Mapa</button>
-                        </div>
-                    </div>`);
-            },
-
-            mestre() {
-                const pronto = this.db.grupos.ok && this.db.percurso.ok;
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2 style="font-size:1.2rem">Configuração Mestre</h2>
-                            <button class="btn btn-verde" onclick="App.telaGrupos()">Organizar Grupos</button>
-                            <button class="btn btn-verde" onclick="App.telaPercursos()">Organizar Percursos</button>
-                            
-                            <hr style="margin:20px 0; opacity:0.2">
-                            
-                            <button class="btn ${pronto?'btn-ativo':'btn-disabled'}" 
-                                    ${pronto?'':'disabled'} 
-                                    onclick="App.iniciarEdicao()">
-                                Continuar para Edição
-                            </button>
-                            <button class="btn btn-marrom" onclick="App.comando()">Voltar</button>
-                        </div>
-                    </div>`);
-            },
-
-            telaGrupos() {
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Número de Grupos</h2>
-                            <input type="number" id="ig1" value="${this.db.grupos.qtd || ''}" placeholder="Ex: 8" oninput="App.checkG()">
-                            
-                            <div id="sg-p" class="${this.db.grupos.qtd >= 1 ? '' : 'hidden'}">
-                                <h2>Pessoas por Grupo</h2>
-                                <input type="number" id="ig2" value="${this.db.grupos.pessoas || ''}" placeholder="Ex: 2" oninput="App.checkG()">
-                            </div>
-                            
-                            <div id="sg-l" class="${this.db.grupos.pessoas >= 1 ? '' : 'hidden'}">
-                                <input type="text" id="ig-op" value="${this.db.grupos.opcional || ''}" placeholder="Informação opcional">
-                                <h2>Líderes por Grupo</h2>
-                                <input type="number" id="ig4" value="${this.db.grupos.lideres || ''}" placeholder="Ex: 1" oninput="App.checkG()">
-                                <button id="btn-g-ok" class="btn btn-disabled" disabled onclick="App.saveG()">Confirmar Grupos</button>
-                            </div>
-                            
-                            <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
-                        </div>
-                    </div>`);
-                this.checkG();
-            },
-            checkG() {
-                const g1 = document.getElementById('ig1').value;
-                const g2 = document.getElementById('ig2').value;
-                const g4 = document.getElementById('ig4').value;
-                const sp = document.getElementById('sg-p');
-                const sl = document.getElementById('sg-l');
-                const bok = document.getElementById('btn-g-ok');
-
-                if(g1 >= 1) sp.classList.remove('hidden'); else sp.classList.add('hidden');
-                if(g2 >= 1) sl.classList.remove('hidden'); else sl.classList.add('hidden');
+            // --- NAVEGAÇÃO PRINCIPAL (MAPA) ---
+            startOrganizador() {
+                this.editMode = false;
+                const temMapa = this.db.mapSlots.some(s => s !== null);
                 
-                if(g1 && g2 && g4) {
-                    bok.disabled = false; bok.classList.remove('btn-disabled'); bok.classList.add('btn-ativo');
-                } else {
-                    bok.disabled = true; bok.classList.add('btn-disabled'); bok.classList.remove('btn-ativo');
-                }
-            },
-            saveG() { 
-                this.db.grupos = { 
-                    qtd: parseInt(document.getElementById('ig1').value), 
-                    pessoas: parseInt(document.getElementById('ig2').value), 
-                    lideres: document.getElementById('ig4').value, 
-                    opcional: document.getElementById('ig-op').value, 
-                    ok: true 
-                }; 
-                this.mestre(); 
-            },
-
-            telaPercursos() {
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Quantidade de Objetivos Fixos</h2>
-                            <input type="number" id="ip1" value="${this.db.percurso.fixos || ''}" oninput="App.checkP()">
-                            
-                            <div id="sp-mov" class="${this.db.percurso.fixos >= 1 ? '' : 'hidden'}">
-                                <h2>Quantidade de Objetivos Móveis</h2>
-                                <input type="number" id="ip2" value="${this.db.percurso.moveis || ''}" oninput="App.checkP()">
-                                <button id="btn-p-ok" class="btn btn-disabled" disabled onclick="App.saveP()">Confirmar Percurso</button>
-                            </div>
-                            <button class="btn btn-marrom" onclick="App.mestre()">Voltar</button>
-                        </div>
-                    </div>`);
-                this.checkP();
-            },
-            checkP() {
-                const p1 = document.getElementById('ip1').value;
-                const p2 = document.getElementById('ip2').value;
-                const sm = document.getElementById('sp-mov');
-                const bok = document.getElementById('btn-p-ok');
-
-                if(p1 >= 1) sm.classList.remove('hidden'); else sm.classList.add('hidden');
-                if(p1 && p2 !== "") {
-                    bok.disabled = false; bok.classList.remove('btn-disabled'); bok.classList.add('btn-ativo');
-                }
-            },
-            saveP() { 
-                this.db.percurso = { fixos: document.getElementById('ip1').value, moveis: document.getElementById('ip2').value, ok: true }; 
-                this.mestre(); 
-            },
-
-            iniciarEdicao() {
-                this.modoEdicao = true;
                 this.render(`
                     <div id="map"></div>
-                    <div id="ui-header-container">${this.renderMenuEdicao()}</div>
-                    <button class="btn-continuar-box" onclick="App.fluxoContinuar()">Continuar</button>
+                    <div id="ui-layer" class="overlay-ui">
+                        ${this.generatedCode ? `<div class="painel-edicao" style="top:60px; background:white; font-weight:bold; font-size:1.2rem; border-color:var(--verde-comando)">CÓDIGO ATIVO: ${this.generatedCode}</div>` : ''}
+                    </div>
+
+                    <div id="modal-container" class="hidden"></div>
+
+                    <div class="nav-footer">
+                        <div class="nav-item" onclick="TrailApp.screenHome()"><span>🏠</span>Home</div>
+                        <div class="nav-item" onclick="TrailApp.screenMestre()"><span>🗺️</span>Mapas</div>
+                        <div class="nav-item ${temMapa ? '' : 'hidden'}" style="color:var(--verde-comando)" onclick="alert('Iniciando monitoramento...')"><span>⚪</span>Começar</div>
+                        <div class="nav-item" onclick="TrailApp.screenHistory()"><span>🔺</span>Atividades</div>
+                        <div class="nav-item" onclick="TrailApp.screenPerfil()"><span>👤</span>Perfil</div>
+                    </div>
                 `);
-                this.initMap();
+                this.initLeaflet();
             },
 
-            renderMenuEdicao() {
-                const p = this.pontoSelecionadoIdx !== null ? this.pontosTemporarios[this.pontoSelecionadoIdx] : null;
-                const cor = this.db.coresSlots[this.activeSlotIdx];
+            // --- GESTÃO DE MAPAS E CONFIGURAÇÕES ---
+            screenMestre() {
+                const pronto = this.db.config.grupos.status && this.db.config.percurso.status;
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2 style="font-size:1.2rem">Mestre de Trilha</h2>
+                        <button class="btn-base btn-verde" onclick="TrailApp.configGrupos()">1. Definir Grupos</button>
+                        <button class="btn-base btn-verde" onclick="TrailApp.configPercurso()">2. Definir Objetivos</button>
+                        <hr style="margin:20px 0; opacity:0.1">
+                        <button class="btn-base ${pronto ? 'btn-glow' : 'btn-locked'}" ${pronto ? '' : 'disabled'} onclick="TrailApp.startEditMode()">
+                            Continuar para o Mapa
+                        </button>
+                        <button class="btn-base btn-marrom" onclick="TrailApp.startOrganizador()">Cancelar</button>
+                    </div>
+                </div>`);
+            },
+
+            configGrupos() {
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Qtd de Grupos</h2>
+                        <input type="number" class="input-quest" id="g-qtd" value="${this.db.config.grupos.total || ''}" placeholder="Ex: 5" oninput="TrailApp.logicG()">
+                        
+                        <div id="step-p" class="${this.db.config.grupos.total > 0 ? '' : 'hidden'}">
+                            <h2>Pessoas por Grupo</h2>
+                            <input type="number" class="input-quest" id="g-pes" value="${this.db.config.grupos.integrantes || ''}" placeholder="Ex: 3" oninput="TrailApp.logicG()">
+                        </div>
+
+                        <div id="step-l" class="${this.db.config.grupos.integrantes > 0 ? '' : 'hidden'}">
+                            <input type="text" class="input-quest" id="g-ext" value="${this.db.config.grupos.extra || ''}" placeholder="Info Adicional (Opcional)">
+                            <h2>Líderes por Grupo</h2>
+                            <input type="number" class="input-quest" id="g-lid" value="${this.db.config.grupos.lideres || ''}" placeholder="Ex: 1" oninput="TrailApp.logicG()">
+                            <button id="btn-g-save" class="btn-base btn-locked" disabled onclick="TrailApp.saveG()">Salvar Grupos</button>
+                        </div>
+                        <button class="btn-base btn-marrom" onclick="TrailApp.screenMestre()">Voltar</button>
+                    </div>
+                </div>`);
+                this.logicG();
+            },
+
+            logicG() {
+                const g1 = document.getElementById('g-qtd').value;
+                const g2 = document.getElementById('g-pes').value;
+                const g4 = document.getElementById('g-lid').value;
+                if(g1 > 0) document.getElementById('step-p').classList.remove('hidden');
+                if(g2 > 0) document.getElementById('step-l').classList.remove('hidden');
+                const btn = document.getElementById('btn-g-save');
+                if(g1 > 0 && g2 > 0 && g4 > 0) { btn.disabled=false; btn.classList.remove('btn-locked'); btn.classList.add('btn-verde'); }
+            },
+
+            saveG() {
+                this.db.config.grupos = {
+                    total: parseInt(document.getElementById('g-qtd').value),
+                    integrantes: parseInt(document.getElementById('g-pes').value),
+                    lideres: parseInt(document.getElementById('g-lid').value),
+                    extra: document.getElementById('g-ext').value,
+                    status: true
+                };
+                this.screenMestre();
+            },
+
+            configPercurso() {
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Objetivos Fixos</h2>
+                        <input type="number" class="input-quest" id="p-fix" value="${this.db.config.percurso.fixos || ''}" placeholder="Qtd de Pontos" oninput="TrailApp.logicP()">
+                        
+                        <div id="step-mov" class="${this.db.config.percurso.fixos > 0 ? '' : 'hidden'}">
+                            <h2>Objetivos Móveis</h2>
+                            <input type="number" class="input-quest" id="p-mov" value="${this.db.config.percurso.moveis || ''}" placeholder="Qtd de Alvos">
+                            <button id="btn-p-save" class="btn-base btn-verde" onclick="TrailApp.saveP()">Salvar Percurso</button>
+                        </div>
+                        <button class="btn-base btn-marrom" onclick="TrailApp.screenMestre()">Voltar</button>
+                    </div>
+                </div>`);
+            },
+
+            logicP() { if(document.getElementById('p-fix').value > 0) document.getElementById('step-mov').classList.remove('hidden'); },
+
+            saveP() {
+                this.db.config.percurso = {
+                    fixos: document.getElementById('p-fix').value,
+                    moveis: document.getElementById('p-mov').value,
+                    status: true
+                };
+                this.screenMestre();
+            },
+
+            // --- MODO EDIÇÃO DE MAPA ---
+            startEditMode() {
+                this.editMode = true;
+                this.render(`
+                    <div id="map"></div>
+                    <div id="ui-header">${this.uiEdicaoTopo()}</div>
+                    <div id="modal-container" class="hidden"></div>
+                    <button class="btn-base btn-verde" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); width:240px; border-radius:30px; z-index:2000; box-shadow:var(--sombra)" onclick="TrailApp.flowContinuar()">Continuar</button>
+                `);
+                this.initLeaflet();
+            },
+
+            uiEdicaoTopo() {
+                const p = this.selectedPoint !== null ? this.tempPoints[this.selectedPoint] : null;
+                const cor = this.db.colors[this.activeSlot];
                 return `
-                <div class="header-edicao" style="border-bottom: 5px solid ${cor}">
+                <div class="painel-edicao" style="border-top: 6px solid ${cor}">
                     ${p ? `
-                        <h2>Editando Ponto ${this.pontoSelecionadoIdx+1}</h2>
-                        <input type="text" id="ed-nome" value="${p.nome||''}" placeholder="Nome do Local">
+                        <h3>Editando Ponto ${this.selectedPoint + 1}</h3>
+                        <input type="text" class="input-quest" id="point-name" value="${p.name || ''}" placeholder="Nome do Local">
                         <div style="display:flex; gap:10px">
-                            <button class="btn btn-verde" style="margin:0" onclick="App.salvarPonto()">Salvar</button>
-                            <button class="btn btn-marrom" style="margin:0; background:red" onclick="App.excluirPonto()">Remover</button>
+                            <button class="btn-base btn-verde" style="margin:0" onclick="TrailApp.savePointData()">OK</button>
+                            <button class="btn-base btn-marrom" style="margin:0; background:var(--vermelho-erro)" onclick="TrailApp.deletePoint()">Remover</button>
                         </div>
                     ` : `
-                        <h2 style="margin:0">Mapa: Slot ${this.activeSlotIdx+1}</h2>
-                        <p style="font-size:0.6rem; margin:5px 0">Toque no mapa para inserir pontos</p>
-                        <button class="btn btn-verde" style="padding:5px; font-size:0.7rem; width:auto" onclick="App.abrirSlots()">Trocar/Salvar Slot</button>
+                        <h3>Slot ${this.activeSlot + 1} Ativo</h3>
+                        <p style="font-size:0.6rem">Toque no mapa para marcar os pontos fixos.</p>
+                        <button class="btn-base btn-verde" style="padding:5px; width:auto; font-size:0.7rem" onclick="TrailApp.modalSlots()">Mudar/Salvar Slot</button>
                     `}
                 </div>`;
             },
 
-            fluxoContinuar() {
-                // Se preencheu objetivos móveis, pede código específico
-                if(parseInt(this.db.percurso.moveis) > 0) {
+            modalSlots() {
+                const modal = document.getElementById('modal-container');
+                modal.classList.remove('hidden');
+                modal.innerHTML = `
+                <div class="modal-background">
+                    <div class="modal-content">
+                        <h2>Gerenciar Slots</h2>
+                        ${this.db.mapSlots.map((s, i) => `
+                            <div class="card-item" onclick="TrailApp.selectSlot(${i})">
+                                <div style="width:14px; height:14px; background:${this.db.colors[i]}; border-radius:50%"></div>
+                                <span>Mapa Slot ${i+1} ${s ? '(Carregar)' : '(Vazio)'}</span>
+                            </div>
+                        `).join('')}
+                        <button class="btn-base btn-marrom" onclick="document.getElementById('modal-container').classList.add('hidden')">Fechar</button>
+                    </div>
+                </div>`;
+            },
+
+            selectSlot(i) {
+                if(this.db.mapSlots[i]) {
+                    this.tempPoints = JSON.parse(JSON.stringify(this.db.mapSlots[i].points));
+                } else {
+                    this.db.mapSlots[i] = { points: JSON.parse(JSON.stringify(this.tempPoints)) };
+                }
+                this.activeSlot = i;
+                document.getElementById('modal-container').classList.add('hidden');
+                this.drawMarkers();
+                document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
+            },
+
+            // --- FLUXO FINAL E CÓDIGOS ---
+            flowContinuar() {
+                if(this.db.config.percurso.moveis > 0) {
                     this.render(`
-                        <div class="cenario floresta-4">
-                            <div class="menu-bege">
-                                <h2>Código do Objetivo Móvel</h2>
-                                <p style="font-size:0.7rem; margin-bottom:10px">Este código será usado para validar os alvos móveis</p>
-                                <input type="text" id="cm" placeholder="Mínimo 6 caracteres" oninput="App.validaCM()">
-                                <button id="btn-cm" class="btn btn-disabled" disabled onclick="App.gerarCodigoFinal()">Gerar Acesso</button>
-                            </div>
-                        </div>`);
+                    <div class="cenario-full bg-forest">
+                        <div class="menu-wrapper">
+                            <h2>Segurança de Alvos</h2>
+                            <p style="font-size:0.7rem; margin-bottom:15px">Defina o código chave para objetivos móveis.</p>
+                            <input type="text" class="input-quest" id="key-mov" placeholder="Mínimo 6 caracteres" oninput="TrailApp.validaKey()">
+                            <button id="btn-key-go" class="btn-base btn-locked" disabled onclick="TrailApp.finalCodeGen()">Gerar Código de Acesso</button>
+                        </div>
+                    </div>`);
                 } else {
-                    this.gerarCodigoFinal();
-                }
-            },
-            validaCM() {
-                const b = document.getElementById('btn-cm');
-                if(document.getElementById('cm').value.length >= 6) {
-                    b.disabled = false; b.classList.remove('btn-disabled'); b.classList.add('btn-ativo');
-                } else {
-                    b.disabled = true; b.classList.add('btn-disabled'); b.classList.remove('btn-ativo');
+                    this.finalCodeGen();
                 }
             },
 
-            gerarCodigoFinal() {
-                this.accessCode = Math.floor(100000 + Math.random() * 900000);
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2 style="font-size:1.1rem">Código de Acesso dos Participantes</h2>
-                            <div style="background:white; padding:20px; border:2px dashed var(--verde-comando); margin:20px 0">
-                                <h1 style="font-size:3.5rem; letter-spacing:5px">${this.accessCode}</h1>
-                            </div>
-                            <button class="btn btn-verde" onclick="App.telaGestaoUsuarios()">Ver Participantes</button>
-                        </div>
-                    </div>`);
+            validaKey() {
+                const k = document.getElementById('key-mov').value;
+                const b = document.getElementById('btn-key-go');
+                if(k.length >= 6) { b.disabled=false; b.classList.remove('btn-locked'); b.classList.add('btn-glow'); }
             },
 
-            telaGestaoUsuarios() {
-                // Simulando usuários que entraram com o código
-                const users = ["Beta_User", "Trail_Master", "Zeca_Quest", "Ana_Explorer"];
+            finalCodeGen() {
+                this.generatedCode = Math.floor(100000 + Math.random() * 900000);
                 this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Participantes Conectados</h2>
-                            <p style="font-size:0.7rem">Toque no usuário para definir grupo e mapa</p>
-                            <div style="max-height:250px; overflow-y:auto; margin:15px 0">
-                                ${users.map(u => `<div class="slot-card" onclick="App.configUser('${u}')">👤 ${u} ➔</div>`).join('')}
-                            </div>
-                            <button class="btn btn-marrom" onclick="App.comando()">Iniciar Atividade</button>
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Código de Acesso Gerado</h2>
+                        <div style="background:white; border:2px dashed var(--verde-comando); padding:25px; margin:20px 0">
+                            <h1 style="font-size:3.5rem; letter-spacing:8px">${this.generatedCode}</h1>
                         </div>
-                    </div>`);
+                        <p style="font-size:0.8rem">Compartilhe este código com os participantes para que eles entrem na trilha.</p>
+                        <button class="btn-base btn-verde" onclick="TrailApp.screenMonitor()">Painel de Participantes</button>
+                    </div>
+                </div>`);
             },
 
-            configUser(u) {
+            screenMonitor() {
+                const listaFake = ["Guto_Trail", "Ana_Explorer", "Beta_Tester"];
                 this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h1 style="font-size:1.4rem">Configurar: ${u}</h1>
-                            
-                            <h2>Número do Grupo</h2>
-                            <p style="font-size:0.6rem">Limite definido: ${this.db.grupos.qtd} grupos</p>
-                            <input type="number" id="ng-input" placeholder="1 a ${this.db.grupos.qtd}">
-                            
-                            <button class="btn btn-verde" onclick="App.abrirMapaSelecao()">Selecionar Mapa</button>
-                            <button class="btn btn-marrom" style="margin-top:10px" onclick="App.telaGestaoUsuarios()">Voltar</button>
-                        </div>
-                    </div>`);
-            },
-
-            abrirMapaSelecao() {
-                const numGrupo = parseInt(document.getElementById('ng-input').value);
-                if(!numGrupo || numGrupo > this.db.grupos.qtd) {
-                    alert(`Por favor, insira um grupo válido (1 a ${this.db.grupos.qtd})`);
-                    return;
-                }
-                
-                this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2>Escolha o Mapa para este usuário</h2>
-                            ${this.db.mapasSalvos.map((m, i) => `
-                                <div class="slot-card" onclick="App.decisaoVisualizacao(${i})">
-                                    Slot ${i+1} ${m ? '✅' : '(Vazio)'}
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Participantes Ativos</h2>
+                        <div style="max-height:300px; overflow-y:auto; margin:15px 0">
+                            ${listaFake.map(u => `
+                                <div class="card-item" onclick="TrailApp.configCheckin('${u}')">
+                                    <span>👤 ${u}</span>
+                                    <span style="color:var(--verde-comando)">Check-in ➔</span>
                                 </div>
                             `).join('')}
                         </div>
-                    </div>`);
+                        <button class="btn-base btn-verde" onclick="TrailApp.startOrganizador()">Abrir Mapa de Comando</button>
+                    </div>
+                </div>`);
             },
 
-            decisaoVisualizacao(mapIndex) {
+            configCheckin(user) {
                 this.render(`
-                    <div class="cenario floresta-4">
-                        <div class="menu-bege">
-                            <h2 style="font-size:1.1rem">Visualizar todos os pontos?</h2>
-                            <p style="font-size:0.7rem; margin-bottom:20px">Defina como o usuário verá o mapa.</p>
-                            
-                            <button class="btn btn-verde" onclick="App.finalizarEVoltar('sim')">SIM (Ver Tudo)</button>
-                            <button class="btn btn-marrom" onclick="App.finalizarEVoltar('nao')">NÃO (Apenas Ponto 1)</button>
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Configurar: ${user}</h2>
+                        <p style="font-size:0.7rem">Atribua grupo e mapa para o participante.</p>
+                        
+                        <input type="number" class="input-quest" id="u-grupo" placeholder="Número do Grupo (1 a ${this.db.config.grupos.total})">
+                        
+                        <h2>Mapa Designado</h2>
+                        ${this.db.mapSlots.map((s, i) => `
+                            <div class="card-item" onclick="TrailApp.setDifficulty('${user}', ${i})">
+                                Slot ${i+1} ${s ? '✅' : '(Vazio)'}
+                            </div>
+                        `).join('')}
+                        
+                        <button class="btn-base btn-marrom" onclick="TrailApp.screenMonitor()">Voltar</button>
+                    </div>
+                </div>`);
+            },
+
+            setDifficulty(user, mapIdx) {
+                const g = document.getElementById('u-grupo').value;
+                if(!g || g > this.db.config.grupos.total) {
+                    alert("Defina um grupo válido primeiro!"); return;
+                }
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Nível de Visibilidade</h2>
+                        <p style="margin-bottom:20px">Como ${user} verá os pontos no mapa?</p>
+                        <button class="btn-base btn-verde" onclick="alert('Configurado: Ver tudo'); TrailApp.screenMonitor()">Ver Todos os Pontos</button>
+                        <button class="btn-base btn-marrom" onclick="alert('Configurado: Modo Progressivo'); TrailApp.screenMonitor()">Ver Apenas Ponto Atual</button>
+                    </div>
+                </div>`);
+            },
+
+            // --- PERFIL E HISTÓRICO ---
+            screenHistory() {
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper">
+                        <h2>Histórico de Missões</h2>
+                        <div style="max-height:350px; overflow-y:auto">
+                            ${this.db.history.map((h, i) => `
+                                <div class="card-item" onclick="alert('Participantes: ' + '${h.p.join(', ')}')">
+                                    <span>📅 ${h.data}</span>
+                                    <span style="font-size:0.6rem">${h.hora}</span>
+                                </div>
+                            `).join('')}
                         </div>
-                    </div>`);
+                        <button class="btn-base btn-marrom" onclick="TrailApp.startOrganizador()">Voltar</button>
+                    </div>
+                </div>`);
             },
 
-            finalizarEVoltar(opt) {
-                alert(opt === 'sim' ? "Usuário verá todos os pontos marcados." : "Usuário verá apenas o ponto 1.");
-                App.telaGestaoUsuarios();
+            screenPerfil() {
+                this.render(`
+                <div class="cenario-full bg-forest">
+                    <div class="menu-wrapper" style="text-align:left">
+                        <div class="perfil-card-header">
+                            <span class="nick-display">${this.db.user.nickname}</span>
+                            <span class="email-display">${this.db.user.email}</span>
+                        </div>
+
+                        <h2>Desempenho Mensal (Tempo)</h2>
+                        <div class="metricas-container">
+                            <div class="grafico-flex">
+                                <div class="barra-metrica" style="height:45%"></div>
+                                <div class="barra-metrica" style="height:70%"></div>
+                                <div class="barra-metrica" style="height:35%"></div>
+                                <div class="barra-metrica" style="height:90%"></div>
+                                <div class="barra-metrica" style="height:55%"></div>
+                                <div class="barra-metrica" style="height:40%"></div>
+                            </div>
+                        </div>
+
+                        <h2>Calendário de Atividades</h2>
+                        <div class="metricas-container">
+                            <div class="calendario-grid">
+                                ${Array.from({length:31}, (_, i) => `
+                                    <div class="dia-box ${[2, 5, 12, 18, 26].includes(i+1) ? 'dia-fogo' : ''}">${i+1}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <button class="btn-base btn-marrom" style="margin-top:20px" onclick="TrailApp.startOrganizador()">Voltar ao Comando</button>
+                    </div>
+                </div>`);
             },
 
-            initMap() {
-                this.map = L.map('map', { zoomControl: false }).setView([0,0], 2);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
+            // --- MOTOR DO MAPA (LEAFLET) ---
+            initLeaflet() {
+                if(this.map) this.map.remove();
+                this.map = L.map('map', { zoomControl: false }).setView([-23.55, -46.63], 13);
                 
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'TrailQuest Satellite'
+                }).addTo(this.map);
+
                 this.map.locate({setView: true, maxZoom: 16});
+                
                 this.map.on('locationfound', (e) => {
-                    this.currentPos = e.latlng;
-                    if(this.userMarker) this.userMarker.setLatLng(e.latlng);
-                    else this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', radius: 8, fillOpacity: 0.8}).addTo(this.map);
+                    this.userPos = e.latlng;
+                    if(this.userMarker) this.map.removeLayer(this.userMarker);
+                    this.userMarker = L.circleMarker(e.latlng, {color: '#2196F3', radius: 10, fillOpacity: 0.9}).addTo(this.map);
                 });
 
                 this.map.on('click', (e) => {
-                    if(this.modoEdicao && this.pontoSelecionadoIdx === null) {
-                        this.pontosTemporarios.push({latlng: e.latlng, nome: ""});
-                        this.drawP();
+                    if(this.editMode && this.selectedPoint === null) {
+                        this.tempPoints.push({ latlng: e.latlng, name: "" });
+                        this.drawMarkers();
                     }
                 });
-                this.drawP();
+
+                this.drawMarkers();
             },
 
-            drawP() {
-                if(!this.map) return;
-                this.map.eachLayer(l => { if(l instanceof L.Marker && l !== this.userMarker) this.map.removeLayer(l); });
-                const cor = this.db.coresSlots[this.activeSlotIdx];
-                
-                this.pontosTemporarios.forEach((p, i) => {
+            drawMarkers() {
+                this.map.eachLayer(l => { if(l instanceof L.Marker) this.map.removeLayer(l); });
+                const cor = this.db.colors[this.activeSlot];
+
+                this.tempPoints.forEach((p, i) => {
                     const icon = L.divIcon({
                         className: '',
-                        html: `<div class="pin-number" style="background:${cor}">${i+1}</div>`,
-                        iconSize: [28, 28]
+                        html: `<div class="custom-marker" style="background:${cor}">${i+1}</div>`,
+                        iconSize: [32, 32]
                     });
-                    
-                    L.marker(p.latlng, {icon: icon}).addTo(this.map).on('click', (e) => {
+
+                    L.marker(p.latlng, { icon: icon }).addTo(this.map).on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
-                        this.pontoSelecionadoIdx = i;
-                        document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
+                        this.selectedPoint = i;
+                        document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
                     });
                 });
             },
 
-            salvarPonto() {
-                this.pontosTemporarios[this.pontoSelecionadoIdx].nome = document.getElementById('ed-nome').value;
-                this.pontoSelecionadoIdx = null;
-                this.drawP();
-                document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
+            savePointData() {
+                const novoNome = document.getElementById('point-name').value;
+                this.tempPoints[this.selectedPoint].name = novoNome;
+                this.selectedPoint = null;
+                this.drawMarkers();
+                document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
             },
 
-            excluirPonto() {
-                this.pontosTemporarios.splice(this.pontoSelecionadoIdx, 1);
-                this.pontoSelecionadoIdx = null;
-                this.drawP();
-                document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
-            },
-
-            abrirSlots() {
-                const c = document.getElementById('lista-slots'); 
-                c.innerHTML = "";
-                this.db.mapasSalvos.forEach((m, i) => {
-                    c.innerHTML += `
-                        <div class="slot-card" onclick="App.acaoSlot(${i})">
-                            <div style="width:15px; height:15px; background:${this.db.coresSlots[i]}; border-radius:50%"></div>
-                            <span>Slot ${i+1} ${m ? '(Carregar)' : '(Salvar)'}</span>
-                        </div>`;
-                });
-                document.getElementById('modal-slots').classList.remove('hidden');
-            },
-
-            acaoSlot(i) {
-                if(this.db.mapasSalvos[i]) {
-                    // Carrega
-                    this.pontosTemporarios = JSON.parse(JSON.stringify(this.db.mapasSalvos[i].p));
-                } else {
-                    // Salva
-                    this.db.mapasSalvos[i] = { p: JSON.parse(JSON.stringify(this.pontosTemporarios)) };
-                }
-                this.activeSlotIdx = i;
-                document.getElementById('modal-slots').classList.add('hidden');
-                this.drawP();
-                document.getElementById('ui-header-container').innerHTML = this.renderMenuEdicao();
+            deletePoint() {
+                this.tempPoints.splice(this.selectedPoint, 1);
+                this.selectedPoint = null;
+                this.drawMarkers();
+                document.getElementById('ui-header').innerHTML = this.uiEdicaoTopo();
             }
         };
 
-        window.onload = () => App.abertura();
+        // Inicialização
+        window.onload = () => TrailApp.init();
     </script>
 </body>
 </html>
