@@ -3,87 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TrailQuest v9.0 | Enterprise Edition</title>
-
+    <title>TrailQuest OMNI-SURGERY v10</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto+Mono:wght@300;500;700&family=Special+Elite&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --tq-primary: #1b5e20;
-            --tq-accent: #ffab00;
-            --tq-danger: #b71c1c;
-            --tq-bg: #fdfdf5;
-            --tq-dark: #1a1a1a;
-            --tq-border: #2e1a16;
-            --shadow-pro: 10px 10px 0px #2e1a16;
+            --primary: #1b5e20;
+            --accent: #ffab00;
+            --bg: #fdfdf5;
+            --dark: #1a1a1a;
+            --border: #2e1a16;
+            --shadow: 10px 10px 0px #2e1a16;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; background: #000; font-family: 'Roboto Mono', monospace; overflow: hidden; }
 
-        /* Map Engine */
-        #map { width: 100%; height: 100%; position: absolute; z-index: 1; filter: saturate(1.1) contrast(1.1); }
+        #map { width: 100%; height: 100%; position: absolute; z-index: 1; }
 
-        /* UI Shell */
-        .ui-mount { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; }
-        .ui-mount * { pointer-events: auto; }
+        /* UI Containers */
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .ui-layer * { pointer-events: auto; }
 
-        /* Tactical Components */
-        .window-pro {
-            background: var(--tq-bg); border: 3px solid var(--tq-border);
-            padding: 30px; width: 92%; max-width: 460px; margin: auto;
-            box-shadow: var(--shadow-pro); position: relative;
+        .window {
+            background: var(--bg); border: 3px solid var(--border);
+            padding: 25px; width: 92%; max-width: 440px; margin: auto;
+            box-shadow: var(--shadow); position: relative;
             max-height: 85vh; overflow-y: auto;
         }
 
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center; z-index: 2000;
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
         }
 
-        h1 { font-family: 'Special Elite', serif; color: var(--tq-primary); font-size: 2.5rem; text-align: center; margin-bottom: 20px; }
-        h2 { font-family: 'Montserrat'; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid var(--tq-primary); margin: 20px 0 10px; padding-bottom: 5px; }
-
-        .input-pro { width: 100%; padding: 15px; margin-bottom: 12px; border: 2px solid #ccc; background: #fff; font-family: inherit; font-size: 1rem; }
+        h1 { font-family: 'Special Elite', serif; color: var(--primary); font-size: 2.5rem; text-align: center; margin-bottom: 10px; }
+        h2 { font-family: 'Montserrat'; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid var(--primary); margin: 15px 0 10px; padding-bottom: 5px; }
         
-        .btn-pro {
-            width: 100%; padding: 18px; border: none; font-family: 'Montserrat';
-            font-weight: 900; text-transform: uppercase; cursor: pointer;
-            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .btn-green { background: var(--tq-primary); color: white; }
-        .btn-gold { background: var(--tq-accent); color: #000; }
-        .btn-cancel { background: transparent; border: 2px solid var(--tq-border); color: var(--tq-border); margin-top: 10px; }
+        /* Inputs Totalmente Limpos */
+        .tq-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #ccc; background: #fff; font-family: inherit; font-size: 1rem; }
+        
+        .tq-btn { width: 100%; padding: 18px; border: none; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-green { background: var(--primary); color: white; }
+        .btn-gold { background: var(--accent); color: #000; }
+        .btn-cancel { background: #333; color: #eee; }
 
-        /* Navigation Bar Professional */
-        .nav-pro {
-            position: fixed; bottom: 0; width: 100%; height: 80px;
-            background: #fff; border-top: 3px solid var(--tq-border);
-            display: flex; justify-content: space-around; padding-top: 10px; z-index: 1500;
+        /* Menu Rodapé com Comando Central */
+        .footer-nav {
+            position: fixed; bottom: 0; width: 100%; background: #fff;
+            border-top: 3px solid var(--border); display: flex;
+            justify-content: space-around; padding: 10px 0 25px; z-index: 1000;
         }
-        .nav-item { flex: 1; text-align: center; color: #888; font-size: 0.65rem; font-weight: 700; font-family: 'Montserrat'; text-transform: uppercase; }
-        .nav-item span { display: block; font-size: 1.6rem; margin-bottom: 2px; }
-        .nav-item.active { color: var(--tq-primary); }
-
-        /* HUD Tracker */
-        .hud-chrono {
-            position: absolute; top: 20px; right: 20px;
-            background: white; border: 2px solid var(--tq-border);
-            padding: 10px 15px; font-weight: 900; font-size: 1.2rem;
-            box-shadow: 5px 5px 0px var(--tq-border);
+        .nav-link { text-align: center; color: #777; font-family: 'Montserrat'; font-size: 0.6rem; font-weight: 700; flex: 1; text-decoration: none; }
+        .nav-link span { font-size: 1.5rem; display: block; }
+        .nav-link.active { color: var(--primary); }
+        
+        .btn-center-continue { 
+            background: var(--primary); color: white; border-radius: 50%; 
+            width: 60px; height: 60px; display: flex; align-items: center; 
+            justify-content: center; transform: translateY(-30px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 3px solid #fff;
         }
 
-        /* Group Markers */
-        .marker-group {
-            width: 35px; height: 35px; border-radius: 50%;
-            border: 3px solid white; display: flex; align-items: center;
-            justify-content: center; color: white; font-weight: 900;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        }
+        /* Edição de Pontos */
+        .edit-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; background: var(--bg); border: 2px solid var(--border); padding: 15px; z-index: 1001; box-shadow: var(--shadow); }
+        .marker-tactical { background: var(--primary); color: white; border: 2px solid white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+
+        /* Calendário e Perfil */
+        .chart-row { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-bottom: 20px; }
+        .chart-bar { background: var(--primary); flex: 1; border-radius: 2px 2px 0 0; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .cal-day { background: white; border: 1px solid #ddd; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; border-radius: 50%; position: relative; }
+        .cal-hot::after { content: '🔥'; position: absolute; top: -5px; font-size: 0.7rem; }
 
         .hidden { display: none !important; }
     </style>
@@ -91,241 +85,275 @@
 <body>
 
     <div id="map"></div>
-    <div id="ui-root" class="ui-mount"></div>
+    <div id="app"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        /**
-         * TRAILQUEST CORE ENGINE v9.0
-         * Modules: Auth, MapEngine, Sync, UI, Activity
-         */
-
         const TQ = {
             state: {
-                user: JSON.parse(localStorage.getItem('TQ_USER')) || null,
-                activity: {
-                    status: 'idle', // idle, running, paused
-                    time: 0,
-                    groups: [],
-                    maps: JSON.parse(localStorage.getItem('TQ_MAPS')) || []
-                },
-                currentView: 'splash',
-                activeMapIndex: 0,
-                connectedUsers: [],
-                gpsThrottle: 2000 // 2 seconds
+                user: { nick: '', email: '', isLogged: false },
+                config: { groups: 0, ppx: 0, fix: 0, mov: 0, extra: '' },
+                maps: [null, null, null, null, null],
+                activeSlot: 0,
+                points: [],
+                connections: [], // Simulação de usuários conectados
+                editMode: false,
+                view: 'splash'
             },
 
-            // --- MODULE: INITIALIZATION ---
+            map: null,
+            markers: [],
+
             init() {
-                this.mapEngine.init();
-                this.auth.autoLogin();
+                this.initMap();
                 this.render();
-                this.gps.startTracking();
             },
 
-            // --- MODULE: AUTHENTICATION ---
-            auth: {
-                login(email, password, nick) {
-                    const newUser = { email, nick, id: 'u_' + Date.now(), xp: 0 };
-                    TQ.state.user = newUser;
-                    localStorage.setItem('TQ_USER', JSON.stringify(newUser));
-                    TQ.state.currentView = 'dashboard';
-                    TQ.render();
-                },
-                autoLogin() {
-                    if(TQ.state.user) TQ.state.currentView = 'dashboard';
-                }
+            initMap() {
+                this.map = L.map('map', { zoomControl: false }).setView([-23.5, -46.6], 12);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
+                this.map.on('click', (e) => { if(this.state.editMode) this.addPoint(e.latlng); });
             },
 
-            // --- MODULE: MAP ENGINE (LEAFLET) ---
-            mapEngine: {
-                instance: null,
-                layers: {},
-                init() {
-                    this.instance = L.map('map', { zoomControl: false, attributionControl: false }).setView([-23.55, -46.63], 15);
-                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.instance);
-                },
-                updateMarkers() {
-                    // Logic for 100 users rendering optimization
-                    this.instance.eachLayer((layer) => {
-                        if (!!layer.toGeoJSON && layer !== this.instance) this.instance.removeLayer(layer);
-                    });
-                    
-                    // Render Objectives
-                    const currentMap = TQ.state.activity.maps[TQ.state.activeMapIndex];
-                    if(currentMap) {
-                        currentMap.points.forEach(p => {
-                            L.marker(p.latlng, {
-                                icon: L.divIcon({
-                                    className: '',
-                                    html: `<div class="marker-group" style="background:${currentMap.color}">${p.num}</div>`
-                                })
-                            }).addTo(this.instance).on('click', () => TQ.ui.openObjectiveMenu(p));
-                        });
-                    }
-                }
-            },
-
-            // --- MODULE: GPS TRACKING ---
-            gps: {
-                startTracking() {
-                    setInterval(() => {
-                        navigator.geolocation.getCurrentPosition((pos) => {
-                            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            // Simulate sending to Supabase
-                            console.log('Syncing location...', coords);
-                        });
-                    }, TQ.state.gpsThrottle);
-                }
-            },
-
-            // --- MODULE: OBJECTIVES & REORDERING ---
-            objectives: {
-                reorder(mapIndex, pointId, newNum) {
-                    const map = TQ.state.activity.maps[mapIndex];
-                    const point = map.points.find(p => p.id === pointId);
-                    const target = map.points.find(p => p.num === parseInt(newNum));
-                    
-                    if(target) target.num = point.num;
-                    point.num = parseInt(newNum);
-                    
-                    map.points.sort((a, b) => a.num - b.num);
-                    TQ.save();
-                    TQ.mapEngine.updateMarkers();
-                }
-            },
-
-            // --- MODULE: UI CONTROLLER ---
             render() {
-                const root = document.getElementById('ui-root');
+                const root = document.getElementById('app');
                 root.innerHTML = '';
 
-                if(this.state.currentView === 'splash') {
-                    root.innerHTML = this.ui.splash();
-                } else if(this.state.currentView === 'login') {
-                    root.innerHTML = this.ui.login();
-                } else if(this.state.currentView === 'dashboard') {
-                    root.innerHTML = this.ui.dashboard();
-                    this.mapEngine.updateMarkers();
-                }
+                if(this.state.view === 'splash') this.viewSplash(root);
+                if(this.state.view === 'login') this.viewLogin(root);
+                if(this.state.view === 'dashboard') this.viewDashboard(root);
             },
 
-            ui: {
-                splash: () => `
+            // --- TELAS ---
+            viewSplash(root) {
+                root.innerHTML = `
                     <div class="overlay">
-                        <div class="window-pro">
+                        <div class="window">
                             <h1>TrailQuest</h1>
-                            <button class="btn-pro btn-green" onclick="TQ.state.currentView='login'; TQ.render()">Entrar no Sistema</button>
-                            <button class="btn-pro btn-gold" style="margin-top:15px" onclick="TQ.state.currentView='dashboard'; TQ.render()">Modo Participante</button>
+                            <button class="tq-btn btn-green" onclick="TQ.navigate('login')">Acesso Organizador</button>
+                            <button class="tq-btn btn-gold" onclick="TQ.navigate('dashboard')">Entrar com Código</button>
                         </div>
                     </div>
-                `,
-                login: () => `
-                    <div class="overlay">
-                        <div class="window-pro">
-                            <h2>Autenticação</h2>
-                            <input type="text" id="l-nick" class="input-pro" placeholder="Nickname">
-                            <input type="email" id="l-email" class="input-pro" placeholder="Email">
-                            <input type="password" id="l-pass" class="input-pro" placeholder="Senha">
-                            <button class="btn-pro btn-green" onclick="TQ.auth.login(
-                                document.getElementById('l-email').value,
-                                document.getElementById('l-pass').value,
-                                document.getElementById('l-nick').value
-                            )">Registrar e Entrar</button>
-                        </div>
-                    </div>
-                `,
-                dashboard: () => `
-                    <div class="hud-chrono" id="chrono">00:00:00</div>
-                    <nav class="nav-pro">
-                        <div class="nav-item active"><span>🏠</span>Início</div>
-                        <div class="nav-item" onclick="TQ.ui.openMapsMenu()"><span>🗺️</span>Mapas</div>
-                        <div class="nav-item" onclick="TQ.ui.openConfig()"><span>⚙️</span>Ajustes</div>
-                        <div class="nav-item" onclick="TQ.ui.openProfile()"><span>👤</span>Perfil</div>
-                    </nav>
-                `,
-
-                openMapsMenu() {
-                    const div = document.createElement('div');
-                    div.className = 'overlay';
-                    div.innerHTML = `
-                        <div class="window-pro">
-                            <h2>Gerenciador de Mapas</h2>
-                            <div id="map-list">
-                                ${TQ.state.activity.maps.map((m, i) => `
-                                    <div style="padding:15px; background:white; border-left:10px solid ${m.color}; margin-bottom:10px" onclick="TQ.state.activeMapIndex=${i}; TQ.mapEngine.updateMarkers(); this.closest('.overlay').remove()">
-                                        <b>${m.name}</b><br><small>${m.points.length} Objetivos</small>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <button class="btn-pro btn-green" onclick="TQ.ui.createNewMap()">Criar Novo Mapa</button>
-                            <button class="btn-pro btn-cancel" onclick="this.closest('.overlay').remove()">Fechar</button>
-                        </div>
-                    `;
-                    document.body.appendChild(div);
-                },
-
-                createNewMap() {
-                    const colors = ['verde', 'vermelho', 'azul', 'amarelo', 'preto'];
-                    const colorHex = { verde:'#1b5e20', vermelho:'#b71c1c', azul:'#0d47a1', amarelo:'#fbc02d', preto:'#000' };
-                    const name = prompt("Nome do Mapa:");
-                    const color = prompt("Cor (verde, vermelho, azul, amarelo, preto):");
-                    
-                    if(name && color) {
-                        TQ.state.activity.maps.push({
-                            id: Date.now(),
-                            name: name,
-                            color: colorHex[color] || '#000',
-                            points: []
-                        });
-                        TQ.save();
-                        this.openMapsMenu();
-                    }
-                },
-
-                openObjectiveMenu(p) {
-                    const div = document.createElement('div');
-                    div.className = 'overlay';
-                    div.innerHTML = `
-                        <div class="window-pro">
-                            <h2>Objetivo ${p.num}</h2>
-                            <input type="text" id="edit-n" class="input-pro" value="${p.name}">
-                            <input type="number" id="edit-num" class="input-pro" value="${p.num}">
-                            <p style="margin-bottom:10px">Código de Validação: <b>${p.code}</b></p>
-                            <button class="btn-pro btn-green" onclick="TQ.objectives.reorder(TQ.state.activeMapIndex, ${p.id}, document.getElementById('edit-num').value); this.closest('.overlay').remove()">Salvar Alterações</button>
-                            <button class="btn-pro btn-cancel" onclick="this.closest('.overlay').remove()">Voltar</button>
-                        </div>
-                    `;
-                    document.body.appendChild(div);
-                }
+                `;
             },
 
-            save() {
-                localStorage.setItem('TQ_MAPS', JSON.stringify(TQ.state.activity.maps));
+            viewLogin(root) {
+                root.innerHTML = `
+                    <div class="overlay">
+                        <div class="window">
+                            <h2>Autenticação</h2>
+                            <h2>E-mail</h2>
+                            <input type="text" id="log-email" class="tq-input">
+                            <h2>Senha</h2>
+                            <input type="password" id="log-pass" class="tq-input">
+                            <button class="tq-btn btn-green" onclick="TQ.doLogin()">Entrar</button>
+                            <button class="tq-btn btn-cancel" onclick="TQ.navigate('splash')">Voltar</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            viewDashboard(root) {
+                this.state.editMode = false;
+                root.innerHTML = `
+                    <div class="ui-layer" id="hud-edit"></div>
+                    <nav class="footer-nav">
+                        <div class="nav-link active" onclick="TQ.navigate('dashboard')"><span>🏠</span>Início</div>
+                        <div class="nav-link" onclick="TQ.openSettings()"><span>⚙️</span>Ajustes</div>
+                        <div class="btn-center-continue" onclick="TQ.generateFinalCode()"><span>➡️</span></div>
+                        <div class="nav-link" onclick="TQ.openRadar()"><span>📡</span>Radar</div>
+                        <div class="nav-link" onclick="TQ.openProfile()"><span>👤</span>Perfil</div>
+                    </nav>
+                `;
+            },
+
+            // --- LÓGICA DE NAVEGAÇÃO E AÇÕES ---
+            navigate(view) {
+                this.state.view = view;
+                this.render();
+            },
+
+            doLogin() {
+                this.state.user.isLogged = true;
+                this.navigate('dashboard');
+            },
+
+            openSettings() {
+                const root = document.getElementById('app');
+                const div = document.createElement('div');
+                div.className = 'overlay';
+                div.innerHTML = `
+                    <div class="window">
+                        <h1>Configuração</h1>
+                        <h2>Quantidade de Grupos</h2>
+                        <input type="number" id="cfg-groups" class="tq-input">
+                        <h2>Líderes por Grupo</h2>
+                        <input type="number" id="cfg-lead" class="tq-input">
+                        <h2>Objetivos Fixos</h2>
+                        <input type="number" id="cfg-fix" class="tq-input">
+                        <h2>Objetivos Móveis</h2>
+                        <input type="number" id="cfg-mov" class="tq-input">
+                        <h2>Informação Adicional (Opcional)</h2>
+                        <input type="text" id="cfg-extra" class="tq-input">
+                        <button class="tq-btn btn-green" onclick="TQ.saveConfig()">Salvar e Editar Mapa</button>
+                        <button class="tq-btn btn-cancel" onclick="TQ.navigate('dashboard')">Cancelar</button>
+                    </div>
+                `;
+                root.appendChild(div);
+            },
+
+            saveConfig() {
+                this.state.config = {
+                    groups: document.getElementById('cfg-groups').value,
+                    fix: document.getElementById('cfg-fix').value,
+                    mov: document.getElementById('cfg-mov').value,
+                    extra: document.getElementById('cfg-extra').value
+                };
+                this.startEditor();
+            },
+
+            startEditor() {
+                this.state.editMode = true;
+                this.navigate('dashboard');
+                this.updateHud();
+            },
+
+            updateHud() {
+                const hud = document.getElementById('hud-edit');
+                hud.innerHTML = `
+                    <div class="edit-hud">
+                        <div style="display:flex; justify-content:space-between; align-items:center">
+                            <b>Edição: Slot ${this.state.activeSlot + 1}</b>
+                            <button class="tq-btn btn-green" style="width:auto; padding:5px 10px; margin:0; font-size:0.6rem" onclick="TQ.selectSlotMenu()">Trocar Mapa</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            selectSlotMenu() {
+                const div = document.createElement('div');
+                div.className = 'overlay';
+                div.innerHTML = `
+                    <div class="window">
+                        <h2>Selecionar Slot de Mapa</h2>
+                        ${this.state.maps.map((m, i) => `
+                            <button class="tq-btn btn-cancel" style="background:${this.state.activeSlot === i ? '#1b5e20' : '#444'}" onclick="TQ.changeSlot(${i})">Mapa ${i+1}</button>
+                        `).join('')}
+                        <button class="tq-btn btn-gold" onclick="this.parentElement.parentElement.remove()">Voltar</button>
+                    </div>
+                `;
+                document.getElementById('app').appendChild(div);
+            },
+
+            changeSlot(i) {
+                this.state.activeSlot = i;
+                // Lógica de persistência de pontos por slot aqui
+                document.querySelector('.overlay').remove();
+                this.updateHud();
+            },
+
+            addPoint(latlng) {
+                const code = Math.floor(100000 + Math.random() * 900000);
+                const p = { latlng, code, id: Date.now() };
+                this.state.points.push(p);
+                
+                const marker = L.marker(latlng, {
+                    icon: L.divIcon({ className: '', html: `<div class="marker-tactical">${this.state.points.length}</div>` })
+                }).addTo(this.map);
+                
+                marker.on('click', () => this.pointMenu(p));
+                this.markers.push(marker);
+            },
+
+            pointMenu(p) {
+                const div = document.createElement('div');
+                div.className = 'overlay';
+                div.innerHTML = `
+                    <div class="window">
+                        <h2>Configurar Ponto</h2>
+                        <h2>Título do Ponto</h2>
+                        <input type="text" class="tq-input" id="p-title">
+                        <h2>Código Gerado</h2>
+                        <div style="background:#fff; padding:15px; border:2px dashed #1b5e20; text-align:center; font-size:1.5rem; font-weight:900">
+                            ${p.code}
+                        </div>
+                        <button class="tq-btn btn-green" onclick="this.parentElement.parentElement.remove()">Salvar</button>
+                        <button class="tq-btn btn-cancel" onclick="TQ.removePoint(${p.id})">Excluir Ponto</button>
+                    </div>
+                `;
+                document.getElementById('app').appendChild(div);
+            },
+
+            openRadar() {
+                const div = document.createElement('div');
+                div.className = 'overlay';
+                // Radar Inteligente: Só mostra conteúdo se houver conexões
+                const content = this.state.connections.length > 0 ? 
+                    this.state.connections.map(c => `<div style="padding:10px; background:#fff; margin-bottom:5px">👤 ${c.nick}</div>`).join('') :
+                    `<p style="text-align:center; opacity:0.5">Aguardando usuários...</p>`;
+
+                div.innerHTML = `
+                    <div class="window">
+                        <h1>Radar Ativo</h1>
+                        <div style="margin:15px 0">${content}</div>
+                        <button class="tq-btn btn-cancel" onclick="this.parentElement.parentElement.remove()">Fechar</button>
+                    </div>
+                `;
+                document.getElementById('app').appendChild(div);
+            },
+
+            openProfile() {
+                const div = document.createElement('div');
+                div.className = 'overlay';
+                div.innerHTML = `
+                    <div class="window">
+                        <h1>Meu Perfil</h1>
+                        <h2>Alterar Nickname</h2>
+                        <input type="text" id="new-nick" class="tq-input">
+                        <button class="tq-btn btn-green" onclick="TQ.updateNick()">Atualizar Identidade</button>
+                        
+                        <h2>Atividade Recente</h2>
+                        <div class="chart-row">
+                            <div class="chart-bar" style="height:30%"></div>
+                            <div class="chart-bar" style="height:70%"></div>
+                            <div class="chart-bar" style="height:50%"></div>
+                            <div class="chart-bar" style="height:90%"></div>
+                        </div>
+
+                        <h2>Calendário Strava</h2>
+                        <div class="calendar">
+                            ${Array.from({length: 28}, (_, i) => `<div class="cal-day ${[2,10,15,22].includes(i) ? 'cal-hot' : ''}">${i+1}</div>`).join('')}
+                        </div>
+                        <button class="tq-btn btn-cancel" onclick="this.parentElement.parentElement.remove()">Voltar</button>
+                    </div>
+                `;
+                document.getElementById('app').appendChild(div);
+            },
+
+            updateNick() {
+                this.state.user.nick = document.getElementById('new-nick').value;
+                alert("Identidade atualizada!");
+            },
+
+            generateFinalCode() {
+                const code = Math.floor(100000 + Math.random() * 900000);
+                const div = document.createElement('div');
+                div.className = 'overlay';
+                div.innerHTML = `
+                    <div class="window" style="text-align:center">
+                        <h1>CÓDIGO DA MISSÃO</h1>
+                        <div style="font-size:3.5rem; font-weight:900; letter-spacing:8px; color:#1b5e20; margin:20px 0">
+                            ${code}
+                        </div>
+                        <button class="tq-btn btn-green" onclick="this.parentElement.parentElement.remove()">Finalizar</button>
+                    </div>
+                `;
+                document.getElementById('app').appendChild(div);
             }
         };
 
-        // Event Listeners for Professional Interaction
-        window.addEventListener('load', () => TQ.init());
-
-        // Map Click to Add Objective (Admin Only Logic)
-        TQ.mapEngine.instance?.on('click', (e) => {
-            if(TQ.state.user) {
-                const map = TQ.state.activity.maps[TQ.state.activeMapIndex];
-                if(!map) return alert("Crie um mapa primeiro!");
-                const num = map.points.length + 1;
-                map.points.push({
-                    id: Date.now(),
-                    num: num,
-                    name: 'Objetivo ' + num,
-                    code: Math.floor(100000 + Math.random() * 900000),
-                    latlng: e.latlng
-                });
-                TQ.save();
-                TQ.mapEngine.updateMarkers();
-            }
-        });
+        window.onload = () => TQ.init();
     </script>
 </body>
 </html>
