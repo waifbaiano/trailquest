@@ -4,71 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1b5e20">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TrailQuest PRO - Enterprise Suite</title>
-    
+    <title>TrailQuest Enterprise v8.0</title>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto+Mono:wght@300;500;700&family=Special+Elite&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary: #1b5e20;
             --accent: #ffab00;
-            --bg-sand: #fdfdf5;
-            --border-dark: #2e1a16;
-            --error: #b71c1c;
-            --shadow: 12px 12px 0px #2e1a16;
+            --danger: #b71c1c;
+            --bg-tactical: #fdfdf5;
+            --text-main: #1a1a1a;
+            --border-heavy: #2e1a16;
+            --shadow-tactical: 8px 8px 0px #2e1a16;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; background: #000; font-family: 'Roboto Mono', monospace; overflow: hidden; }
 
-        /* Mapa - Estilo Satélite Permanente */
-        #map { width: 100%; height: 100%; position: absolute; z-index: 1; }
-        .leaflet-control-attribution { display: none !important; }
+        /* Map Engine Layer */
+        #map { width: 100%; height: 100%; position: absolute; z-index: 1; filter: saturate(1.2) contrast(1.1); }
 
-        /* UI Overlays */
-        .app-shell { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; }
-        .app-shell * { pointer-events: auto; }
+        /* UI Layers */
+        .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; }
+        .ui-overlay * { pointer-events: auto; }
 
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        
-        .tactical-panel {
-            background: var(--bg-sand); border: 3px solid var(--border-dark);
-            padding: 30px; width: 92%; max-width: 480px; box-shadow: var(--shadow);
-            max-height: 90vh; overflow-y: auto; position: relative;
+        .modal-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+
+        .container-tactical {
+            background: var(--bg-tactical); border: 3px solid var(--border-heavy);
+            padding: 25px; width: 92%; max-width: 450px; box-shadow: var(--shadow-tactical);
+            max-height: 85vh; overflow-y: auto;
         }
 
         /* Typography */
-        h1 { font-family: 'Special Elite', serif; color: var(--primary); font-size: 2.5rem; text-align: center; margin-bottom: 20px; }
-        h2 { font-family: 'Montserrat'; font-weight: 900; font-size: 0.9rem; text-transform: uppercase; border-bottom: 2px solid var(--primary); margin: 20px 0 10px; }
+        h1 { font-family: 'Special Elite', serif; color: var(--primary); font-size: 2.2rem; text-align: center; margin-bottom: 20px; }
+        h2 { font-family: 'Montserrat'; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; border-bottom: 2px solid var(--primary); margin: 15px 0 10px; padding-bottom: 4px; }
 
-        /* Inputs & Buttons */
-        .tq-input { width: 100%; padding: 15px; margin-bottom: 12px; border: 2px solid #ccc; font-family: inherit; font-size: 1rem; }
-        .tq-btn { width: 100%; padding: 18px; border: none; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* Tactical Inputs */
+        .tq-input {
+            width: 100%; padding: 14px; margin-bottom: 12px;
+            border: 2px solid #ccc; background: white; font-family: inherit; font-size: 1rem;
+        }
+        .tq-input:focus { border-color: var(--accent); outline: none; }
+
+        /* Action Buttons */
+        .tq-btn {
+            width: 100%; padding: 16px; border: none; font-family: 'Montserrat';
+            font-weight: 900; text-transform: uppercase; cursor: pointer;
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-top: 10px;
+        }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-accent { background: var(--accent); color: black; }
-        .btn-ghost { background: transparent; border: 2px solid var(--border-dark); color: var(--border-dark); }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn-ghost { background: transparent; border: 2px solid var(--border-heavy); color: var(--border-heavy); }
 
-        /* Navigation */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; border-top: 3px solid var(--border-dark); display: flex; padding: 10px 0 25px; z-index: 1005; }
-        .nav-item { flex: 1; text-align: center; color: #888; font-family: 'Montserrat'; font-weight: 700; font-size: 0.65rem; }
-        .nav-item span { display: block; font-size: 1.5rem; }
+        /* Rodapé de Navegação Alta Performance */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 75px;
+            background: white; border-top: 3px solid var(--border-heavy);
+            display: flex; justify-content: space-around; padding-top: 8px; z-index: 1500;
+        }
+        .nav-item { flex: 1; text-align: center; color: #888; font-size: 0.65rem; font-weight: 700; font-family: 'Montserrat'; }
+        .nav-item span { display: block; font-size: 1.6rem; margin-bottom: 2px; }
         .nav-item.active { color: var(--primary); }
 
-        /* Chronometer HUD */
-        .chrono-hud { position: absolute; top: 20px; right: 20px; background: white; border: 2px solid var(--border-dark); padding: 10px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; box-shadow: 4px 4px 0px var(--border-dark); }
+        /* Marker & Pins */
+        .pin-number {
+            background: var(--primary); color: white; border: 2px solid white;
+            border-radius: 50%; width: 30px; height: 30px; display: flex;
+            align-items: center; justify-content: center; font-weight: 900;
+        }
 
-        /* Marker Styles */
-        .marker-label { background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; border: 2px solid white; }
-        
-        /* Stats & Calendar */
-        .stats-grid { display: flex; gap: 5px; height: 100px; align-items: flex-end; margin: 15px 0; }
-        .bar { flex: 1; background: var(--primary); border-radius: 2px 2px 0 0; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .day { aspect-ratio: 1; background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border-radius: 50%; }
-        .day.hot { border: 2px solid var(--accent); }
-        .day.hot::after { content: '🔥'; position: absolute; font-size: 0.5rem; transform: translateY(-10px); }
+        /* Stats Graph */
+        .stats-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; margin: 20px 0; }
+        .chart-bar { flex: 1; background: var(--primary); border-radius: 2px 2px 0 0; }
 
         .hidden { display: none !important; }
     </style>
@@ -77,317 +93,297 @@
 
     <div id="map"></div>
 
-    <div class="app-shell" id="app-root">
-        </div>
+    <div id="ui-mount" class="ui-overlay"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
         /**
-         * CORE ENGINE - TRAILQUEST v7.0
-         * Engineered for Scalability and Precision
+         * ENGINE TQ v8.0 - MICRO-MODULAR ARCHITECTURE
          */
-        const TrailQuest = {
-            // -- CONFIGURAÇÕES --
-            settings: {
-                GPS_INTERVAL: 3000,
-                MAX_MAPS: 5,
-                MAP_COLORS: ['green', 'red', 'yellow', 'blue', 'black'],
-                SATELLITE_URL: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-            },
-
-            // -- ESTADO GLOBAL --
+        
+        const TQ = {
+            // Módulo de Estado Global
             state: {
-                user: JSON.parse(localStorage.getItem('TQ_AUTH')) || null,
-                isParticipant: false,
-                currentMapIndex: 0,
-                maps: JSON.parse(localStorage.getItem('TQ_MAPS')) || [],
-                points: [],
-                trackingActive: false,
-                startTime: 0,
-                elapsedTime: 0,
-                timerInterval: null,
-                connectedUsers: [], // Simulação de 100 usuários
-                config: { groups: 1, ppx: 1, leaders: 1 }
+                user: JSON.parse(localStorage.getItem('tq_session')) || null,
+                view: 'splash',
+                isTracking: false,
+                currentMap: 0,
+                maps: JSON.parse(localStorage.getItem('tq_maps')) || [
+                    { name: 'Mapa Principal', color: 'green', points: [] },
+                    { name: 'Mapa Secundário', color: 'red', points: [] },
+                    { name: 'Mapa Alfa', color: 'yellow', points: [] },
+                    { name: 'Mapa Bravo', color: 'blue', points: [] },
+                    { name: 'Mapa Operacional', color: 'black', points: [] }
+                ],
+                config: { groups: 1, ppx: 1, leaders: 1 },
+                timer: { start: null, elapsed: 0, interval: null },
+                connectedUsers: [] // Real-time buffer
             },
 
-            // -- INICIALIZAÇÃO --
+            // Módulo de Inicialização
             init() {
-                this.checkAuth();
-                this.initMap();
-                this.renderUI();
+                this.mapEngine.init();
+                this.auth.checkSession();
+                this.uiController.render();
+                this.gpsTracker.init();
             },
 
-            checkAuth() {
-                if (this.state.user && this.state.user.token) {
-                    this.state.view = 'command';
-                } else {
-                    this.state.view = 'splash';
+            // Módulo de Autenticação
+            auth: {
+                checkSession() {
+                    if (TQ.state.user && TQ.state.user.id) {
+                        TQ.state.view = 'command';
+                    }
+                },
+                login(email, password, nick) {
+                    if (password.length < 8) return alert("Senha mínima 8 caracteres.");
+                    TQ.state.user = { email, nick, id: 'ID_' + Math.random().toString(36).substr(2, 9) };
+                    localStorage.setItem('tq_session', JSON.stringify(TQ.state.user));
+                    TQ.state.view = 'command';
+                    TQ.uiController.render();
+                },
+                logout() {
+                    localStorage.removeItem('tq_session');
+                    location.reload();
                 }
             },
 
-            initMap() {
-                this.map = L.map('map', { 
-                    zoomControl: false, 
-                    attributionControl: false,
-                    maxZoom: 19
-                }).setView([-23.5505, -46.6333], 13);
+            // Módulo de Mapa (Leaflet Engine)
+            mapEngine: {
+                instance: null,
+                markers: [],
+                init() {
+                    this.instance = L.map('map', { 
+                        zoomControl: false, 
+                        attributionControl: false 
+                    }).setView([-23.55, -46.63], 15);
 
-                L.tileLayer(this.settings.SATELLITE_URL).addTo(this.map);
+                    // Satélite Permanente
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        maxZoom: 19
+                    }).addTo(this.instance);
 
-                // GPS Tracking
-                this.map.locate({ setView: true, watch: true, enableHighAccuracy: true });
-                this.map.on('locationfound', (e) => this.handleLocationUpdate(e));
-                
-                this.map.on('click', (e) => this.handleMapClick(e));
-            },
-
-            // -- GESTÃO DE UI --
-            renderUI() {
-                const root = document.getElementById('app-root');
-                root.innerHTML = '';
-
-                if (this.state.view === 'splash') {
-                    this.renderSplash(root);
-                } else if (this.state.view === 'login') {
-                    this.renderLogin(root);
-                } else if (this.state.view === 'command') {
-                    this.renderCommand(root);
-                }
-            },
-
-            renderSplash(root) {
-                root.innerHTML = `
-                <div class="screen">
-                    <div class="tactical-panel">
-                        <h1>TrailQuest</h1>
-                        <button class="tq-btn btn-primary" onclick="TrailQuest.switchView('login')">Fazer Login</button>
-                        <button class="tq-btn btn-ghost" onclick="TrailQuest.startAsParticipant()">Continuar como Participante</button>
-                    </div>
-                </div>`;
-            },
-
-            renderLogin(root) {
-                root.innerHTML = `
-                <div class="screen">
-                    <div class="tactical-panel">
-                        <h2>Autenticação</h2>
-                        <input type="email" id="auth-email" class="tq-input" placeholder="E-mail">
-                        <input type="text" id="auth-nick" class="tq-input" placeholder="Nickname">
-                        <button class="tq-btn btn-primary" onclick="TrailQuest.processLogin()">Entrar</button>
-                        <button class="tq-btn btn-ghost" onclick="TrailQuest.switchView('splash')">Voltar</button>
-                    </div>
-                </div>`;
-            },
-
-            renderCommand(root) {
-                // HUD superior
-                const hud = document.createElement('div');
-                hud.className = 'chrono-hud';
-                hud.id = 'main-chrono';
-                hud.innerHTML = `⏱️ 00:00:00`;
-                root.appendChild(hud);
-
-                // Botão de Edição se for Organizador
-                const editBtn = document.createElement('div');
-                editBtn.style = "position:absolute; top:80px; left:20px;";
-                editBtn.innerHTML = `<button class="tq-btn btn-accent" style="padding:10px; width:auto" onclick="TrailQuest.toggleEditMode()">🛠️ Mapas</button>`;
-                root.appendChild(editBtn);
-
-                // Navbar
-                const nav = document.createElement('nav');
-                nav.className = 'bottom-nav';
-                nav.innerHTML = `
-                    <div class="nav-item active" onclick="TrailQuest.switchTab('home')"><span>🏠</span>Início</div>
-                    <div class="nav-item" onclick="TrailQuest.openMapsManager()"><span>🗺️</span>Mapas</div>
-                    <div class="nav-item" onclick="TrailQuest.toggleActivity()"><span>🏁</span>${this.state.trackingActive ? 'Parar' : 'Começar'}</div>
-                    <div class="nav-item" onclick="TrailQuest.showActivities()"><span>📊</span>Ativ.</div>
-                    <div class="nav-item" onclick="TrailQuest.showProfile()"><span>👤</span>Perfil</div>
-                `;
-                root.appendChild(nav);
-            },
-
-            // -- LÓGICA DE NEGÓCIO --
-            switchView(view) {
-                this.state.view = view;
-                this.renderUI();
-            },
-
-            processLogin() {
-                const email = document.getElementById('auth-email').value;
-                const nick = document.getElementById('auth-nick').value;
-                
-                if(!email.includes('@')) return alert('Email inválido');
-                
-                this.state.user = { email, nick, token: 'TQ_' + Date.now() };
-                localStorage.setItem('TQ_AUTH', JSON.stringify(this.state.user));
-                this.switchView('command');
-            },
-
-            startAsParticipant() {
-                this.state.isParticipant = true;
-                this.state.user = { nick: 'Participante_' + Math.floor(Math.random()*100), token: null };
-                this.switchView('command');
-            },
-
-            // -- GESTÃO DO MAPA E PONTOS --
-            handleMapClick(e) {
-                if(!this.state.isEditing) return;
-
-                const newPoint = {
-                    id: Date.now(),
-                    num: this.state.points.length + 1,
-                    name: 'Novo Ponto',
-                    code: Math.floor(100000 + Math.random() * 900000),
-                    latlng: e.latlng
-                };
-
-                this.state.points.push(newPoint);
-                this.renderPoints();
-            },
-
-            renderPoints() {
-                this.markers = this.markers || [];
-                this.markers.forEach(m => this.map.removeLayer(m));
-                this.markers = [];
-
-                this.state.points.forEach((p, index) => {
-                    const marker = L.marker(p.latlng, {
-                        icon: L.divIcon({
-                            className: 'marker-label',
-                            html: `<span>${p.num}</span>`,
-                            iconSize: [25, 25]
-                        })
-                    }).addTo(this.map);
-
-                    marker.on('click', () => this.openPointMenu(p));
-                    this.markers.push(marker);
-                });
-            },
-
-            openPointMenu(point) {
-                const overlay = document.createElement('div');
-                overlay.className = 'screen';
-                overlay.innerHTML = `
-                    <div class="tactical-panel">
-                        <h2>Ponto ${point.num}</h2>
-                        <input type="text" id="edit-p-name" class="tq-input" value="${point.name}" placeholder="Nome">
-                        <input type="number" id="edit-p-num" class="tq-input" value="${point.num}" placeholder="Número">
-                        <p style="margin-bottom:15px">Código: <b>${point.code}</b></p>
-                        <button class="tq-btn btn-primary" onclick="TrailQuest.savePoint(${point.id})">Salvar</button>
-                        <button class="tq-btn btn-accent" onclick="TrailQuest.deletePoint(${point.id})">Excluir</button>
-                        <button class="tq-btn btn-ghost" onclick="document.body.removeChild(this.parentNode.parentNode)">Voltar</button>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-            },
-
-            savePoint(id) {
-                const newName = document.getElementById('edit-p-name').value;
-                const newNum = parseInt(document.getElementById('edit-p-num').value);
-                
-                const pt = this.state.points.find(p => p.id === id);
-                const oldNum = pt.num;
-
-                // Lógica de Troca de Numeração
-                const conflictPt = this.state.points.find(p => p.num === newNum && p.id !== id);
-                if(conflictPt) {
-                    conflictPt.num = oldNum;
-                }
-
-                pt.name = newName;
-                pt.num = newNum;
-                
-                this.renderPoints();
-                document.querySelector('.screen').remove();
-            },
-
-            // -- CRONÔMETRO E ATIVIDADE --
-            toggleActivity() {
-                this.state.trackingActive = !this.state.trackingActive;
-                if(this.state.trackingActive) {
-                    this.state.startTime = Date.now() - (this.state.elapsedTime || 0);
-                    this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
-                } else {
-                    clearInterval(this.state.timerInterval);
-                }
-                this.renderUI();
-            },
-
-            updateTimer() {
-                const diff = Date.now() - this.state.startTime;
-                const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
-                const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                
-                const el = document.getElementById('main-chrono');
-                if(el) el.innerHTML = `⏱️ ${h}:${m}:${s}`;
-                this.state.elapsedTime = diff;
-            },
-
-            // -- SISTEMA DE PERFIL --
-            showProfile() {
-                const overlay = document.createElement('div');
-                overlay.className = 'screen';
-                overlay.innerHTML = `
-                <div class="tactical-panel">
-                    <h1>Perfil</h1>
-                    <p><b>Nick:</b> ${this.state.user.nick}</p>
-                    <p><b>Email:</b> ${this.state.user.email || 'Participante'}</p>
+                    this.instance.on('click', (e) => TQ.objectives.add(e.latlng));
+                },
+                refresh() {
+                    this.markers.forEach(m => this.instance.removeLayer(m));
+                    this.markers = [];
                     
-                    <h2>Atividade Mensal</h2>
-                    <div class="stats-grid">
-                        ${[40, 80, 20, 60, 90, 30, 50].map(h => `<div class="bar" style="height:${h}%"></div>`).join('')}
-                    </div>
-
-                    <h2>Calendário</h2>
-                    <div class="calendar-grid">
-                        ${Array.from({length: 28}, (_, i) => `<div class="day ${i%5==0?'hot':''}">${i+1}</div>`).join('')}
-                    </div>
-
-                    <button class="tq-btn btn-ghost" style="margin-top:20px" onclick="document.body.removeChild(this.parentNode.parentNode)">Voltar</button>
-                    <button class="tq-btn btn-accent" onclick="TrailQuest.logout()">Sair</button>
-                </div>`;
-                document.body.appendChild(overlay);
-            },
-
-            logout() {
-                localStorage.removeItem('TQ_AUTH');
-                location.reload();
-            },
-
-            // -- ESCALABILIDADE (100 USUÁRIOS) --
-            handleLocationUpdate(e) {
-                // Throttle de atualização (3 segundos)
-                const now = Date.now();
-                if (this.lastUpdate && now - this.lastUpdate < 3000) return;
-                this.lastUpdate = now;
-
-                // Aqui enviaria para o Firebase/Supabase
-                // socket.emit('location', { latlng: e.latlng, user: this.state.user.nick });
-                
-                // Simulação de renderização de outros 100 usuários sem quebrar o DOM
-                this.renderRemoteUsers();
-            },
-
-            renderRemoteUsers() {
-                // Uso de LayerGroup para performance
-                if(!this.userLayer) {
-                    this.userLayer = L.layerGroup().addTo(this.map);
+                    const currentPoints = TQ.state.maps[TQ.state.currentMap].points;
+                    currentPoints.forEach((p, idx) => {
+                        const m = L.marker(p.latlng, {
+                            icon: L.divIcon({
+                                className: '',
+                                html: `<div class="pin-number" style="background:${TQ.state.maps[TQ.state.currentMap].color}">${p.num}</div>`,
+                                iconSize: [30,30]
+                            })
+                        }).addTo(this.instance);
+                        
+                        m.on('click', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            TQ.uiController.openPointMenu(p);
+                        });
+                        this.markers.push(m);
+                    });
                 }
-                
-                // Limpeza se necessário e atualização suave
-                // Em um cenário real, iteraríamos sobre o snapshot do banco
+            },
+
+            // Módulo de GPS e Rastreamento
+            gpsTracker: {
+                init() {
+                    navigator.geolocation.watchPosition(
+                        (pos) => this.handleUpdate(pos),
+                        (err) => console.error(err),
+                        { enableHighAccuracy: true }
+                    );
+                },
+                handleUpdate(pos) {
+                    const latlng = [pos.coords.latitude, pos.coords.longitude];
+                    // Throttling logic aqui para 2 segundos
+                    if (TQ.state.user) {
+                        // Sincronizar com banco (Supabase/Firebase)
+                    }
+                    if (!this.userMarker) {
+                        this.userMarker = L.circleMarker(latlng, { color: 'blue', radius: 8 }).addTo(TQ.mapEngine.instance);
+                    } else {
+                        this.userMarker.setLatLng(latlng);
+                    }
+                }
+            },
+
+            // Módulo de Objetivos (Lógica de Reordenação)
+            objectives: {
+                add(latlng) {
+                    const map = TQ.state.maps[TQ.state.currentMap];
+                    const num = map.points.length + 1;
+                    const code = Math.floor(100000 + Math.random() * 900000);
+                    map.points.push({ id: Date.now(), num, name: 'Ponto ' + num, code, latlng });
+                    this.save();
+                    TQ.mapEngine.refresh();
+                },
+                reorder(pointId, newNum) {
+                    const map = TQ.state.maps[TQ.state.currentMap];
+                    const oldPoint = map.points.find(p => p.id === pointId);
+                    const targetPoint = map.points.find(p => p.num === parseInt(newNum));
+                    
+                    if (targetPoint) {
+                        targetPoint.num = oldPoint.num;
+                    }
+                    oldPoint.num = parseInt(newNum);
+                    
+                    map.points.sort((a, b) => a.num - b.num);
+                    this.save();
+                    TQ.mapEngine.refresh();
+                },
+                delete(pointId) {
+                    const map = TQ.state.maps[TQ.state.currentMap];
+                    map.points = map.points.filter(p => p.id !== pointId);
+                    map.points.forEach((p, i) => p.num = i + 1); // Auto-reparar números
+                    this.save();
+                    TQ.mapEngine.refresh();
+                },
+                save() {
+                    localStorage.setItem('tq_maps', JSON.stringify(TQ.state.maps));
+                }
+            },
+
+            // Módulo Cronômetro
+            activities: {
+                start() {
+                    TQ.state.timer.start = Date.now() - TQ.state.timer.elapsed;
+                    TQ.state.timer.interval = setInterval(() => {
+                        TQ.state.timer.elapsed = Date.now() - TQ.state.timer.start;
+                        TQ.uiController.updateChronoUI();
+                    }, 1000);
+                },
+                pause() {
+                    clearInterval(TQ.state.timer.interval);
+                },
+                stop() {
+                    this.pause();
+                    // Salvar no histórico
+                    TQ.state.timer.elapsed = 0;
+                    TQ.uiController.updateChronoUI();
+                }
+            },
+
+            // Controlador de Interface (UI)
+            uiController: {
+                render() {
+                    const mount = document.getElementById('ui-mount');
+                    mount.innerHTML = '';
+
+                    if (TQ.state.view === 'splash') {
+                        mount.innerHTML = `
+                            <div class="modal-screen">
+                                <div class="container-tactical">
+                                    <h1>TrailQuest</h1>
+                                    <button class="tq-btn btn-primary" onclick="TQ.state.view='login'; TQ.uiController.render()">Entrar / Registrar</button>
+                                    <button class="tq-btn btn-ghost" onclick="TQ.state.view='command'; TQ.uiController.render()">Modo Participante</button>
+                                </div>
+                            </div>`;
+                    } else if (TQ.state.view === 'login') {
+                        mount.innerHTML = `
+                            <div class="modal-screen">
+                                <div class="container-tactical">
+                                    <h2>Acesso Seguro</h2>
+                                    <input type="text" id="l-nick" class="tq-input" placeholder="Nickname">
+                                    <input type="email" id="l-email" class="tq-input" placeholder="Email">
+                                    <input type="password" id="l-pass" class="tq-input" placeholder="Senha (min 8)">
+                                    <button class="tq-btn btn-primary" onclick="TQ.auth.login(document.getElementById('l-email').value, document.getElementById('l-pass').value, document.getElementById('l-nick').value)">Confirmar</button>
+                                    <button class="tq-btn btn-ghost" onclick="TQ.state.view='splash'; TQ.uiController.render()">Voltar</button>
+                                </div>
+                            </div>`;
+                    } else if (TQ.state.view === 'command') {
+                        mount.innerHTML = `
+                            <div id="chrono-hud" style="position:fixed; top:20px; right:20px; background:white; padding:10px; border:2px solid var(--border-heavy); font-weight:900; box-shadow:4px 4px 0 var(--border-heavy)">00:00:00</div>
+                            <nav class="bottom-nav">
+                                <div class="nav-item active" onclick="TQ.uiController.render()"><span>🏠</span>Início</div>
+                                <div class="nav-item" onclick="TQ.uiController.openMapEditor()"><span>🗺️</span>Mapas</div>
+                                <div class="nav-item" onclick="TQ.uiController.openActivityMenu()"><span>🏁</span>Atividade</div>
+                                <div class="nav-item" onclick="TQ.uiController.openProfile()"><span>👤</span>Perfil</div>
+                            </nav>`;
+                    }
+                },
+
+                updateChronoUI() {
+                    const el = document.getElementById('chrono-hud');
+                    if (!el) return;
+                    const d = new Date(TQ.state.timer.elapsed);
+                    el.innerText = d.toISOString().substr(11, 8);
+                },
+
+                openPointMenu(p) {
+                    const div = document.createElement('div');
+                    div.className = 'modal-screen';
+                    div.innerHTML = `
+                        <div class="container-tactical">
+                            <h2>Ponto ${p.num}</h2>
+                            <p style="font-size:0.7rem; margin-bottom:10px">ID de Registro: ${p.code}</p>
+                            <input type="text" id="p-name" class="tq-input" value="${p.name}">
+                            <input type="number" id="p-num" class="tq-input" value="${p.num}">
+                            <button class="tq-btn btn-primary" onclick="TQ.objectives.reorder(${p.id}, document.getElementById('p-num').value); this.closest('.modal-screen').remove()">Atualizar</button>
+                            <button class="tq-btn btn-accent" onclick="TQ.objectives.delete(${p.id}); this.closest('.modal-screen').remove()">Excluir</button>
+                            <button class="tq-btn btn-ghost" onclick="this.closest('.modal-screen').remove()">Fechar</button>
+                        </div>`;
+                    document.body.appendChild(div);
+                },
+
+                openMapEditor() {
+                    const div = document.createElement('div');
+                    div.className = 'modal-screen';
+                    div.innerHTML = `
+                        <div class="container-tactical">
+                            <h2>Seletor de Mapas</h2>
+                            ${TQ.state.maps.map((m, i) => `
+                                <div onclick="TQ.state.currentMap=${i}; TQ.mapEngine.refresh(); this.closest('.modal-screen').remove()" 
+                                     style="padding:15px; border:2px solid ${m.color}; margin-bottom:10px; cursor:pointer; background: ${TQ.state.currentMap === i ? '#eee' : 'white'}">
+                                    <b>${m.name}</b> (${m.points.length} pontos)
+                                </div>
+                            `).join('')}
+                            <button class="tq-btn btn-ghost" onclick="this.closest('.modal-screen').remove()">Voltar</button>
+                        </div>`;
+                    document.body.appendChild(div);
+                },
+
+                openProfile() {
+                    const div = document.createElement('div');
+                    div.className = 'modal-screen';
+                    div.innerHTML = `
+                        <div class="container-tactical">
+                            <h2>Perfil Operacional</h2>
+                            <p><b>Nick:</b> ${TQ.state.user ? TQ.state.user.nick : 'Visitante'}</p>
+                            <p><b>Status:</b> ${TQ.state.user ? 'Registrado' : 'Anônimo'}</p>
+                            
+                            <h2>Mensal</h2>
+                            <div class="stats-chart">
+                                ${Array.from({length:7}, () => `<div class="chart-bar" style="height:${Math.random()*100}%"></div>`).join('')}
+                            </div>
+                            
+                            <button class="tq-btn btn-primary" onclick="TQ.auth.logout()">Sair da Conta</button>
+                            <button class="tq-btn btn-ghost" onclick="this.closest('.modal-screen').remove()">Voltar</button>
+                        </div>`;
+                    document.body.appendChild(div);
+                },
+
+                openActivityMenu() {
+                    const div = document.createElement('div');
+                    div.className = 'modal-screen';
+                    div.innerHTML = `
+                        <div class="container-tactical">
+                            <h2>Comando de Atividade</h2>
+                            <button class="tq-btn btn-primary" onclick="TQ.activities.start(); this.closest('.modal-screen').remove()">Iniciar</button>
+                            <button class="tq-btn btn-accent" onclick="TQ.activities.pause(); this.closest('.modal-screen').remove()">Pausar</button>
+                            <button class="tq-btn btn-ghost" onclick="TQ.activities.stop(); this.closest('.modal-screen').remove()">Finalizar</button>
+                            <button class="tq-btn btn-ghost" onclick="this.closest('.modal-screen').remove()">Voltar</button>
+                        </div>`;
+                    document.body.appendChild(div);
+                }
             }
         };
 
-        // Service Worker Registration for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW failed', err));
-            });
-        }
-
-        TrailQuest.init();
+        window.onload = () => TQ.init();
     </script>
 </body>
 </html>
