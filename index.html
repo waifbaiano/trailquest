@@ -3,641 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1b5e20">
-    <title>TrailQuest - Tactical Explorer</title>
-
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRyYWlsUXVlc3QiLAogICJzaG9ydF9uYW1lIjogIlRyYWlsUXVlc3QiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzFhM2EwOCIsCiAgInRoZW1lX2NvbG9yIjogIiMxYjVlMjAiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi84NTQvODU0ODc4LnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
+    <title>TrailQuest</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlRyYWlsUXVlc3QiLAogICJzaG9ydF9uYW1lIjogIlRyYWlsUXVlc3QiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRhN2M1YiIsCiAgInRoZW1lX2NvbG9yIjogIzRhN2M1YiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI4NTYvMjg1NjM2Ny5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
 
     <style>
+        /* --- ESTILOS GERAIS --- */
         :root {
-            --primary: #1b5e20;
-            --accent: #ffab00;
-            --bg-beige: #f5f5dc;
-            --text-dark: #2e1a16;
-            --danger: #b71c1c;
-            --forest-overlay: rgba(27, 94, 32, 0.85);
+            --cor-bege: #f5f5dc;
+            --cor-verde: #2d5a27;
+            --cor-marrom: #5d4037;
+            --cor-amarela: #fbc02d;
+            --font-vintage: 'Crimson Text', serif;
+            --font-titulo: 'Dancing Script', cursive;
         }
 
-        /* RESET & BASE */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { height: 100%; width: 100%; font-family: 'Roboto', sans-serif; background: #000; overflow: hidden; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font-vintage);
+            background-color: #000;
+        }
 
-        /* FOREST BACKGROUND SYSTEM */
-        .forest-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+        /* Fundo com Imagem de Floresta */
+        .bg-floresta {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            background-position: center;
             z-index: -1;
         }
-        .overlay-dark { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--forest-overlay); z-index: -1; }
 
-        /* UI CONTAINERS */
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; overflow: hidden; }
-        .screen.active { display: flex; }
-
-        /* MAP ENGINE */
-        #map { flex: 1; width: 100%; z-index: 1; background: #1a1a1a; }
-        .leaflet-container { background: #1a1a1a !important; }
-
-        /* HUD & NAVIGATION */
-        .hud-top {
-            position: absolute; top: 15px; left: 0; width: 100%; z-index: 1000;
-            display: flex; justify-content: center; pointer-events: none;
-        }
-        .activity-code-badge {
-            background: var(--accent); color: #000; padding: 8px 20px;
-            border-radius: 50px; font-weight: 900; font-family: 'Montserrat';
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events: auto;
+        /* --- CABEÇALHO --- */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            padding: 15px 0;
+            z-index: 1000;
+            pointer-events: none;
         }
 
-        .bottom-nav {
-            height: 70px; background: #fff; display: flex;
-            border-top: 2px solid var(--primary); z-index: 1000;
+        h1 {
+            font-family: var(--font-titulo);
+            color: white;
+            font-size: 3rem;
+            margin: 0;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
         }
+
+        /* --- CONTAINER DE PÁGINAS --- */
+        .page {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 80px; /* Espaço para o título */
+            box-sizing: border-box;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        /* --- ESTILO DO MAPA --- */
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Botão Minha Posição */
+        .btn-posicao {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            z-index: 1000;
+            background-color: var(--cor-bege);
+            border: 2px solid var(--cor-verde);
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: var(--cor-verde);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            font-family: var(--font-vintage);
+        }
+
+        /* --- CARTÕES E INTERFACE --- */
+        .card {
+            background-color: var(--cor-bege);
+            padding: 25px;
+            border-radius: 15px;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 2px solid var(--cor-marrom);
+        }
+
+        h2 {
+            color: var(--cor-marrom);
+            margin-top: 0;
+        }
+
+        .info-perfil {
+            text-align: left;
+            margin: 15px 0;
+            font-size: 1.2rem;
+        }
+
+        /* --- MENU INFERIOR --- */
+        nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background-color: rgba(245, 245, 220, 0.95);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            border: 1px solid var(--cor-marrom);
+        }
+
         .nav-item {
-            flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; color: #666; font-weight: 700; font-size: 0.7rem;
-        }
-        .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 3px; }
-
-        /* MENUS & PANELS */
-        .menu-center {
-            background: var(--bg-beige); width: 85%; max-width: 350px;
-            margin: auto; padding: 30px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+            text-decoration: none;
+            color: var(--cor-marrom);
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
         }
 
-        .tq-btn {
-            width: 100%; padding: 15px; margin: 10px 0; border: none;
-            border-radius: 12px; font-family: 'Montserrat'; font-weight: 700;
-            text-transform: uppercase; cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-green { background: var(--primary); color: #fff; }
-        .btn-green:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-beige { background: #e0d5b0; color: var(--text-dark); }
-
-        .tq-input {
-            width: 100%; padding: 15px; margin: 10px 0;
-            border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;
+        .nav-item.active {
+            color: var(--cor-verde);
         }
 
-        /* PROFILE STYLES */
-        .profile-header {
-            background: var(--bg-beige); margin: 20px; padding: 25px;
-            border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        /* Ícones simples via CSS */
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            background-color: currentColor;
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
         }
-        .profile-nick { font-family: 'Montserrat'; font-weight: 900; color: var(--primary); font-size: 1.5rem; }
-        .profile-email { font-size: 0.75rem; color: #666; font-weight: 400; }
-
-        /* GRAPH & CALENDAR (STRATA STYLE) */
-        .chart-container { background: rgba(255,255,255,0.1); margin: 20px; border-radius: 15px; padding: 15px; color: #fff; }
-        .calendar-grid {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
-            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;
-        }
-        .cal-day {
-            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-            font-size: 0.7rem; color: #fff; border-radius: 50%;
-        }
-        .cal-hot { background: #fff; color: var(--primary); box-shadow: 0 0 10px #fff; }
-
-        /* POINT MENU */
-        .point-popup-menu { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .popup-btn { padding: 8px; border: none; border-radius: 5px; color: #fff; font-weight: bold; width: 100px; }
-
-        /* MOBILE OPTIMIZATIONS */
-        @media (max-width: 480px) {
-            .menu-center { width: 92%; padding: 20px; }
-            .tq-btn { padding: 12px; font-size: 0.9rem; }
-        }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="forest-bg"></div>
-    <div class="overlay-dark"></div>
+    <div class="bg-floresta"></div>
 
-    <section id="screen-home" class="screen active">
-        <div class="menu-center">
-            <h1>TrailQuest</h1>
-            <p style="margin-bottom: 20px; color: #555;">Exploração Tática</p>
-            <button class="tq-btn btn-green" onclick="showScreen('screen-login')">Fazer Login</button>
-            <button class="tq-btn btn-beige" onclick="showScreen('screen-guest')">Participante</button>
-        </div>
-    </section>
+    <header>
+        <h1>TrailQuest</h1>
+    </header>
 
-    <section id="screen-login" class="screen">
-        <div class="menu-center">
-            <h2>Acesso</h2>
-            <input type="email" id="login-email" class="tq-input" placeholder="Email">
-            <input type="password" id="login-pass" class="tq-input" placeholder="Senha (mín. 8 caracteres)" oninput="validatePass()">
-            <button id="btn-login-cont" class="tq-btn btn-green" disabled onclick="handleAuth()">Continuar</button>
-            <button class="tq-btn btn-ghost" onclick="showScreen('screen-home')" style="color: #666; background: none;">Voltar</button>
-        </div>
-    </section>
-
-    <section id="screen-nick" class="screen">
-        <div class="menu-center">
-            <h2>Identidade</h2>
-            <p>Escolha como será visto no mapa:</p>
-            <input type="text" id="user-nick" class="tq-input" placeholder="Seu Nickname">
-            <button class="tq-btn btn-green" onclick="saveNick()">Finalizar</button>
-        </div>
-    </section>
-
-    <section id="screen-dashboard" class="screen">
-        <div class="hud-top hidden" id="activity-hud">
-            <div class="activity-code-badge">CÓDIGO: <span id="display-act-code">------</span></div>
-        </div>
-
+    <main id="page-mapa" class="page active" style="padding: 0;">
         <div id="map"></div>
+        <button class="btn-posicao" onclick="centralizarMapa()">Minha posição</button>
+    </main>
 
-        <div id="editor-controls" class="hidden" style="position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; z-index: 1000;">
-            <button class="tq-btn btn-green" style="width: 80%; border-radius: 30px; font-size: 1.2rem;" onclick="handleEditorContinue()">Continuar</button>
-        </div>
-
-        <nav id="footer-nav" class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('map')"><i>📍</i>Mapa</div>
-            <div class="nav-item" onclick="switchTab('activities')"><i>🚩</i>Atividades</div>
-            <div class="nav-item" onclick="switchTab('profile')"><i>👤</i>Perfil</div>
-        </nav>
-    </section>
-
-    <section id="screen-activities" class="screen">
-        <div style="padding: 20px; overflow-y: auto; height: calc(100% - 70px);">
-            <h2 style="color: #fff; font-family: 'Montserrat'; margin-bottom: 20px;">Atividades</h2>
-            <button class="tq-btn btn-accent" style="background: var(--accent); margin-bottom: 20px;" onclick="openCreateActivity()">+ Nova Atividade</button>
-            <div id="activities-list">
-                </div>
-        </div>
-        <nav class="bottom-nav">
-            <div class="nav-item" onclick="switchTab('map')"><i>📍</i>Mapa</div>
-            <div class="nav-item active" onclick="switchTab('activities')"><i>🚩</i>Atividades</div>
-            <div class="nav-item" onclick="switchTab('profile')"><i>👤</i>Perfil</div>
-        </nav>
-    </section>
-
-    <section id="screen-profile" class="screen">
-        <div style="overflow-y: auto; height: calc(100% - 70px);">
-            <div class="profile-header">
-                <div class="profile-nick" id="prof-nick">Nickname</div>
-                <div class="profile-email" id="prof-email">email@trailquest.com</div>
-            </div>
-
-            <div class="chart-container">
-                <h3>Atividade Mensal</h3>
-                <div id="activity-chart" style="height: 100px; display: flex; align-items: flex-end; gap: 5px; margin-top: 15px;">
-                    </div>
-            </div>
-
-            <div class="chart-container">
-                <h3>Calendário</h3>
-                <div class="calendar-grid" id="calendar-grid">
-                    </div>
-            </div>
-        </div>
-        <nav class="bottom-nav">
-            <div class="nav-item" onclick="switchTab('map')"><i>📍</i>Mapa</div>
-            <div class="nav-item" onclick="switchTab('activities')"><i>🚩</i>Atividades</div>
-            <div class="nav-item active" onclick="switchTab('profile')"><i>👤</i>Perfil</div>
-        </nav>
-    </section>
-
-    <div id="modal-create" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; align-items: center; justify-content: center;">
-        <div class="window" style="background: #fff; width: 90%; max-width: 400px; padding: 25px; border-radius: 15px;">
-            <h2 style="color: var(--primary);">Configurar Evento</h2>
-            <input type="text" id="act-name" class="tq-input" placeholder="Nome da Atividade">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="number" id="act-groups" class="tq-input" placeholder="Grupos">
-                <input type="number" id="act-ppg" class="tq-input" placeholder="Pessoas/Grupo">
-            </div>
-            <input type="number" id="act-objs" class="tq-input" placeholder="Total Objetivos">
-            <input type="number" id="act-mov" class="tq-input" placeholder="Objetivos Móveis">
-            <button class="tq-btn btn-green" onclick="startMapEditor()">Desenhar Mapa</button>
-            <button class="tq-btn" style="background: #eee;" onclick="closeModal('modal-create')">Cancelar</button>
-        </div>
-    </div>
-
-    <section id="screen-mobile-code" class="screen">
-        <div class="menu-center">
-            <h2>Código do Objetivo Móvel</h2>
-            <p style="margin-bottom: 15px; font-size: 0.8rem;">Defina o código tático para desbloqueio:</p>
-            <input type="text" id="mov-code" class="tq-input" placeholder="Mínimo 6 caracteres" oninput="validateMovCode()">
-            <button id="btn-mov-cont" class="tq-btn btn-green" disabled onclick="generateFinalActivity()">Gerar Atividade</button>
+    <section id="page-atividades" class="page">
+        <div class="card">
+            <h2>Histórico de atividades</h2>
+            <p>Nenhuma atividade registrada ainda.</p>
         </div>
     </section>
+
+    <section id="page-perfil" class="page">
+        <div class="card">
+            <h2>Perfil do Aventureiro</h2>
+            <div class="info-perfil">
+                <p><strong>Nickname:</strong> Explorador_Raiz</p>
+                <p><strong>Email:</strong> usuario@trailquest.com</p>
+            </div>
+        </div>
+    </section>
+
+    <nav>
+        <div class="nav-item active" onclick="switchPage('page-mapa', this)">
+            <span>Mapa</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('page-atividades', this)">
+            <span>Atividades</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('page-perfil', this)">
+            <span>Perfil</span>
+        </div>
+    </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        /**
-         * TRAILQUEST OMNI-ENGINE
-         * Gerenciamento de Estado, Sincronização Geoespacial e Persistência
-         */
+        /* --- CONFIGURAÇÃO DO MAPA --- */
+        let map;
+        let userMarker;
+        let userLocation = [-23.5505, -46.6333]; // Coordenada padrão (SP) até obter GPS
 
-        // -- ESTADO GLOBAL --
-        const APP = {
-            user: JSON.parse(localStorage.getItem('TQ_USER')) || null,
-            map: null,
-            markers: new Map(),
-            points: [],
-            isEditing: false,
-            currentActivity: null,
-            activeTab: 'map',
-            db: null,
-            geoWatch: null
-        };
+        function initMap() {
+            // Inicializa o mapa focado na posição padrão
+            map = L.map('map', {
+                zoomControl: false, // Otimização para mobile
+                tap: false         // Melhora fluidez em telas touch
+            }).setView(userLocation, 16);
 
-        // -- INITIALIZATION --
-        window.onload = async () => {
-            initDB();
-            initMap();
-            checkAutoLogin();
-            registerServiceWorker();
-            renderProfileData();
-        };
+            // Camada de Satélite (Esri World Imagery)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community',
+                maxZoom: 19
+            }).addTo(map);
 
-        // -- INDEXED DB SYSTEM --
-        function initDB() {
-            const request = indexedDB.open("TrailQuestDB", 2);
-            request.onupgradeneeded = (e) => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains("activities")) db.createObjectStore("activities", { keyPath: "id" });
-                if (!db.objectStoreNames.contains("sync_queue")) db.createObjectStore("sync_queue", { autoIncrement: true });
-            };
-            request.onsuccess = (e) => APP.db = e.target.result;
+            // Marcador azul para o usuário
+            const blueIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:#2196F3; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);'></div>",
+                iconSize: [15, 15],
+                iconAnchor: [7, 7]
+            });
+
+            userMarker = L.marker(userLocation, { icon: blueIcon }).addTo(map)
+                .bindPopup("Você está aqui").openPopup();
+
+            // Inicia monitoramento de localização
+            watchPosition();
         }
 
-        // -- AUTH & LOGIN --
-        function validatePass() {
-            const pass = document.getElementById('login-pass').value;
-            document.getElementById('btn-login-cont').disabled = pass.length < 8;
-        }
-
-        function handleAuth() {
-            const email = document.getElementById('login-email').value;
-            // No TrailQuest, o primeiro login cria os dados
-            const users = JSON.parse(localStorage.getItem('TQ_ALL_USERS') || '{}');
-            if (users[email]) {
-                APP.user = users[email];
-                saveSession();
-                showScreen('screen-dashboard');
-            } else {
-                APP.user = { email, nick: '', history: [] };
-                showScreen('screen-nick');
+        /* --- GEOLOCALIZAÇÃO --- */
+        function watchPosition() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    const newPos = [latitude, longitude];
+                    
+                    userLocation = newPos;
+                    userMarker.setLatLng(newPos);
+                    
+                    // Atualiza suavemente sem forçar zoom se o usuário estiver explorando
+                }, (error) => {
+                    console.error("Erro ao obter localização: ", error);
+                }, {
+                    enableHighAccuracy: true,
+                    maximumAge: 3000,
+                    timeout: 10000
+                });
             }
         }
 
-        function saveNick() {
-            const nick = document.getElementById('user-nick').value;
-            if (!nick) return alert("Insira um nickname!");
-            APP.user.nick = nick;
-            
-            const users = JSON.parse(localStorage.getItem('TQ_ALL_USERS') || '{}');
-            users[APP.user.email] = APP.user;
-            localStorage.setItem('TQ_ALL_USERS', JSON.stringify(users));
-            
-            saveSession();
-            showScreen('screen-dashboard');
+        function centralizarMapa() {
+            map.setView(userLocation, 17);
         }
 
-        function saveSession() {
-            localStorage.setItem('TQ_USER', JSON.stringify(APP.user));
-            renderProfileData();
-        }
-
-        function checkAutoLogin() {
-            if (APP.user && APP.user.nick) {
-                showScreen('screen-dashboard');
-                switchTab('map');
-            }
-        }
-
-        // -- UI NAVIGATION --
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function switchTab(tab) {
-            APP.activeTab = tab;
+        /* --- NAVEGAÇÃO ENTRE PÁGINAS --- */
+        function switchPage(pageId, element) {
+            // Remove classe ativa de todas as páginas e itens do menu
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             
-            if (tab === 'map') {
-                showScreen('screen-dashboard');
-                document.querySelectorAll('.nav-item')[0].classList.add('active');
-                setTimeout(() => APP.map.invalidateSize(), 100);
-            } else if (tab === 'activities') {
-                showScreen('screen-activities');
-                renderActivitiesList();
-            } else if (tab === 'profile') {
-                showScreen('screen-profile');
-                renderProfileData();
+            // Ativa a página e o botão selecionado
+            document.getElementById(pageId).classList.add('active');
+            element.classList.add('active');
+
+            // Se for a página de mapa, garante que o Leaflet recalcule o tamanho
+            if (pageId === 'page-mapa') {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
             }
         }
 
-        // -- MAP ENGINE (TACTICAL) --
-        function initMap() {
-            APP.map = L.map('map', {
-                zoomControl: false,
-                maxZoom: 19,
-                minZoom: 3
-            }).setView([-23.5505, -46.6333], 13);
-
-            // Modo Satélite Permanente
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'TrailQuest Satellite'
-            }).addTo(APP.map);
-
-            APP.map.on('click', (e) => {
-                if (APP.isEditing) {
-                    addTacticalPoint(e.latlng);
-                }
-            });
-
-            startLocationTracking();
-        }
-
-        function startLocationTracking() {
-            if (!navigator.geolocation) return;
-
-            APP.geoWatch = navigator.geolocation.watchPosition((pos) => {
-                const { latitude, longitude } = pos.coords;
-                updateSelfMarker(latitude, longitude);
-                syncLocation(latitude, longitude);
-            }, (err) => console.error(err), {
-                enableHighAccuracy: true,
-                maximumAge: 2000,
-                timeout: 5000
-            });
-        }
-
-        let selfMarker = null;
-        function updateSelfMarker(lat, lng) {
-            if (!selfMarker) {
-                selfMarker = L.circleMarker([lat, lng], {
-                    radius: 10,
-                    color: '#fff',
-                    fillColor: '#2196F3',
-                    fillOpacity: 1,
-                    weight: 3
-                }).addTo(APP.map);
-            } else {
-                selfMarker.setLatLng([lat, lng]);
-            }
-        }
-
-        // -- EDITOR DE ATIVIDADES --
-        function openCreateActivity() {
-            document.getElementById('modal-create').style.display = 'flex';
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        function startMapEditor() {
-            const name = document.getElementById('act-name').value;
-            const total = parseInt(document.getElementById('act-objs').value);
-            if (!name || isNaN(total)) return alert("Dados inválidos!");
-
-            APP.currentActivity = {
-                id: Date.now().toString(36),
-                name,
-                totalObjectives: total,
-                points: [],
-                groups: parseInt(document.getElementById('act-groups').value),
-                ppg: parseInt(document.getElementById('act-ppg').value),
-                mobileObjectives: parseInt(document.getElementById('act-mov').value) || 0,
-                status: 'editing'
-            };
-
-            closeModal('modal-create');
-            switchTab('map');
-            APP.isEditing = true;
-            document.getElementById('footer-nav').classList.add('hidden');
-            document.getElementById('editor-controls').classList.remove('hidden');
-            
-            // Força modo satélite e remove interações desnecessárias
-            APP.map.setView(selfMarker ? selfMarker.getLatLng() : APP.map.getCenter(), 18);
-        }
-
-        function addTacticalPoint(latlng) {
-            if (APP.currentActivity.points.length >= APP.currentActivity.totalObjectives) {
-                return alert("Limite de objetivos atingido!");
-            }
-
-            const point = {
-                id: Date.now(),
-                order: APP.currentActivity.points.length + 1,
-                name: "Ponto " + (APP.currentActivity.points.length + 1),
-                lat: latlng.lat,
-                lng: latlng.lng,
-                color: 'verde'
-            };
-
-            APP.currentActivity.points.push(point);
-            renderPointMarker(point);
-        }
-
-        function renderPointMarker(point) {
-            const colorMap = {
-                'verde': '#4CAF50', 'vermelho': '#F44336', 'azul': '#2196F3', 'amarelo': '#FFEB3B', 'preto': '#000'
-            };
-
-            const marker = L.circleMarker([point.lat, point.lng], {
-                radius: 12,
-                color: '#fff',
-                fillColor: colorMap[point.color],
-                fillOpacity: 0.9,
-                weight: 2
-            }).addTo(APP.map);
-
-            const content = `
-                <div class="point-popup-menu">
-                    <b style="color:#000">${point.name} (#${point.order})</b>
-                    <button class="popup-btn" style="background:var(--primary)" onclick="renamePoint(${point.id})">Nomear</button>
-                    <button class="popup-btn" style="background:var(--accent); color:#000" onclick="reorderPoint(${point.id})">Numerar</button>
-                    <button class="popup-btn" style="background:var(--danger)" onclick="deletePoint(${point.id}, this)">Excluir</button>
-                </div>
-            `;
-
-            marker.bindPopup(content);
-            APP.markers.set(point.id, marker);
-        }
-
-        function renamePoint(id) {
-            const newName = prompt("Nome do ponto:");
-            if (newName) {
-                const p = APP.currentActivity.points.find(x => x.id === id);
-                p.name = newName;
-                APP.markers.get(id).closePopup();
-            }
-        }
-
-        function reorderPoint(id) {
-            const newOrder = parseInt(prompt("Novo número da ordem:"));
-            if (isNaN(newOrder) || newOrder <= 0 || newOrder > APP.currentActivity.totalObjectives) return;
-
-            const map = APP.currentActivity.points;
-            const target = map.find(x => x.id === id);
-            const swapper = map.find(x => x.order === newOrder);
-
-            if (swapper) {
-                swapper.order = target.order;
-            }
-            target.order = newOrder;
-            
-            // Re-render markers para atualizar popups
-            refreshMapMarkers();
-        }
-
-        function deletePoint(id) {
-            APP.map.removeLayer(APP.markers.get(id));
-            APP.markers.delete(id);
-            APP.currentActivity.points = APP.currentActivity.points.filter(x => x.id !== id);
-            // Re-ordenar
-            APP.currentActivity.points.forEach((p, i) => p.order = i + 1);
-            refreshMapMarkers();
-        }
-
-        function refreshMapMarkers() {
-            APP.markers.forEach(m => APP.map.removeLayer(m));
-            APP.markers.clear();
-            APP.currentActivity.points.forEach(p => renderPointMarker(p));
-        }
-
-        function handleEditorContinue() {
-            if (APP.currentActivity.points.length < 1) return alert("Adicione ao menos um ponto!");
-            
-            if (APP.currentActivity.mobileObjectives > 0) {
-                showScreen('screen-mobile-code');
-            } else {
-                generateFinalActivity();
-            }
-        }
-
-        function validateMovCode() {
-            const val = document.getElementById('mov-code').value;
-            document.getElementById('btn-mov-cont').disabled = val.length < 6;
-        }
-
-        function generateFinalActivity() {
-            APP.isEditing = false;
-            APP.currentActivity.status = 'active';
-            APP.currentActivity.code = Math.floor(100000 + Math.random() * 900000).toString();
-            APP.currentActivity.date = new Date().toLocaleDateString();
-            APP.currentActivity.timeStart = Date.now();
-
-            // Salvar no Histórico do Usuário
-            APP.user.history.push(APP.currentActivity);
-            saveSession();
-
-            // Salvar no Banco de Dados Offline
-            const tx = APP.db.transaction("activities", "readwrite");
-            tx.objectStore("activities").put(APP.currentActivity);
-
-            // UI
-            document.getElementById('editor-controls').classList.add('hidden');
-            document.getElementById('footer-nav').classList.remove('hidden');
-            document.getElementById('activity-hud').classList.remove('hidden');
-            document.getElementById('display-act-code').innerText = APP.currentActivity.code;
-            
-            showScreen('screen-dashboard');
-            alert("Atividade Criada! Compartilhe o código: " + APP.currentActivity.code);
-        }
-
-        // -- PERFIL & GRÁFICOS --
-        function renderProfileData() {
-            if (!APP.user) return;
-            document.getElementById('prof-nick').innerText = APP.user.nick;
-            document.getElementById('prof-email').innerText = APP.user.email;
-
-            // Render Chart
-            const chart = document.getElementById('activity-chart');
-            chart.innerHTML = '';
-            for (let i = 0; i < 12; i++) {
-                const bar = document.createElement('div');
-                const height = Math.random() * 80 + 10; // Mock de dados
-                bar.style.height = height + '%';
-                bar.style.width = '15px';
-                bar.style.background = i === 11 ? 'var(--accent)' : 'rgba(255,255,255,0.3)';
-                bar.style.borderRadius = '5px';
-                chart.appendChild(bar);
-            }
-
-            // Render Calendar
-            const cal = document.getElementById('calendar-grid');
-            cal.innerHTML = '';
-            const today = new Date().getDate();
-            for (let i = 1; i <= 31; i++) {
-                const day = document.createElement('div');
-                day.className = 'cal-day' + (i === today ? ' cal-hot' : '');
-                day.innerHTML = i === today ? '🔥' : i;
-                cal.appendChild(day);
-            }
-        }
-
-        function renderActivitiesList() {
-            const list = document.getElementById('activities-list');
-            list.innerHTML = '';
-            
-            APP.user.history.reverse().forEach(act => {
-                const div = document.createElement('div');
-                div.style.cssText = "background:rgba(255,255,255,0.9); padding:15px; border-radius:10px; margin-bottom:10px;";
-                div.innerHTML = `
-                    <div style="font-weight:bold; color:var(--primary)">${act.name}</div>
-                    <div style="font-size:0.8rem; color:#666">${act.date} - ${act.points.length} Pontos</div>
-                    <button class="tq-btn btn-beige" style="padding:5px; font-size:0.7rem;" onclick="viewActDetails('${act.id}')">Ver Detalhes</button>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        function viewActDetails(id) {
-            const act = APP.user.history.find(x => x.id === id);
-            alert(`Atividade: ${act.name}\nCódigo: ${act.code}\nParticipantes: Em tempo real...`);
-        }
-
-        // -- PWA & SYNC ENGINE --
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
+        /* --- SERVICE WORKER (PWA) --- */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE = 'trailquest-v1';
+                    const CACHE_NAME = 'trailquest-v1';
+                    const assets = [
+                        '/',
+                        'index.html',
+                        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+                        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+                    ];
                     self.addEventListener('install', e => {
-                        e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
+                        e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(assets)));
                     });
                     self.addEventListener('fetch', e => {
-                        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+                        e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
                     });
                 `;
                 const blob = new Blob([swCode], { type: 'application/javascript' });
-                navigator.serviceWorker.register(URL.createObjectURL(blob));
-            }
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl);
+            });
         }
 
-        function syncLocation(lat, lng) {
-            if (!APP.currentActivity || APP.currentActivity.status !== 'active') return;
-            
-            // Simulação de sincronização para suporte a 300 usuários
-            // Em produção aqui entraria o WebSocket.emit('pos', {lat, lng, nick})
-            console.log(`[SYNC] ${APP.user.nick} at ${lat}, ${lng}`);
-            
-            // Mock de outros participantes
-            updatePeerMarkers();
-        }
-
-        function updatePeerMarkers() {
-            // Lógica de filtragem: Ver apenas membros do grupo
-            // APP.markers.set(peerId, marker)
-        }
+        // Inicialização ao carregar
+        window.onload = initMap;
 
     </script>
 </body>
