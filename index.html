@@ -21,198 +21,96 @@
             --font-titulo: 'Dancing Script', cursive;
         }
 
-        /* RESET E ESTRUTURA BASE */
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #000;
             font-family: var(--font-vintage);
         }
 
-        /* FUNDO DE FLORESTA - Z-INDEX 0 */
         .bg-floresta {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1000');
-            background-size: cover;
-            background-position: center;
-            z-index: 0;
+            background-size: cover; background-position: center; z-index: 0;
         }
 
-        /* CABEÇALHO - Z-INDEX 1000 */
         header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            text-align: center;
-            padding: 10px 0;
-            z-index: 1000;
-            pointer-events: none; /* Não bloqueia toques no mapa */
+            position: fixed; top: 0; width: 100%; text-align: center;
+            padding: 10px 0; z-index: 1000; pointer-events: none;
         }
 
         header h1 {
-            font-family: var(--font-titulo);
-            color: white;
-            font-size: 2.8rem;
-            margin: 0;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+            font-family: var(--font-titulo); color: white;
+            font-size: 2.8rem; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
         }
 
-        /* PÁGINAS DO SISTEMA */
+        /* CONTAINER DAS PÁGINAS */
         .page {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
+            display: none; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10;
         }
+        .page.active { display: flex; }
+        .page#page-mapa { background: transparent; }
 
-        /* A página do mapa precisa estar visível mas sem fundo para mostrar o Leaflet abaixo */
-        .page#page-mapa {
-            background: transparent;
-        }
+        /* MAPA */
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100vh; z-index: 1; }
 
-        .page.active {
-            display: flex;
-        }
-
-        /* MAPA LEAFLET - Z-INDEX 1 */
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100vh; /* Altura garantida */
-            z-index: 1;
-        }
-
-        /* BOTÕES FLUTUANTES NO MAPA */
+        /* BOTÃO MINHA POSIÇÃO */
         .btn-posicao {
-            position: absolute;
-            bottom: 110px;
-            right: 20px;
-            z-index: 2000;
-            background-color: var(--cor-bege);
-            border: 2px solid var(--cor-verde);
-            padding: 12px 18px;
-            border-radius: 50px;
-            font-weight: bold;
-            color: var(--cor-verde);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            cursor: pointer;
-            font-family: var(--font-vintage);
+            position: absolute; bottom: 110px; right: 20px; z-index: 2000;
+            background-color: var(--cor-bege); border: 2px solid var(--cor-verde);
+            padding: 12px 18px; border-radius: 50px; font-weight: bold;
+            color: var(--cor-verde); box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            cursor: pointer; font-family: var(--font-vintage);
         }
 
-        /* MENU DE INTERAÇÃO DO PONTO (MODAL) */
+        /* MENU INTERATIVO DO PONTO (BEGE/MODERNO) */
         #menu-ponto {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: var(--cor-bege);
-            padding: 20px;
-            border-radius: 20px;
-            border: 3px solid var(--cor-marrom);
-            z-index: 5000;
-            width: 85%;
-            max-width: 300px;
-            box-shadow: 0 0 100px rgba(0,0,0,0.7);
-            text-align: center;
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background-color: var(--cor-bege);
+            padding: 20px; border-radius: 20px; border: 3px solid var(--cor-marrom);
+            z-index: 5000; width: 85%; max-width: 320px;
+            box-shadow: 0 0 100px rgba(0,0,0,0.7); text-align: center;
         }
 
         .menu-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            background-color: var(--cor-verde);
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            font-family: var(--font-vintage);
-            cursor: pointer;
+            display: block; width: 100%; padding: 12px; margin: 8px 0;
+            border: none; border-radius: 10px; background-color: var(--cor-verde);
+            color: white; font-weight: bold; font-family: var(--font-vintage);
+            font-size: 1.1rem; cursor: pointer;
         }
-
         .menu-btn.excluir { background-color: var(--cor-vermelha); }
         .menu-btn.voltar { background-color: var(--cor-marrom); }
 
         .input-menu {
-            width: 90%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid var(--cor-marrom);
-            border-radius: 5px;
-            font-family: var(--font-vintage);
+            width: 90%; padding: 12px; margin-bottom: 10px;
+            border: 2px solid var(--cor-marrom); border-radius: 8px;
+            font-family: var(--font-vintage); font-size: 1rem;
         }
 
-        /* CARTÕES DE INTERFACE (PERFIL/ATIVIDADES) */
+        /* CARTÕES DE INTERFACE */
         .card {
-            background-color: var(--cor-bege);
-            padding: 25px;
-            border-radius: 15px;
-            width: 85%;
-            max-width: 400px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
-            text-align: center;
-            border: 2px solid var(--cor-marrom);
-            z-index: 20;
+            background-color: var(--cor-bege); padding: 25px; border-radius: 15px;
+            width: 85%; max-width: 400px; border: 2px solid var(--cor-marrom);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6); text-align: center;
         }
 
-        /* MENU INFERIOR - Z-INDEX 3000 */
+        /* MENU INFERIOR */
         nav {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 500px;
-            background-color: rgba(245, 245, 220, 0.98);
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 0;
-            border-radius: 40px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-            z-index: 3000;
-            border: 1px solid var(--cor-marrom);
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px; background-color: rgba(245, 245, 220, 0.98);
+            display: flex; justify-content: space-around; padding: 15px 0;
+            border-radius: 40px; box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+            z-index: 3000; border: 1px solid var(--cor-marrom);
         }
+        .nav-item { color: var(--cor-marrom); font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        .nav-item.active { color: var(--cor-verde); text-decoration: underline; }
 
-        .nav-item {
-            color: var(--cor-marrom);
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .nav-item.active {
-            color: var(--cor-verde);
-            text-decoration: underline;
-        }
-
-        /* ESTILO DOS MARCADORES DE PONTOS */
+        /* ESTILO DOS PONTOS NUMERADOS */
         .marker-ponto {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; border-radius: 50%;
+            border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.6);
         }
     </style>
 </head>
@@ -225,10 +123,10 @@
     </header>
 
     <div id="menu-ponto">
-        <h3 id="menu-titulo" style="color: var(--cor-marrom); margin: 0 0 15px 0;">Ponto</h3>
+        <h3 id="menu-titulo" style="color: var(--cor-marrom); margin-top: 0;">Configurar Ponto</h3>
         <div id="container-inputs"></div>
-        <button class="menu-btn" onclick="acaoNomear()">Nomear</button>
-        <button class="menu-btn" onclick="acaoNumerar()">Numerar</button>
+        <button class="menu-btn" onclick="uiNomear()">Nomear</button>
+        <button class="menu-btn" onclick="uiNumerar()">Numerar</button>
         <button class="menu-btn excluir" onclick="acaoExcluir()">Excluir</button>
         <button class="menu-btn voltar" onclick="fecharMenuPonto()">Voltar</button>
     </div>
@@ -241,13 +139,13 @@
     <section id="page-atividades" class="page">
         <div class="card">
             <h2 style="color: var(--cor-marrom)">Histórico de Atividades</h2>
-            <p>Seu rastro na floresta aparecerá aqui em breve.</p>
+            <p>Seu progresso será listado aqui.</p>
         </div>
     </section>
 
     <section id="page-perfil" class="page">
         <div class="card">
-            <h2 style="color: var(--cor-marrom)">Perfil de Explorador</h2>
+            <h2 style="color: var(--cor-marrom)">Perfil do Explorador</h2>
             <div style="text-align: left; margin: 15px 0;">
                 <p><strong>Nickname:</strong> Explorador_Raiz</p>
                 <p><strong>Email:</strong> usuario@trailquest.com</p>
@@ -264,38 +162,46 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // CONFIGURAÇÕES GLOBAIS DO ENGENHEIRO
+        /**
+         * VARIÁVEIS DE CONFIGURAÇÃO SÊNIOR
+         */
         let map;
         let userMarker;
-        let userLocation = [-23.5505, -46.6333]; // Coordenada base (SP)
-        let numeroObjetivos = 20; // Limite de pontos
+        let userLocation = [-23.5505, -46.6333];
+        
+        // 2 - Limite de Objetivos
+        let numeroObjetivos = 25; 
         let listaPontos = []; 
         let pontoSelecionado = null;
-        let corAtualMapa = 'verde';
-        const coresHex = { 'verde': '#2d5a27', 'vermelho': '#c62828', 'azul': '#1565c0', 'amarelo': '#fbc02d', 'preto': '#212121' };
+        
+        // 8 - Cores dos Pontos
+        let corAtualMapa = 'verde'; // Opções: verde, vermelho, azul, amarelo, preto
+        const coresHex = {
+            'verde': '#2d5a27',
+            'vermelho': '#c62828',
+            'azul': '#1565c0',
+            'amarelo': '#fbc02d',
+            'preto': '#212121'
+        };
 
-        // GARANTIR QUE TUDO RODE APÓS O CARREGAMENTO DO DOM
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", () => {
             initTrailQuest();
         });
 
         function initTrailQuest() {
-            console.log("Iniciando TrailQuest...");
-            
-            // 1. Inicialização do Mapa
+            // Inicialização do mapa modo satélite
             map = L.map('map', {
                 zoomControl: false,
                 tap: true,
-                dragging: true
+                dragging: true,
+                touchZoom: true
             }).setView(userLocation, 16);
 
-            // 2. Camada Satélite
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 19,
-                attribution: 'TrailQuest Satellite'
+                maxZoom: 19
             }).addTo(map);
 
-            // 3. Marcador do Usuário
+            // Marcador azul do usuário
             const userIcon = L.divIcon({
                 className: 'user-icon',
                 html: `<div style="background-color:#2196F3; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>`,
@@ -303,43 +209,43 @@
             });
             userMarker = L.marker(userLocation, { icon: userIcon }).addTo(map);
 
-            // 4. Evento de toque no mapa para criar pontos
-            map.on('click', function(e) {
-                // Previne criação de pontos se o clique foi em um elemento de UI
+            // 1 - Criação de pontos ao tocar
+            map.on('click', (e) => {
+                // Previne criação se o clique for em UI ou marcador existente
                 if (e.originalEvent.target.id === 'map' || e.originalEvent.target.classList.contains('leaflet-container')) {
-                    criarNovoPonto(e.latlng);
+                    criarPonto(e.latlng);
                 }
             });
 
-            // 5. Iniciar monitoramento GPS
-            iniciarGeolocalizacao();
-
-            // Forçar ajuste de tamanho após renderização inicial
+            iniciarGPS();
             setTimeout(() => { map.invalidateSize(); }, 500);
         }
 
-        /* --- SISTEMA DE PONTOS --- */
-        function criarNovoPonto(latlng) {
+        /**
+         * GESTÃO DE PONTOS NO MAPA
+         */
+        function criarPonto(latlng) {
+            // 2 - Validação de limite
             if (listaPontos.length >= numeroObjetivos) {
-                alert("Você atingiu o limite de objetivos para este mapa!");
+                alert("Limite de " + numeroObjetivos + " objetivos atingido!");
                 return;
             }
 
             const novoNumero = listaPontos.length + 1;
-            const pontoObj = {
+            const novoPonto = {
                 id: Date.now(),
                 latlng: latlng,
-                nome: "Ponto " + novoNumero,
                 numero: novoNumero,
+                nome: "Ponto " + novoNumero,
                 marker: null
             };
 
-            const marker = adicionarMarkerAoMapa(pontoObj);
-            pontoObj.marker = marker;
-            listaPontos.push(pontoObj);
+            const marker = renderizarMarker(novoPonto);
+            novoPonto.marker = marker;
+            listaPontos.push(novoPonto);
         }
 
-        function adicionarMarkerAoMapa(pontoObj) {
+        function renderizarMarker(pontoObj) {
             const iconHtml = L.divIcon({
                 className: 'marker-ponto',
                 html: `<div style="background-color:${coresHex[corAtualMapa]}; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white;">${pontoObj.numero}</div>`,
@@ -347,9 +253,10 @@
                 iconAnchor: [16, 16]
             });
 
+            // 9 - Estabilidade: Usamos latlng diretamente para não mover o mapa
             const marker = L.marker(pontoObj.latlng, { icon: iconHtml }).addTo(map);
-            
-            // Clique no marcador para abrir o menu
+
+            // Clique no ponto abre menu (Item 3)
             marker.on('click', (e) => {
                 L.DomEvent.stopPropagation(e);
                 abrirMenuPonto(pontoObj);
@@ -358,7 +265,9 @@
             return marker;
         }
 
-        /* --- MENU DO PONTO --- */
+        /**
+         * MENU DE INTERAÇÃO (Item 3, 4, 5, 6, 7)
+         */
         function abrirMenuPonto(pontoObj) {
             pontoSelecionado = pontoObj;
             document.getElementById('menu-titulo').innerText = pontoObj.nome;
@@ -371,16 +280,17 @@
             pontoSelecionado = null;
         }
 
-        function acaoNomear() {
-            const container = document.getElementById('container-inputs');
-            container.innerHTML = `
-                <input type="text" id="input-nome" class="input-menu" placeholder="Nome do local..." value="${pontoSelecionado.nome}">
-                <button class="menu-btn" onclick="confirmarNome()">Confirmar</button>
+        // 4 - Nomear
+        function uiNomear() {
+            const cont = document.getElementById('container-inputs');
+            cont.innerHTML = `
+                <input type="text" id="in-nome" class="input-menu" placeholder="Nome (Ex: Cantina)" value="${pontoSelecionado.nome}">
+                <button class="menu-btn" onclick="confirmarNome()">Salvar Nome</button>
             `;
         }
 
         function confirmarNome() {
-            const novoNome = document.getElementById('input-nome').value;
+            const novoNome = document.getElementById('in-nome').value;
             if (novoNome) {
                 pontoSelecionado.nome = novoNome;
                 document.getElementById('menu-titulo').innerText = novoNome;
@@ -388,48 +298,50 @@
             }
         }
 
-        function acaoNumerar() {
-            const container = document.getElementById('container-inputs');
-            container.innerHTML = `
-                <input type="number" id="input-num" class="input-menu" placeholder="Novo número (1-${numeroObjetivos})">
-                <button class="menu-btn" onclick="confirmarTrocaNumero()">Trocar</button>
+        // 5 - Numerar (Com Troca Automática)
+        function uiNumerar() {
+            const cont = document.getElementById('container-inputs');
+            cont.innerHTML = `
+                <input type="number" id="in-num" class="input-menu" placeholder="Novo número (1-${numeroObjetivos})">
+                <button class="menu-btn" onclick="confirmarTroca()">Confirmar Troca</button>
             `;
         }
 
-        function confirmarTrocaNumero() {
-            const novoNum = parseInt(document.getElementById('input-num').value);
-            if (isNaN(novoNum) || novoNum < 1 || novoNum > numeroObjetivos) {
+        function confirmarTroca() {
+            const n = parseInt(document.getElementById('in-num').value);
+            if (isNaN(n) || n < 1 || n > numeroObjetivos) {
                 alert("Número inválido!");
                 return;
             }
 
-            // Lógica de Troca Automática
-            const pontoAlvo = listaPontos.find(p => p.numero === novoNum && p.id !== pontoSelecionado.id);
-            if (pontoAlvo) {
-                pontoAlvo.numero = pontoSelecionado.numero;
-                atualizarVisualMarker(pontoAlvo);
+            // Lógica de Troca Atômica
+            const alvo = listaPontos.find(p => p.numero === n && p.id !== pontoSelecionado.id);
+            if (alvo) {
+                alvo.numero = pontoSelecionado.numero;
+                atualizarIcone(alvo);
             }
 
-            pontoSelecionado.numero = novoNum;
-            atualizarVisualMarker(pontoSelecionado);
+            pontoSelecionado.numero = n;
+            atualizarIcone(pontoSelecionado);
             fecharMenuPonto();
         }
 
+        // 6 - Excluir e Reorganizar
         function acaoExcluir() {
             map.removeLayer(pontoSelecionado.marker);
             listaPontos = listaPontos.filter(p => p.id !== pontoSelecionado.id);
             
-            // Reorganização sequencial automática
+            // Reorganização automática sequencial
             listaPontos.sort((a, b) => a.numero - b.numero);
-            listaPontos.forEach((p, index) => {
-                p.numero = index + 1;
-                atualizarVisualMarker(p);
+            listaPontos.forEach((p, idx) => {
+                p.numero = idx + 1;
+                atualizarIcone(p);
             });
             
             fecharMenuPonto();
         }
 
-        function atualizarVisualMarker(pontoObj) {
+        function atualizarIcone(pontoObj) {
             pontoObj.marker.setIcon(L.divIcon({
                 className: 'marker-ponto',
                 html: `<div style="background-color:${coresHex[corAtualMapa]}; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white;">${pontoObj.numero}</div>`,
@@ -438,16 +350,15 @@
             }));
         }
 
-        /* --- GPS E UTILITÁRIOS --- */
-        function iniciarGeolocalizacao() {
+        /**
+         * GPS E NAVEGAÇÃO
+         */
+        function iniciarGPS() {
             if ("geolocation" in navigator) {
-                navigator.geolocation.watchPosition((pos) => {
-                    userLocation = [pos.coords.latitude, pos.coords.longitude];
+                navigator.geolocation.watchPosition(p => {
+                    userLocation = [p.coords.latitude, p.coords.longitude];
                     userMarker.setLatLng(userLocation);
-                }, (err) => console.error("Erro GPS:", err), {
-                    enableHighAccuracy: true,
-                    maximumAge: 5000
-                });
+                }, null, { enableHighAccuracy: true });
             }
         }
 
@@ -455,30 +366,20 @@
             map.setView(userLocation, 17);
         }
 
-        function switchPage(pageId, element) {
-            // UI Update
+        function switchPage(pageId, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            
             document.getElementById(pageId).classList.add('active');
-            element.classList.add('active');
-
-            // Bug fix do Leaflet: re-renderizar mapa ao voltar para aba mapa
-            if (pageId === 'page-mapa') {
-                setTimeout(() => { map.invalidateSize(); }, 300);
-            }
+            el.classList.add('active');
+            if (pageId === 'page-mapa') setTimeout(() => map.invalidateSize(), 300);
         }
 
-        /* --- SERVICE WORKER (PWA) --- */
+        // PWA Básico Offline
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const swContent = `
-                    self.addEventListener('install', e => self.skipWaiting());
-                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
-                `;
-                const blob = new Blob([swContent], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(swUrl);
+                const sw = `self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));`;
+                const blob = new Blob([sw], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob));
             });
         }
     </script>
