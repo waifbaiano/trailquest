@@ -3,69 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrailQuest OMNI-SERVER | Final Surgery Edition</title>
+    <meta name="theme-color" content="#1b5e20">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>TrailQuest PRO - Enterprise Suite</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Roboto+Mono:wght@300;500;700&family=Special+Elite&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
-            --hex-primary: #1b5e20;
-            --hex-accent: #ffab00;
-            --hex-bg: #fdfdf5;
-            --hex-dark: #1a1a1a;
-            --hex-border: #2e1a16;
-            --shadow-tactical: 10px 10px 0px #2e1a16;
+            --primary: #1b5e20;
+            --accent: #ffab00;
+            --bg-sand: #fdfdf5;
+            --border-dark: #2e1a16;
+            --error: #b71c1c;
+            --shadow: 12px 12px 0px #2e1a16;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; background: #000; font-family: 'Roboto Mono', monospace; overflow: hidden; }
 
+        /* Mapa - Estilo Satélite Permanente */
         #map { width: 100%; height: 100%; position: absolute; z-index: 1; }
-        .ui-master-layer { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; pointer-events: none; }
-        .ui-master-layer * { pointer-events: auto; }
+        .leaflet-control-attribution { display: none !important; }
 
-        .window-frame {
-            background: var(--hex-bg); border: 3px solid var(--hex-border);
-            padding: 25px; width: 92%; max-width: 440px; margin: auto;
-            box-shadow: var(--shadow-tactical); position: relative;
-            max-height: 85vh; overflow-y: auto;
-        }
+        /* UI Overlays */
+        .app-shell { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; }
+        .app-shell * { pointer-events: auto; }
 
-        .overlay-screen {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            z-index: 2000; display: flex; align-items: center; justify-content: center;
-        }
-
-        h1 { font-family: 'Special Elite', serif; color: var(--hex-primary); font-size: 2.8rem; text-align: center; margin-bottom: 5px; }
-        h2 { font-family: 'Montserrat'; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; color: #444; border-bottom: 2px solid var(--hex-primary); margin: 15px 0 10px; padding-bottom: 5px; }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         
-        .tq-input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #ccc; background: #fff; font-family: inherit; font-size: 0.9rem; }
-        
-        .tq-btn { width: 100%; padding: 18px; border: none; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-green { background: var(--hex-primary); color: white; }
-        .btn-gold { background: var(--hex-accent); color: #000; }
-        .btn-cancel { background: #333; color: #eee; }
-
-        .bottom-bar {
-            position: fixed; bottom: 0; width: 100%; background: #fff;
-            border-top: 3px solid var(--hex-border); display: flex;
-            justify-content: space-around; padding: 10px 0 25px; z-index: 1000;
+        .tactical-panel {
+            background: var(--bg-sand); border: 3px solid var(--border-dark);
+            padding: 30px; width: 92%; max-width: 480px; box-shadow: var(--shadow);
+            max-height: 90vh; overflow-y: auto; position: relative;
         }
-        .nav-link { text-align: center; color: #777; font-family: 'Montserrat'; font-size: 0.6rem; font-weight: 700; flex: 1; }
-        .nav-link span { font-size: 1.5rem; display: block; }
-        .nav-link.active { color: var(--hex-primary); }
-        .btn-continue-nav { background: var(--hex-primary); color: white; border-radius: 50px; padding: 10px; transform: translateY(-15px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
-        .edit-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; background: var(--hex-bg); border: 2px solid var(--hex-border); padding: 15px; z-index: 1001; box-shadow: var(--shadow-tactical); }
-        .pin-tactical { background: var(--hex-primary); color: white; border: 2px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+        /* Typography */
+        h1 { font-family: 'Special Elite', serif; color: var(--primary); font-size: 2.5rem; text-align: center; margin-bottom: 20px; }
+        h2 { font-family: 'Montserrat'; font-weight: 900; font-size: 0.9rem; text-transform: uppercase; border-bottom: 2px solid var(--primary); margin: 20px 0 10px; }
 
-        /* Gráficos e Calendário */
-        .chart-bar { background: var(--hex-primary); width: 12%; border-radius: 2px 2px 0 0; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
-        .cal-day { background: white; border: 1px solid #ddd; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; border-radius: 50%; position: relative; }
-        .cal-fire::after { content: '🔥'; position: absolute; top: -5px; font-size: 0.8rem; }
+        /* Inputs & Buttons */
+        .tq-input { width: 100%; padding: 15px; margin-bottom: 12px; border: 2px solid #ccc; font-family: inherit; font-size: 1rem; }
+        .tq-btn { width: 100%; padding: 18px; border: none; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: black; }
+        .btn-ghost { background: transparent; border: 2px solid var(--border-dark); color: var(--border-dark); }
+
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; border-top: 3px solid var(--border-dark); display: flex; padding: 10px 0 25px; z-index: 1005; }
+        .nav-item { flex: 1; text-align: center; color: #888; font-family: 'Montserrat'; font-weight: 700; font-size: 0.65rem; }
+        .nav-item span { display: block; font-size: 1.5rem; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Chronometer HUD */
+        .chrono-hud { position: absolute; top: 20px; right: 20px; background: white; border: 2px solid var(--border-dark); padding: 10px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; box-shadow: 4px 4px 0px var(--border-dark); }
+
+        /* Marker Styles */
+        .marker-label { background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; border: 2px solid white; }
+        
+        /* Stats & Calendar */
+        .stats-grid { display: flex; gap: 5px; height: 100px; align-items: flex-end; margin: 15px 0; }
+        .bar { flex: 1; background: var(--primary); border-radius: 2px 2px 0 0; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day { aspect-ratio: 1; background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border-radius: 50%; }
+        .day.hot { border: 2px solid var(--accent); }
+        .day.hot::after { content: '🔥'; position: absolute; font-size: 0.5rem; transform: translateY(-10px); }
 
         .hidden { display: none !important; }
     </style>
@@ -73,299 +76,318 @@
 <body>
 
     <div id="map"></div>
-    <div id="app-mount"></div>
+
+    <div class="app-shell" id="app-root">
+        </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
+        /**
+         * CORE ENGINE - TRAILQUEST v7.0
+         * Engineered for Scalability and Precision
+         */
         const TrailQuest = {
+            // -- CONFIGURAÇÕES --
+            settings: {
+                GPS_INTERVAL: 3000,
+                MAX_MAPS: 5,
+                MAP_COLORS: ['green', 'red', 'yellow', 'blue', 'black'],
+                SATELLITE_URL: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+            },
+
+            // -- ESTADO GLOBAL --
             state: {
-                user: { nick: '', type: 'GUEST' },
-                config: { groups: 0, ppx: 0, leaders: 0, fix: 0, mov: 0, extra: '', status: false },
-                mapSlots: [null, null, null, null, null],
+                user: JSON.parse(localStorage.getItem('TQ_AUTH')) || null,
+                isParticipant: false,
+                currentMapIndex: 0,
+                maps: JSON.parse(localStorage.getItem('TQ_MAPS')) || [],
                 points: [],
-                connectedUsers: [], 
-                activeSlot: 0,
-                editMode: false,
-                currentCode: null,
-                targetPoint: null
+                trackingActive: false,
+                startTime: 0,
+                elapsedTime: 0,
+                timerInterval: null,
+                connectedUsers: [], // Simulação de 100 usuários
+                config: { groups: 1, ppx: 1, leaders: 1 }
             },
 
-            map: null,
-            markers: [],
-
-            init() { this.renderSplash(); },
-
-            render(html) { document.getElementById('app-mount').innerHTML = html; },
-
-            renderSplash() {
-                this.render(`
-                    <div class="overlay-screen" style="background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000') center/cover">
-                        <div class="window-frame">
-                            <h1>TrailQuest</h1>
-                            <button class="tq-btn btn-green" onclick="TrailQuest.goLogin()">Acesso Organizador</button>
-                            <button class="tq-btn btn-green" onclick="TrailQuest.goJoin()">Código Participante</button>
-                        </div>
-                    </div>
-                `);
-            },
-
-            goLogin() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h2>Autenticação</h2>
-                            <input type="email" class="tq-input" placeholder="">
-                            <input type="password" id="adm-pass" class="tq-input" placeholder="">
-                            <button class="tq-btn btn-green" onclick="TrailQuest.goNick()">Entrar</button>
-                            <button class="tq-btn btn-cancel" onclick="TrailQuest.renderSplash()">Voltar</button>
-                        </div>
-                    </div>
-                `);
-            },
-
-            goJoin() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h2>Validar Código</h2>
-                            <input type="text" class="tq-input" placeholder="">
-                            <button class="tq-btn btn-gold" onclick="TrailQuest.goNick()">Entrar na Missão</button>
-                            <button class="tq-btn btn-cancel" onclick="TrailQuest.renderSplash()">Voltar</button>
-                        </div>
-                    </div>
-                `);
-            },
-
-            goNick() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h2>Identificação</h2>
-                            <input type="text" id="user-nick" class="tq-input" placeholder="">
-                            <button class="tq-btn btn-green" onclick="TrailQuest.saveUser()">Salvar Perfil</button>
-                            <button class="tq-btn btn-cancel" onclick="TrailQuest.goDashboard()">Voltar</button>
-                        </div>
-                    </div>
-                `);
-            },
-
-            saveUser() {
-                this.state.user.nick = document.getElementById('user-nick').value || 'Explorer';
-                this.goDashboard();
-            },
-
-            goDashboard() {
-                this.state.editMode = false;
-                this.render(`
-                    <div class="ui-master-layer"><div id="hud-top"></div></div>
-                    <nav class="bottom-bar">
-                        <div class="nav-link active" onclick="TrailQuest.goDashboard()"><span>🏠</span>Home</div>
-                        <div class="nav-link" onclick="TrailQuest.goConfig()"><span>⚙️</span>Ajustes</div>
-                        <div class="nav-link btn-continue-nav" onclick="TrailQuest.finalizeMap()"><span>➡️</span></div>
-                        <div class="nav-link" onclick="TrailQuest.goRadar()"><span>📡</span>Radar</div>
-                        <div class="nav-link" onclick="TrailQuest.goProfile()"><span>👤</span>Perfil</div>
-                    </nav>
-                `);
+            // -- INICIALIZAÇÃO --
+            init() {
+                this.checkAuth();
                 this.initMap();
+                this.renderUI();
+            },
+
+            checkAuth() {
+                if (this.state.user && this.state.user.token) {
+                    this.state.view = 'command';
+                } else {
+                    this.state.view = 'splash';
+                }
             },
 
             initMap() {
-                if(this.map) return;
-                this.map = L.map('map', { zoomControl: false }).setView([-23.5, -46.6], 12);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
-                this.map.on('click', (e) => { if(this.state.editMode) this.dropPoint(e.latlng); });
+                this.map = L.map('map', { 
+                    zoomControl: false, 
+                    attributionControl: false,
+                    maxZoom: 19
+                }).setView([-23.5505, -46.6333], 13);
+
+                L.tileLayer(this.settings.SATELLITE_URL).addTo(this.map);
+
+                // GPS Tracking
+                this.map.locate({ setView: true, watch: true, enableHighAccuracy: true });
+                this.map.on('locationfound', (e) => this.handleLocationUpdate(e));
+                
+                this.map.on('click', (e) => this.handleMapClick(e));
             },
 
-            goConfig() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h1>Configuração</h1>
-                            <h2>Grupos</h2>
-                            <div style="display:flex; gap:10px">
-                                <input type="number" id="c-groups" class="tq-input" placeholder="">
-                                <input type="number" id="c-leaders" class="tq-input" placeholder="">
-                            </div>
-                            <input type="number" id="c-ppx" class="tq-input" placeholder="">
-                            <h2>Percurso</h2>
-                            <div style="display:flex; gap:10px">
-                                <input type="number" id="c-fix" class="tq-input" placeholder="">
-                                <input type="number" id="c-mov" class="tq-input" placeholder="">
-                            </div>
-                            <h2>Info Adicional</h2>
-                            <input type="text" id="c-extra" class="tq-input" placeholder="">
-                            <button class="tq-btn btn-gold" onclick="TrailQuest.saveSetup()">Configurar e Editar Mapa</button>
-                            <button class="tq-btn btn-cancel" onclick="TrailQuest.goDashboard()">Voltar</button>
-                        </div>
+            // -- GESTÃO DE UI --
+            renderUI() {
+                const root = document.getElementById('app-root');
+                root.innerHTML = '';
+
+                if (this.state.view === 'splash') {
+                    this.renderSplash(root);
+                } else if (this.state.view === 'login') {
+                    this.renderLogin(root);
+                } else if (this.state.view === 'command') {
+                    this.renderCommand(root);
+                }
+            },
+
+            renderSplash(root) {
+                root.innerHTML = `
+                <div class="screen">
+                    <div class="tactical-panel">
+                        <h1>TrailQuest</h1>
+                        <button class="tq-btn btn-primary" onclick="TrailQuest.switchView('login')">Fazer Login</button>
+                        <button class="tq-btn btn-ghost" onclick="TrailQuest.startAsParticipant()">Continuar como Participante</button>
                     </div>
-                `);
+                </div>`;
             },
 
-            saveSetup() {
-                this.state.config = {
-                    groups: document.getElementById('c-groups').value,
-                    leaders: document.getElementById('c-leaders').value,
-                    ppx: document.getElementById('c-ppx').value,
-                    fix: document.getElementById('c-fix').value,
-                    mov: document.getElementById('c-mov').value,
-                    extra: document.getElementById('c-extra').value,
-                    status: true
-                };
-                this.startMapEditor();
-            },
-
-            startMapEditor() {
-                this.state.editMode = true;
-                this.state.points = this.state.mapSlots[this.state.activeSlot]?.points || [];
-                this.goDashboard();
-                this.updateEditHUD();
-                this.refreshMarkers();
-            },
-
-            updateEditHUD() {
-                const hud = document.getElementById('hud-top');
-                const p = this.state.targetPoint !== null ? this.state.points[this.state.targetPoint] : null;
-                hud.innerHTML = `
-                    <div class="edit-hud">
-                        ${p ? `
-                            <b>Ponto ${this.state.targetPoint + 1}</b>
-                            <input type="text" id="p-label" class="tq-input" style="margin-top:10px" placeholder="">
-                            <div style="display:flex; gap:5px">
-                                <button class="tq-btn btn-green" style="padding:10px; margin:0" onclick="TrailQuest.savePointLabel()">OK</button>
-                                <button class="tq-btn btn-cancel" style="padding:10px; margin:0" onclick="TrailQuest.deletePoint()">Excluir</button>
-                            </div>
-                        ` : `
-                            <div style="display:flex; justify-content:space-between; align-items:center">
-                                <b>Slot ${this.state.activeSlot + 1}</b>
-                                <button class="tq-btn btn-green" style="font-size:0.6rem; padding:8px; width:auto; margin:0" onclick="TrailQuest.openSlotMenu()">Selecionar Slot</button>
-                            </div>
-                        `}
+            renderLogin(root) {
+                root.innerHTML = `
+                <div class="screen">
+                    <div class="tactical-panel">
+                        <h2>Autenticação</h2>
+                        <input type="email" id="auth-email" class="tq-input" placeholder="E-mail">
+                        <input type="text" id="auth-nick" class="tq-input" placeholder="Nickname">
+                        <button class="tq-btn btn-primary" onclick="TrailQuest.processLogin()">Entrar</button>
+                        <button class="tq-btn btn-ghost" onclick="TrailQuest.switchView('splash')">Voltar</button>
                     </div>
+                </div>`;
+            },
+
+            renderCommand(root) {
+                // HUD superior
+                const hud = document.createElement('div');
+                hud.className = 'chrono-hud';
+                hud.id = 'main-chrono';
+                hud.innerHTML = `⏱️ 00:00:00`;
+                root.appendChild(hud);
+
+                // Botão de Edição se for Organizador
+                const editBtn = document.createElement('div');
+                editBtn.style = "position:absolute; top:80px; left:20px;";
+                editBtn.innerHTML = `<button class="tq-btn btn-accent" style="padding:10px; width:auto" onclick="TrailQuest.toggleEditMode()">🛠️ Mapas</button>`;
+                root.appendChild(editBtn);
+
+                // Navbar
+                const nav = document.createElement('nav');
+                nav.className = 'bottom-nav';
+                nav.innerHTML = `
+                    <div class="nav-item active" onclick="TrailQuest.switchTab('home')"><span>🏠</span>Início</div>
+                    <div class="nav-item" onclick="TrailQuest.openMapsManager()"><span>🗺️</span>Mapas</div>
+                    <div class="nav-item" onclick="TrailQuest.toggleActivity()"><span>🏁</span>${this.state.trackingActive ? 'Parar' : 'Começar'}</div>
+                    <div class="nav-item" onclick="TrailQuest.showActivities()"><span>📊</span>Ativ.</div>
+                    <div class="nav-item" onclick="TrailQuest.showProfile()"><span>👤</span>Perfil</div>
                 `;
+                root.appendChild(nav);
             },
 
-            openSlotMenu() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h2>Slots de Mapa</h2>
-                            ${this.state.mapSlots.map((s, i) => `
-                                <div style="background:white; padding:15px; border:1px solid #ddd; margin-bottom:10px" onclick="TrailQuest.selectSlot(${i})">
-                                    Mapa Auxiliar ${i+1} ${s ? '(ATIVO)' : ''}
-                                </div>
-                            `).join('')}
-                            <button class="tq-btn btn-cancel" onclick="TrailQuest.goDashboard(); TrailQuest.updateEditHUD();">Voltar</button>
-                        </div>
-                    </div>
-                `);
+            // -- LÓGICA DE NEGÓCIO --
+            switchView(view) {
+                this.state.view = view;
+                this.renderUI();
             },
 
-            selectSlot(i) {
-                this.state.mapSlots[this.state.activeSlot] = { points: [...this.state.points] };
-                this.state.activeSlot = i;
-                this.state.points = this.state.mapSlots[i]?.points || [];
-                this.goDashboard();
-                this.updateEditHUD();
-                this.refreshMarkers();
+            processLogin() {
+                const email = document.getElementById('auth-email').value;
+                const nick = document.getElementById('auth-nick').value;
+                
+                if(!email.includes('@')) return alert('Email inválido');
+                
+                this.state.user = { email, nick, token: 'TQ_' + Date.now() };
+                localStorage.setItem('TQ_AUTH', JSON.stringify(this.state.user));
+                this.switchView('command');
             },
 
-            dropPoint(latlng) {
-                if(this.state.points.length >= this.state.config.fix) return;
-                this.state.points.push({ latlng, name: '' });
-                this.refreshMarkers();
-                this.updateEditHUD();
+            startAsParticipant() {
+                this.state.isParticipant = true;
+                this.state.user = { nick: 'Participante_' + Math.floor(Math.random()*100), token: null };
+                this.switchView('command');
             },
 
-            refreshMarkers() {
+            // -- GESTÃO DO MAPA E PONTOS --
+            handleMapClick(e) {
+                if(!this.state.isEditing) return;
+
+                const newPoint = {
+                    id: Date.now(),
+                    num: this.state.points.length + 1,
+                    name: 'Novo Ponto',
+                    code: Math.floor(100000 + Math.random() * 900000),
+                    latlng: e.latlng
+                };
+
+                this.state.points.push(newPoint);
+                this.renderPoints();
+            },
+
+            renderPoints() {
+                this.markers = this.markers || [];
                 this.markers.forEach(m => this.map.removeLayer(m));
                 this.markers = [];
-                this.state.points.forEach((p, i) => {
-                    const m = L.marker(p.latlng, { icon: L.divIcon({ className: '', html: `<div class="pin-tactical">${i+1}</div>`, iconSize: [32,32] }) }).addTo(this.map).on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        this.state.targetPoint = i;
-                        this.updateEditHUD();
-                    });
-                    this.markers.push(m);
+
+                this.state.points.forEach((p, index) => {
+                    const marker = L.marker(p.latlng, {
+                        icon: L.divIcon({
+                            className: 'marker-label',
+                            html: `<span>${p.num}</span>`,
+                            iconSize: [25, 25]
+                        })
+                    }).addTo(this.map);
+
+                    marker.on('click', () => this.openPointMenu(p));
+                    this.markers.push(marker);
                 });
             },
 
-            savePointLabel() {
-                this.state.points[this.state.targetPoint].name = document.getElementById('p-label').value;
-                this.state.targetPoint = null;
-                this.updateEditHUD();
-            },
-
-            deletePoint() {
-                this.state.points.splice(this.state.targetPoint, 1);
-                this.state.targetPoint = null;
-                this.refreshMarkers();
-                this.updateEditHUD();
-            },
-
-            finalizeMap() {
-                this.state.currentCode = Math.floor(100000 + Math.random() * 900000);
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame" style="text-align:center">
-                            <h1>CÓDIGO</h1>
-                            <div style="background:white; border:2px dashed var(--hex-primary); padding:20px; font-size:3rem; font-weight:900; letter-spacing:10px">
-                                ${this.state.currentCode}
-                            </div>
-                            <button class="tq-btn btn-green" onclick="TrailQuest.goDashboard()">Voltar ao Comando</button>
-                        </div>
+            openPointMenu(point) {
+                const overlay = document.createElement('div');
+                overlay.className = 'screen';
+                overlay.innerHTML = `
+                    <div class="tactical-panel">
+                        <h2>Ponto ${point.num}</h2>
+                        <input type="text" id="edit-p-name" class="tq-input" value="${point.name}" placeholder="Nome">
+                        <input type="number" id="edit-p-num" class="tq-input" value="${point.num}" placeholder="Número">
+                        <p style="margin-bottom:15px">Código: <b>${point.code}</b></p>
+                        <button class="tq-btn btn-primary" onclick="TrailQuest.savePoint(${point.id})">Salvar</button>
+                        <button class="tq-btn btn-accent" onclick="TrailQuest.deletePoint(${point.id})">Excluir</button>
+                        <button class="tq-btn btn-ghost" onclick="document.body.removeChild(this.parentNode.parentNode)">Voltar</button>
                     </div>
-                `);
+                `;
+                document.body.appendChild(overlay);
             },
 
-            goRadar() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h2>Radar de Sinal</h2>
-                            <div id="radar-list">
-                                ${this.state.connectedUsers.length === 0 ? 
-                                    '<p style="text-align:center; opacity:0.5; margin:20px">Aguardando conexões...</p>' : 
-                                    this.state.connectedUsers.map(u => `<div style="padding:10px; background:white; margin:5px 0">👤 ${u.name}</div>`).join('')
-                                }
-                            </div>
-                            <button class="tq-btn btn-cancel" onclick="TrailQuest.goDashboard()">Voltar</button>
-                        </div>
-                    </div>
-                `);
+            savePoint(id) {
+                const newName = document.getElementById('edit-p-name').value;
+                const newNum = parseInt(document.getElementById('edit-p-num').value);
+                
+                const pt = this.state.points.find(p => p.id === id);
+                const oldNum = pt.num;
+
+                // Lógica de Troca de Numeração
+                const conflictPt = this.state.points.find(p => p.num === newNum && p.id !== id);
+                if(conflictPt) {
+                    conflictPt.num = oldNum;
+                }
+
+                pt.name = newName;
+                pt.num = newNum;
+                
+                this.renderPoints();
+                document.querySelector('.screen').remove();
             },
 
-            goProfile() {
-                this.render(`
-                    <div class="overlay-screen">
-                        <div class="window-frame">
-                            <h2 style="border:0">${this.state.user.nick}</h2>
-                            <button class="tq-btn btn-gold" style="padding:8px; font-size:0.7rem" onclick="TrailQuest.goNick()">Alterar Identidade</button>
-                            
-                            <h2>Desempenho</h2>
-                            <div style="background:#eee; height:80px; display:flex; align-items:flex-end; padding:10px; gap:5px; margin-bottom:15px">
-                                <div class="chart-bar" style="height:40%"></div>
-                                <div class="chart-bar" style="height:70%"></div>
-                                <div class="chart-bar" style="height:50%"></div>
-                                <div class="chart-bar" style="height:90%"></div>
-                                <div class="chart-bar" style="height:30%"></div>
-                            </div>
+            // -- CRONÔMETRO E ATIVIDADE --
+            toggleActivity() {
+                this.state.trackingActive = !this.state.trackingActive;
+                if(this.state.trackingActive) {
+                    this.state.startTime = Date.now() - (this.state.elapsedTime || 0);
+                    this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
+                } else {
+                    clearInterval(this.state.timerInterval);
+                }
+                this.renderUI();
+            },
 
-                            <h2>Calendário</h2>
-                            <div class="cal-grid">
-                                ${Array.from({length: 28}, (_, i) => `
-                                    <div class="cal-day ${[3,12,25].includes(i+1) ? 'cal-fire' : ''}">${i+1}</div>
-                                `).join('')}
-                            </div>
+            updateTimer() {
+                const diff = Date.now() - this.state.startTime;
+                const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                
+                const el = document.getElementById('main-chrono');
+                if(el) el.innerHTML = `⏱️ ${h}:${m}:${s}`;
+                this.state.elapsedTime = diff;
+            },
 
-                            <button class="tq-btn btn-cancel" style="margin-top:20px" onclick="TrailQuest.goDashboard()">Voltar</button>
-                        </div>
+            // -- SISTEMA DE PERFIL --
+            showProfile() {
+                const overlay = document.createElement('div');
+                overlay.className = 'screen';
+                overlay.innerHTML = `
+                <div class="tactical-panel">
+                    <h1>Perfil</h1>
+                    <p><b>Nick:</b> ${this.state.user.nick}</p>
+                    <p><b>Email:</b> ${this.state.user.email || 'Participante'}</p>
+                    
+                    <h2>Atividade Mensal</h2>
+                    <div class="stats-grid">
+                        ${[40, 80, 20, 60, 90, 30, 50].map(h => `<div class="bar" style="height:${h}%"></div>`).join('')}
                     </div>
-                `);
+
+                    <h2>Calendário</h2>
+                    <div class="calendar-grid">
+                        ${Array.from({length: 28}, (_, i) => `<div class="day ${i%5==0?'hot':''}">${i+1}</div>`).join('')}
+                    </div>
+
+                    <button class="tq-btn btn-ghost" style="margin-top:20px" onclick="document.body.removeChild(this.parentNode.parentNode)">Voltar</button>
+                    <button class="tq-btn btn-accent" onclick="TrailQuest.logout()">Sair</button>
+                </div>`;
+                document.body.appendChild(overlay);
+            },
+
+            logout() {
+                localStorage.removeItem('TQ_AUTH');
+                location.reload();
+            },
+
+            // -- ESCALABILIDADE (100 USUÁRIOS) --
+            handleLocationUpdate(e) {
+                // Throttle de atualização (3 segundos)
+                const now = Date.now();
+                if (this.lastUpdate && now - this.lastUpdate < 3000) return;
+                this.lastUpdate = now;
+
+                // Aqui enviaria para o Firebase/Supabase
+                // socket.emit('location', { latlng: e.latlng, user: this.state.user.nick });
+                
+                // Simulação de renderização de outros 100 usuários sem quebrar o DOM
+                this.renderRemoteUsers();
+            },
+
+            renderRemoteUsers() {
+                // Uso de LayerGroup para performance
+                if(!this.userLayer) {
+                    this.userLayer = L.layerGroup().addTo(this.map);
+                }
+                
+                // Limpeza se necessário e atualização suave
+                // Em um cenário real, iteraríamos sobre o snapshot do banco
             }
         };
 
-        window.onload = () => TrailQuest.init();
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW failed', err));
+            });
+        }
+
+        TrailQuest.init();
     </script>
 </body>
 </html>
